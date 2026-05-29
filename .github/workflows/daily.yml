@@ -1,0 +1,16 @@
+name: Daily Phenology Refresh
+
+on:
+  schedule:
+    - cron: '0 13 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger /api/cron
+        run: |
+          curl -sS -X GET "https://phenology.chrisizworski.com/api/cron" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            --fail --max-time 180 -w "\nHTTP %{http_code}\n"
