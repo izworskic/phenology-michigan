@@ -3,9 +3,9 @@ import { useState, useEffect, useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, ReferenceLine, ResponsiveContainer, Tooltip } from "recharts";
 import { Bird, Fish, Flower2, Waves, Thermometer, Sprout, Egg, TreePine, Feather, Compass, Droplets } from "lucide-react";
 import {
-  dayOfYear, normalMeanF, gddSeries, EVENTS, CAT, seasonOf, classify, MID_MONTH_DOY, MONTH_ABBR,
+  dayOfYear, normalMeanF, gddSeries, EVENTS, CAT, seasonOf, classify, RIVERS, MID_MONTH_DOY, MONTH_ABBR,
 } from "../lib/phenology";
-import { fetchConditions, fetchBirds } from "../lib/sources";
+import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds } from "../lib/sources";
 
 const SITE = "https://phenology.chrisizworski.com";
 const CAT_ICON = { water: Waves, fish: Fish, hatch: Egg, bird: Bird, bloom: Flower2, garden: Sprout, wild: Feather };
@@ -61,14 +61,14 @@ function Wheel({ doy, accent }) {
 
 function Instrument({ Icon, label, value, unit, sub, live, accent }) {
   return (
-    <div style={{ border: "1px solid #e4dcc8", borderRadius: 14, padding: "14px 16px", background: "rgba(255,255,255,0.55)" }}>
+    <div style={{ border: "1px solid #e4dcc8", borderRadius: 14, padding: "14px 16px", background: "rgba(255,255,255,0.55)", minWidth: 0 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
         <Icon size={16} color={accent} />
         <span style={{ fontSize: 11.5, letterSpacing: "0.06em", textTransform: "uppercase", color: "#8a7d62", fontFamily: "Georgia, serif" }}>{label}</span>
-        <span style={{ marginLeft: "auto", fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: live ? "#5a8a4a" : "#b08828", border: `1px solid ${live ? "#bcd3ad" : "#e3d2a6"}`, borderRadius: 6, padding: "1px 6px" }}>{live ? "live" : "modeled"}</span>
+        <span style={{ marginLeft: "auto", fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: live ? "#5a8a4a" : "#b08828", border: `1px solid ${live ? "#bcd3ad" : "#e3d2a6"}`, borderRadius: 6, padding: "1px 6px", whiteSpace: "nowrap" }}>{live ? "live" : "modeled"}</span>
       </div>
       <div><span style={{ fontSize: 28, color: "#2b2a1f", fontWeight: 600, fontFamily: "Fraunces, Georgia, serif" }}>{value}</span><span style={{ fontSize: 13, color: "#8a7d62", marginLeft: 4 }}>{unit}</span></div>
-      <div style={{ fontSize: 11.5, color: "#9a8f76", marginTop: 2 }}>{sub}</div>
+      <div style={{ fontSize: 11.5, color: "#9a8f76", marginTop: 2, overflowWrap: "anywhere" }}>{sub}</div>
     </div>
   );
 }
@@ -84,7 +84,7 @@ function EventRow({ ev, doy, state }) {
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-          <span style={{ fontFamily: "Georgia, serif", fontSize: 14.5, color: "#2b2a1f" }}>{ev.name}</span>
+          <span style={{ fontFamily: "Georgia, serif", fontSize: 14.5, color: "#2b2a1f", overflowWrap: "anywhere" }}>{ev.name}</span>
           <span style={{ marginLeft: "auto", fontSize: 11, color: tagColor, whiteSpace: "nowrap" }}>{tag}</span>
         </div>
         <div style={{ fontSize: 12, color: "#9a8f76", lineHeight: 1.35 }}>{ev.note}</div>
@@ -93,19 +93,27 @@ function EventRow({ ev, doy, state }) {
   );
 }
 
-export default function Home({ conditions, birds, doy, season, normToday, dateStr, generatedAt }) {
+export default function Home({ regional, rivers, gddActual, birds, doy, season, normToday, dateStr, generatedAt }) {
   const [mounted, setMounted] = useState(false);
+  const [riverId, setRiverId] = useState("ausable");
   useEffect(() => { setMounted(true); }, []);
-  const series = useMemo(() => gddSeries(), []);
-  const gddNow = series[Math.min(364, doy - 1)].gdd;
-  const { active, imminent, recent } = classify(doy);
 
-  const airF = conditions.air.tempF;
-  const warmAnom = airF != null ? airF - normToday : null;
-  const anomText = warmAnom == null ? "Air comparison pending."
-    : warmAnom >= 4 ? `Running ${Math.round(warmAnom)} deg above normal. Events may run early.`
-    : warmAnom <= -4 ? `Running ${Math.abs(Math.round(warmAnom))} deg below normal. Events may run late.`
-    : "Near seasonal normal. Timing on schedule.";
+  const normal = useMemo(() => gddSeries(), []);
+  const gddNow = normal[Math.min(364, doy - 1)].gdd;
+  const river = rivers.find((r) => r.id === riverId) || rivers[0];
+  const { active, imminent, recent } = useMemo(() => classify(doy, river ? river.hatchOffset : 0), [doy, river]);
+
+  // real versus normal growing degree days
+  const chart = useMemo(() => {
+    const am = {}; (gddActual?.series || []).forEach((p) => { am[p.doy] = p.gdd; });
+    return normal.map((n) => ({ doy: n.doy, normal: n.gdd, actual: am[n.doy] != null ? am[n.doy] : null }));
+  }, [normal, gddActual]);
+  const actualTotal = gddActual?.total ?? null;
+  const gddAnom = actualTotal != null ? actualTotal - gddNow : null;
+  const dailyRate = Math.max(1, Math.round(normalMeanF(doy) - 50));
+  const daysApprox = gddAnom != null ? Math.round(gddAnom / dailyRate) : null;
+
+  const airF = regional.air.tempF;
 
   const personLd = {
     "@context": "https://schema.org", "@type": "WebSite",
@@ -146,7 +154,7 @@ export default function Home({ conditions, birds, doy, season, normToday, dateSt
           <p style={{ margin: "10px 0 0", fontSize: 14.5, color: "#7a7058", fontStyle: "italic" }}>{dateStr}. The natural year, read in real time from the rivers, the bay, and the sky.</p>
         </header>
 
-        <section style={{ display: "grid", gridTemplateColumns: "minmax(280px, 1fr) minmax(300px, 1.05fr)", gap: 28, alignItems: "start", marginTop: 24 }}>
+        <section className="pheno-2col" style={{ marginTop: 24 }}>
           <div style={{ background: "rgba(255,255,255,0.4)", border: "1px solid #e4dcc8", borderRadius: 18, padding: "18px 18px 8px" }}>
             <Wheel doy={doy} accent={season} />
             <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", justifyContent: "center", padding: "8px 4px 12px" }}>
@@ -166,30 +174,41 @@ export default function Home({ conditions, birds, doy, season, normToday, dateSt
         </section>
 
         <section style={{ marginTop: 30 }}>
-          <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: "0 0 12px" }}>Live instruments</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 14 }}>
-            <Instrument Icon={Droplets} label="AuSable flow" value={conditions.usgs.flow != null ? conditions.usgs.flow : 540} unit="cfs" sub={conditions.usgs.flow != null ? "near Grayling, USGS" : "seasonal normal"} live={conditions.usgs.flow != null} accent={CAT.water.color} />
-            <Instrument Icon={Fish} label="River water" value={conditions.usgs.temp != null ? conditions.usgs.temp.toFixed(1) : "13.5"} unit="deg C" sub={conditions.usgs.temp != null ? "AuSable, USGS" : "seasonal normal"} live={conditions.usgs.temp != null} accent={CAT.fish.color} />
-            <Instrument Icon={Thermometer} label="Bay City air" value={airF != null ? airF : normToday} unit="deg F" sub={conditions.air.forecast || "seasonal normal"} live={airF != null} accent={season.color} />
-            <Instrument Icon={Waves} label="Lake Huron level" value={conditions.level != null ? conditions.level.toFixed(2) : "176.95"} unit="m IGLD" sub={conditions.level != null ? "Saginaw Bay, NOAA" : "seasonal normal"} live={conditions.level != null} accent={CAT.water.color} />
-            <Instrument Icon={Sprout} label="Growing degree days" value={gddNow} unit="GDD50" sub="accumulated since Jan 1, modeled" live={false} accent={CAT.garden.color} />
-            <Instrument Icon={TreePine} label="Anomaly" value={warmAnom != null ? (warmAnom >= 0 ? "+" : "") + Math.round(warmAnom) : "0"} unit="deg vs normal" sub={anomText} live={airF != null} accent={CAT.bird.color} />
+          <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 10, margin: "0 0 12px" }}>
+            <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>Live instruments</h2>
+            <span style={{ fontSize: 12, color: "#9a8f76", marginLeft: 6 }}>River:</span>
+            {rivers.map((r) => (
+              <button key={r.id} className="pheno-pill" data-on={r.id === riverId ? "1" : "0"} onClick={() => setRiverId(r.id)}>{r.name}</button>
+            ))}
+            {river && <span style={{ fontSize: 12, color: "#9a8f76", fontStyle: "italic" }}>{river.note}</span>}
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14 }}>
+            <Instrument Icon={Droplets} label={`${river ? river.name : "River"} flow`} value={river && river.flow != null ? river.flow : "—"} unit="cfs" sub={river && river.flow != null ? "USGS gauge" : "no live reading"} live={!!(river && river.flow != null)} accent={CAT.water.color} />
+            <Instrument Icon={Fish} label="River water" value={river && river.temp != null ? river.temp.toFixed(1) : "n/a"} unit="deg C" sub={river && river.temp != null ? `${river.name}, USGS` : "no temperature sensor on this gauge"} live={!!(river && river.temp != null)} accent={CAT.fish.color} />
+            <Instrument Icon={Thermometer} label="Bay City air" value={airF != null ? airF : normToday} unit="deg F" sub={regional.air.forecast || "seasonal normal"} live={airF != null} accent={season.color} />
+            <Instrument Icon={Waves} label="Lake Huron level" value={regional.level != null ? regional.level.toFixed(2) : "176.95"} unit="m IGLD" sub={regional.level != null ? "Saginaw Bay, NOAA" : "seasonal normal"} live={regional.level != null} accent={CAT.water.color} />
+            <Instrument Icon={Sprout} label="Degree days, actual" value={actualTotal != null ? actualTotal : gddNow} unit="GDD50" sub={actualTotal != null ? "observed since Jan 1, Open-Meteo" : "modeled"} live={actualTotal != null} accent={CAT.garden.color} />
+            <Instrument Icon={TreePine} label="Season anomaly" value={gddAnom != null ? (gddAnom >= 0 ? "+" : "") + gddAnom : "0"} unit="GDD vs normal" sub={gddAnom != null ? `${actualTotal} real against ${gddNow} normal. About ${Math.abs(daysApprox)} days ${gddAnom >= 0 ? "ahead" : "behind"}.` : "real degree days pending"} live={gddAnom != null} accent={CAT.bird.color} />
           </div>
         </section>
 
-        <section style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 28, marginTop: 30, alignItems: "start" }}>
+        <section className="pheno-2col-b" style={{ marginTop: 30 }}>
           <div style={{ background: "rgba(255,255,255,0.4)", border: "1px solid #e4dcc8", borderRadius: 18, padding: "18px 14px 8px" }}>
-            <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: "0 0 6px", paddingLeft: 6 }}>Growing degree day accumulation</h2>
-            <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 8px", paddingLeft: 6 }}>Base 50 F, climatological. Hatch and bloom timing track this curve; the marker is today.</p>
+            <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: "0 0 6px", paddingLeft: 6 }}>Degree day accumulation</h2>
+            <div style={{ display: "flex", gap: 16, paddingLeft: 6, marginBottom: 8, fontSize: 11.5, color: "#9a8f76" }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ width: 16, height: 0, borderTop: "2.6px solid #9a5b3f", display: "inline-block" }} />Actual this year</span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ width: 16, height: 0, borderTop: "2px dashed #c2b291", display: "inline-block" }} />Normal</span>
+            </div>
             <div style={{ height: 220 }}>
               {mounted ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={series} margin={{ top: 8, right: 16, left: 0, bottom: 4 }}>
+                  <LineChart data={chart} margin={{ top: 8, right: 16, left: 0, bottom: 4 }}>
                     <XAxis dataKey="doy" ticks={MID_MONTH_DOY} tickFormatter={(d) => MONTH_ABBR[MID_MONTH_DOY.indexOf(d)] || ""} tick={{ fontSize: 11, fill: "#8a7d62" }} stroke="#cdbfa3" />
                     <YAxis tick={{ fontSize: 11, fill: "#8a7d62" }} stroke="#cdbfa3" width={42} />
-                    <Tooltip formatter={(v) => [`${v} GDD`, ""]} labelFormatter={(d) => `Day ${d}`} contentStyle={{ fontFamily: "Georgia, serif", fontSize: 12, borderRadius: 8, border: "1px solid #e4dcc8" }} />
+                    <Tooltip formatter={(v, n) => [`${v} GDD`, n === "actual" ? "Actual" : "Normal"]} labelFormatter={(d) => `Day ${d}`} contentStyle={{ fontFamily: "Georgia, serif", fontSize: 12, borderRadius: 8, border: "1px solid #e4dcc8" }} />
                     <ReferenceLine x={doy} stroke={season.color} strokeWidth={2} strokeDasharray="4 3" label={{ value: "now", fill: season.color, fontSize: 11, position: "top" }} />
-                    <Line type="monotone" dataKey="gdd" stroke="#9a5b3f" strokeWidth={2.5} dot={false} />
+                    <Line type="monotone" dataKey="normal" stroke="#c2b291" strokeWidth={2} strokeDasharray="5 4" dot={false} />
+                    <Line type="monotone" dataKey="actual" stroke="#9a5b3f" strokeWidth={2.6} dot={false} connectNulls={false} />
                   </LineChart>
                 </ResponsiveContainer>
               ) : <div style={{ height: "100%" }} />}
@@ -200,19 +219,19 @@ export default function Home({ conditions, birds, doy, season, normToday, dateSt
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
               <Bird size={16} color={CAT.bird.color} />
               <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>Notable sightings, Saginaw Bay</h2>
-              <span style={{ marginLeft: "auto", fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: birds.length ? "#5a8a4a" : "#b08828", border: `1px solid ${birds.length ? "#bcd3ad" : "#e3d2a6"}`, borderRadius: 6, padding: "1px 6px" }}>{birds.length ? "live, eBird" : "no recent"}</span>
+              <span style={{ marginLeft: "auto", fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: birds.length ? "#5a8a4a" : "#b08828", border: `1px solid ${birds.length ? "#bcd3ad" : "#e3d2a6"}`, borderRadius: 6, padding: "1px 6px", whiteSpace: "nowrap" }}>{birds.length ? "live, eBird" : "no recent"}</span>
             </div>
             {birds.length ? birds.map((b, i) => (
               <div key={i} style={{ padding: "8px 0", borderBottom: "1px solid #ece4d2" }}>
-                <div style={{ fontFamily: "Georgia, serif", fontSize: 14.5, color: "#2b2a1f" }}>{b.comName}{b.howMany ? <span style={{ color: "#9a8f76", fontSize: 12 }}>  x{b.howMany}</span> : null}</div>
-                <div style={{ fontSize: 11.5, color: "#9a8f76" }}>{b.locName}{b.obsDt ? `  .  ${b.obsDt.split(" ")[0]}` : ""}</div>
+                <div style={{ fontFamily: "Georgia, serif", fontSize: 14.5, color: "#2b2a1f", overflowWrap: "anywhere" }}>{b.comName}{b.howMany ? <span style={{ color: "#9a8f76", fontSize: 12 }}>  x{b.howMany}</span> : null}</div>
+                <div style={{ fontSize: 11.5, color: "#9a8f76", overflowWrap: "anywhere" }}>{b.locName}{b.obsDt ? `  .  ${b.obsDt.split(" ")[0]}` : ""}</div>
               </div>
             )) : <div style={{ fontSize: 12.5, color: "#9a8f76", padding: "6px 0" }}>No notable reports in the last ten days. Check back during a migration wave.</div>}
           </div>
         </section>
 
         <footer style={{ marginTop: 28, paddingTop: 16, borderTop: "1px solid #e4dcc8", fontSize: 12, color: "#9a8f76", lineHeight: 1.55 }}>
-          One clock for the whole natural year, drawing on the <a href="https://michigantroutreport.com">Michigan Trout Report</a>, the <a href="https://michiganbirdingreport.com">Michigan Birding Report</a>, <a href="https://greatlakeslevels.org">Great Lakes Lake Levels</a>, and <a href="https://freighterviewfarms.com">Freighter View Farms</a>. Live data from USGS, NWS, NOAA CO-OPS, and eBird; phenological windows from regional records for Saginaw Bay and northeastern Michigan. Built and maintained by <a href="https://chrisizworski.com">Chris Izworski</a>. Updated {generatedAt}.
+          One clock for the whole natural year, drawing on the <a href="https://michigantroutreport.com">Michigan Trout Report</a>, the <a href="https://michiganbirdingreport.com">Michigan Birding Report</a>, <a href="https://greatlakeslevels.org">Great Lakes Lake Levels</a>, and <a href="https://freighterviewfarms.com">Freighter View Farms</a>. Live data from USGS, NWS, NOAA CO-OPS, eBird, and Open-Meteo; phenological windows from regional records for Saginaw Bay and northeastern Michigan. Built and maintained by <a href="https://chrisizworski.com">Chris Izworski</a>. Updated {generatedAt}.
         </footer>
       </div>
     </div>
@@ -223,10 +242,10 @@ export async function getServerSideProps({ res }) {
   res.setHeader("Cache-Control", "s-maxage=600, stale-while-revalidate=1800");
   const now = new Date();
   const doy = dayOfYear(now);
-  const [conditions, birds] = await Promise.all([fetchConditions(), fetchBirds()]);
+  const [regional, rivers, gddActual, birds] = await Promise.all([fetchRegional(), fetchRivers(), fetchGddActual(), fetchBirds()]);
   return {
     props: {
-      conditions, birds, doy,
+      regional, rivers, gddActual, birds, doy,
       season: seasonOf(doy),
       normToday: Math.round(normalMeanF(doy)),
       dateStr: now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "America/Detroit" }),
