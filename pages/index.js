@@ -59,8 +59,8 @@ function Wheel({ doy, accent, onSelect, activeTags }) {
         const [ex, ey] = polar(cx, cy, R - 30, doyAngle(ev.p % 365));
         const on = matches(ev);
         return (
-          <g key={i} style={{ cursor: "pointer" }} onClick={() => onSelect(ev)}>
-            <circle cx={ex} cy={ey} r="11" fill="transparent" />
+          <g key={i} style={{ cursor: on ? "pointer" : "default", pointerEvents: on ? "auto" : "none" }} onClick={on ? () => onSelect(ev) : undefined}>
+            {on && <circle cx={ex} cy={ey} r="11" fill="transparent" />}
             <circle cx={ex} cy={ey} r={on ? "3.6" : "2.6"} fill={CAT[ev.cat].color} stroke="#fff" strokeWidth="0.6" opacity={on ? 1 : 0.18} />
           </g>
         );
