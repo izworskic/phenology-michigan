@@ -6,8 +6,9 @@ import {
   dayOfYear, normalMeanF, gddSeries, EVENTS, CAT, seasonOf, classify, RIVERS, moonPhase,
   MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring,
 } from "../lib/phenology";
-import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory, fetchSpringIndex, fetchObservations, fetchBay, fetchInaturalist, fetchDrought, fetchAlerts, withTimeout } from "../lib/sources";
+import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory, fetchBuoy, fetchAlerts, withTimeout } from "../lib/sources";
 import { readHistory } from "../lib/history";
+import { readSignals, emptySignals } from "../lib/signals";
 
 const SITE = "https://phenology.chrisizworski.com";
 const CAT_ICON = { water: Waves, fish: Fish, hatch: Egg, bird: Bird, bloom: Flower2, garden: Sprout, wild: Feather };
@@ -192,7 +193,7 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
         const f = cToF(a.temp);
         tempCtx = f < 50 ? " The water is still cold, so fish are sluggish and midday is your window." : f < 58 ? " The water is warming into the trout window." : f <= 65 ? " The water sits in the prime window, so hatches and rises should come on the evening." : f <= 68 ? " The water is on the warm edge; fish early and late and handle fish quickly." : " The water is stressfully warm; back off the trout and consider cooler tailwater or a different target.";
       }
-      parts.push(`The AuSable is at ${a.flow} cfs${flowCtx}, and ${a.temp != null ? Math.round(cToF(a.temp)) + " degrees F." : "no live water temperature is posting."}${tempCtx}`);
+      parts.push(`The AuSable is at ${a.flow} cfs${flowCtx}${a.trend && a.trend !== "steady" ? `, ${a.trend} over the past two days` : ""}, and ${a.temp != null ? Math.round(cToF(a.temp)) + " degrees F." : "no live water temperature is posting."}${tempCtx}`);
     }
     // season pace
     if (gddAnom != null) {
@@ -422,7 +423,7 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
             {river && <span style={{ fontSize: 12, color: "#9a8f76", fontStyle: "italic" }}>{river.note}</span>}
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14 }}>
-            <Instrument Icon={Droplets} label={`${river ? river.name : "River"} flow`} value={river && river.flow != null ? river.flow : "n/a"} unit="cfs" sub={river && river.flow != null ? "USGS gauge" : "no live reading"} live={!!(river && river.flow != null)} accent={CAT.water.color} />
+            <Instrument Icon={Droplets} label={`${river ? river.name : "River"} flow`} value={river && river.flow != null ? river.flow : "n/a"} unit="cfs" sub={river && river.flow != null ? `USGS gauge${river.trend && river.trend !== "steady" ? ", " + river.trend : ""}` : "no live reading"} live={!!(river && river.flow != null)} accent={CAT.water.color} />
             <Instrument Icon={Fish} label="River water" value={river && river.temp != null ? Math.round(cToF(river.temp)) : "n/a"} unit="deg F" sub={river && river.temp != null ? `${river.name}, USGS` : "no temperature sensor on this gauge"} live={!!(river && river.temp != null)} accent={CAT.fish.color} />
             <Instrument Icon={Thermometer} label="Bay City air, now" value={airF != null ? airF : normToday} unit="deg F" sub={airF != null ? `current observation${regional.air.forecast ? ", " + regional.air.forecast.toLowerCase() : ""}` : "seasonal normal"} live={airF != null} accent={season.color} />
             <Instrument Icon={Waves} label="Lake Huron level" value={regional.level != null ? regional.level.toFixed(2) : "176.95"} unit="m IGLD" sub={regional.level != null ? "Saginaw Bay, NOAA" : "seasonal normal"} live={regional.level != null} accent={CAT.water.color} />
@@ -587,21 +588,24 @@ export async function getServerSideProps({ res }) {
   res.setHeader("Cache-Control", "s-maxage=600, stale-while-revalidate=1800");
   const now = new Date();
   const doy = dayOfYear(now);
-  // Live sources (change through the day) fetched directly. Daily-cadence and slower external
-  // sources are wrapped in a timeout so a single slow feed can never stall the page; all run in parallel.
   const T = (p, fb) => withTimeout(p, 8000, fb);
-  const [regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, springIndex, observations, bay, inat, drought, alerts] = await Promise.all([
+  // Live sources change through the day and are fetched every load. Daily-cadence signals
+  // (spring index, observations, iNaturalist, drought, ice, lake-surface temp) are read once
+  // from the banked bundle the cron refreshes daily, so the page makes one cheap call for all of them.
+  const [regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, buoy, alerts, signals] = await Promise.all([
     fetchRegional(), fetchRivers(), fetchGddActual(), fetchBirds(), fetchAusableStats(), fetchForecast(), fetchGddHistory(), readHistory(),
-    T(fetchSpringIndex(), { leafDoy: null, leafAnom: null, bloomAnom: null, agddAnom: null }),
-    T(fetchObservations(), []),
-    T(fetchBay(), { windDirDeg: null, windMph: null, waterTempF: null, airTempF: null, waveFt: null, iceConc: null, iceDate: null, glseaF: null, glseaDate: null }),
-    T(fetchInaturalist(), []),
-    T(fetchDrought(), null),
+    T(fetchBuoy(), { windDirDeg: null, windMph: null, waterTempF: null, airTempF: null, waveFt: null }),
     T(fetchAlerts(), []),
+    T(readSignals(), null),
   ]);
+  const sig = signals || emptySignals();
+  const bay = { ...buoy, ...(sig.bayDaily || {}) };
   return {
     props: {
-      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, springIndex, observations, bay, inat, drought, alerts, doy,
+      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history,
+      springIndex: sig.springIndex || emptySignals().springIndex,
+      observations: sig.observations || [], inat: sig.inat || [], drought: sig.drought || null,
+      bay, alerts, doy,
       season: seasonOf(doy), normToday: Math.round(normalMeanF(doy)),
       dateStr: now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "America/Detroit" }),
       generatedAt: now.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/Detroit" }) + " ET",

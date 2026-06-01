@@ -1,6 +1,7 @@
 import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchForecast } from "../../lib/sources";
 import { dayOfYear, gddSeries, seasonOf, cToF, moonPhase } from "../../lib/phenology";
 import { appendSnapshot, historyConfigured } from "../../lib/history";
+import { gatherSignals, writeSignals, signalsConfigured } from "../../lib/signals";
 
 const SITE = "https://phenology.chrisizworski.com";
 const INDEXNOW_KEY = "b1be9ee40d264668af173e98e30188bf";
@@ -52,6 +53,21 @@ export default async function handler(req, res) {
     }
   } catch (e) {
     log.push(`[${ts()}] snapshot failed: ${e.message}`);
+  }
+
+  // Refresh the daily-cadence signal bundle so the page can read it cheaply instead of
+  // hitting six slow external APIs on every cache miss.
+  try {
+    if (!signalsConfigured()) {
+      log.push(`[${ts()}] signals ready but storage not configured; set GH_TOKEN`);
+    } else {
+      const bundle = await gatherSignals();
+      const r = await writeSignals(bundle);
+      const counts = `obs ${bundle.observations.length}, inat ${bundle.inat.length}, ice ${bundle.bayDaily.iceConc}`;
+      log.push(`[${ts()}] signals: ${r.ok ? `banked (${counts})` : `write failed: ${r.reason}`}`);
+    }
+  } catch (e) {
+    log.push(`[${ts()}] signals failed: ${e.message}`);
   }
 
   // Ping IndexNow and the sitemap so search engines recrawl the daily-updated page.
