@@ -7,6 +7,7 @@ import {
   MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring,
 } from "../lib/phenology";
 import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory } from "../lib/sources";
+import { readHistory } from "../lib/history";
 
 const SITE = "https://phenology.chrisizworski.com";
 const CAT_ICON = { water: Waves, fish: Fish, hatch: Egg, bird: Bird, bloom: Flower2, garden: Sprout, wild: Feather };
@@ -135,7 +136,7 @@ function EventPopout({ ev, doy, actualTotal, thresholds, season, onClose }) {
   );
 }
 
-export default function Home({ regional, rivers, gddActual, birds, stats, forecast, gddHistory, doy, season, normToday, dateStr, generatedAt }) {
+export default function Home({ regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, doy, season, normToday, dateStr, generatedAt }) {
   const [mounted, setMounted] = useState(false);
   const [riverId, setRiverId] = useState("ausable");
   const [sel, setSel] = useState(null);
@@ -218,6 +219,13 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
   }, [rivers, stats, gddAnom, daysApprox, actualTotal, gddNow, thresholds, doy, birds, forecast]);
 
   const indicators = useMemo(() => activeIndicators(doy).filter((i) => i.state !== "recent"), [doy]);
+
+  // banked daily record
+  const auNow = rivers.find((r) => r.id === "ausable") || {};
+  const lyKey = (() => { const d = doyToDate(doy); return `${d.getFullYear() - 1}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; })();
+  const lastYear = history.find((h) => h.date === lyKey) || null;
+  const prettyDate = (s) => (s ? new Date(s + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "");
+  const bankTrend = useMemo(() => history.filter((h) => h.gdd != null).slice(-60).map((h) => ({ doy: h.doy, gdd: h.gdd })), [history]);
 
   const personLd = {
     "@context": "https://schema.org", "@type": "WebSite", name: "Michigan Phenology", url: SITE,
@@ -341,6 +349,37 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
           </section>
         )}
 
+        <section style={{ marginTop: 18, background: "rgba(255,255,255,0.5)", border: "1px solid #e4dcc8", borderRadius: 14, padding: "16px 20px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <Feather size={16} color={CAT.wild.color} />
+            <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>Banked record</h2>
+          </div>
+          {history.length === 0 ? (
+            <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.55, color: "#5a5240" }}>
+              The site keeps its own daily journal now: river flow and temperature, lake level, air, degree days, soil, and the day's notable birds, one snapshot every morning. As it fills, this is the record each date gets measured against in the years to come, your own history rather than a model's.
+            </p>
+          ) : (
+            <>
+              <p style={{ margin: 0, fontSize: 15, lineHeight: 1.55, color: "#3a3527" }}>
+                {history.length} {history.length === 1 ? "day" : "days"} on record since {prettyDate(history[0].date)}.
+                {lastYear ? ` On this date last year the AuSable ran ${lastYear.ausableFlow != null ? lastYear.ausableFlow + " cfs" : "an unrecorded flow"}${lastYear.ausableTempF != null ? " at " + lastYear.ausableTempF + " degrees F" : ""}; today it is ${auNow.flow != null ? auNow.flow + " cfs" : "not posting"}${auNow.temp != null ? " at " + Math.round(cToF(auNow.temp)) + " degrees F" : ""}.` : " A full year of records unlocks the on-this-date comparison."}
+              </p>
+              {bankTrend.length >= 8 && (
+                <div style={{ height: 130, marginTop: 10 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={bankTrend} margin={{ top: 6, right: 12, left: 0, bottom: 0 }}>
+                      <XAxis dataKey="doy" tick={{ fontSize: 10, fill: "#8a7d62" }} stroke="#cdbfa3" />
+                      <YAxis tick={{ fontSize: 10, fill: "#8a7d62" }} stroke="#cdbfa3" width={36} />
+                      <Tooltip formatter={(v) => [`${v} GDD`, "Banked"]} labelFormatter={(d) => `Day ${d}`} contentStyle={{ fontFamily: "Georgia, serif", fontSize: 12, borderRadius: 8, border: "1px solid #e4dcc8" }} />
+                      <Line type="monotone" dataKey="gdd" stroke="#7a6a4f" strokeWidth={2.4} dot={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </>
+          )}
+        </section>
+
         <section className="pheno-2col-b" style={{ marginTop: 30 }}>
           <div style={{ background: "rgba(255,255,255,0.4)", border: "1px solid #e4dcc8", borderRadius: 18, padding: "18px 14px 8px" }}>
             <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: "0 0 6px", paddingLeft: 6 }}>Degree day accumulation</h2>
@@ -392,10 +431,10 @@ export async function getServerSideProps({ res }) {
   res.setHeader("Cache-Control", "s-maxage=600, stale-while-revalidate=1800");
   const now = new Date();
   const doy = dayOfYear(now);
-  const [regional, rivers, gddActual, birds, stats, forecast, gddHistory] = await Promise.all([fetchRegional(), fetchRivers(), fetchGddActual(), fetchBirds(), fetchAusableStats(), fetchForecast(), fetchGddHistory()]);
+  const [regional, rivers, gddActual, birds, stats, forecast, gddHistory, history] = await Promise.all([fetchRegional(), fetchRivers(), fetchGddActual(), fetchBirds(), fetchAusableStats(), fetchForecast(), fetchGddHistory(), readHistory()]);
   return {
     props: {
-      regional, rivers, gddActual, birds, stats, forecast, gddHistory, doy,
+      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, doy,
       season: seasonOf(doy), normToday: Math.round(normalMeanF(doy)),
       dateStr: now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "America/Detroit" }),
       generatedAt: now.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/Detroit" }) + " ET",
