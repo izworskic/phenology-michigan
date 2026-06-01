@@ -4,7 +4,7 @@ import { LineChart, Line, XAxis, YAxis, ReferenceLine, ResponsiveContainer, Tool
 import { Bird, Fish, Flower2, Waves, Thermometer, Sprout, Egg, TreePine, Feather, Compass, Droplets, X, Sunrise, Snowflake, Sparkles, Link2, BarChart3, ArrowRight } from "lucide-react";
 import {
   dayOfYear, normalMeanF, gddSeries, EVENTS, CAT, seasonOf, classify, RIVERS, moonPhase,
-  MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring, emergenceForecast,
+  MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring, emergenceForecast, gardenWindow, LAST_FROST_DOY, FIRST_FROST_DOY,
 } from "../lib/phenology";
 import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory, fetchBuoy, fetchAlerts, fetchRiverForecast, withTimeout } from "../lib/sources";
 import { readHistory } from "../lib/history";
@@ -231,6 +231,14 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
       if (forecast.soilF != null) soilTxt = forecast.soilF < 50 ? `, and the soil at six inches is ${forecast.soilF} degrees, still too cold for warm-season planting` : `, and the soil at six inches is ${forecast.soilF} degrees, warm enough for morels and the warm-season garden`;
       parts.push(`Daylight is ${h} hours ${m} minutes, ${dir} about ${Math.abs(forecast.daylightDeltaMin)} minutes a day${soilTxt}.`);
     }
+    // frost climatology: anchor the growing season in spring and again toward fall
+    if (doy <= LAST_FROST_DOY + 22) {
+      const d = Math.round(LAST_FROST_DOY - doy);
+      if (d > 0) parts.push(`The region's average last frost is around mid-May, roughly ${d} days out, so hold tender transplants a little longer.`);
+      else parts.push(`The region's average last frost, around mid-May, has passed.`);
+    } else if (doy >= 235 && doy <= FIRST_FROST_DOY) {
+      parts.push(`First frost here typically comes in early October, leaving about ${FIRST_FROST_DOY - doy} days of growing season.`);
+    }
     // next hatch projection
     const upcoming = EVENTS.filter((e) => e.cat === "hatch").map((e) => {
       const thr = thresholds[e.name]; if (thr == null || actualTotal == null) return null;
@@ -276,6 +284,14 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
     const auTempF = au && au.temp != null ? cToF(au.temp) : null;
     return emergenceForecast(actualTotal, doy, auTempF);
   }, [actualTotal, doy, rivers]);
+
+  // Computed garden planting window: live soil temperature and the frost outlook against each crop's
+  // soil-temperature need, with frost-sensitive crops gated on the average last frost having passed.
+  const garden = useMemo(() => {
+    const frostClear = !!forecast && (!forecast.frost || forecast.frost.length === 0);
+    return gardenWindow(forecast?.soilF ?? null, frostClear, doy >= LAST_FROST_DOY);
+  }, [forecast, doy]);
+  const showGarden = doy >= 90 && doy <= 185 && garden.length > 0;
 
   // Filter indicators by activity group (hunt, fish, garden, water, bird)
   const [activeTags, setActiveTags] = useState([...ALL_GROUPS]);
@@ -496,6 +512,28 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
                   </div>
                 );
               })}
+            </div>
+          </section>
+        )}
+
+        {showGarden && (
+          <section style={{ marginTop: 30 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
+              <Sprout size={16} color={CAT.garden.color} />
+              <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>Garden planting window</h2>
+              <span style={{ marginLeft: "auto", fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "#7a7058", border: "1px solid #d8cca8", borderRadius: 6, padding: "1px 6px", whiteSpace: "nowrap" }}>computed</span>
+            </div>
+            <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 12px", fontStyle: "italic" }}>Live soil temperature and the seven-day frost outlook against what each crop wants. Cool-season crops are best sown on the early side; the tender ones wait for warm soil and frost behind us.</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 10 }}>
+              {garden.map((g, i) => (
+                <div key={i} style={{ border: "1px solid #e4dcc8", borderLeft: `3px solid ${g.ready ? CAT.garden.color : "#cdbf9a"}`, borderRadius: 10, padding: "9px 12px", background: g.ready ? "rgba(122,160,90,0.10)" : "rgba(255,255,255,0.5)" }}>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                    <span style={{ fontFamily: "Georgia, serif", fontSize: 14.5, color: "#2b2a1f" }}>{g.name}</span>
+                    <span style={{ marginLeft: "auto", fontSize: 10.5, letterSpacing: "0.06em", textTransform: "uppercase", color: g.ready ? "#3f6b2f" : "#8a7058", fontWeight: 600, whiteSpace: "nowrap" }}>{g.status}</span>
+                  </div>
+                  <div style={{ fontSize: 12, color: "#6a5f4a", marginTop: 3 }}>{g.note}</div>
+                </div>
+              ))}
             </div>
           </section>
         )}
