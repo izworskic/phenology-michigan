@@ -1,5 +1,5 @@
 import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchForecast } from "../../lib/sources";
-import { dayOfYear, gddSeries, seasonOf, cToF } from "../../lib/phenology";
+import { dayOfYear, gddSeries, seasonOf, cToF, moonPhase } from "../../lib/phenology";
 import { appendSnapshot, historyConfigured } from "../../lib/history";
 
 const SITE = "https://phenology.chrisizworski.com";
@@ -38,6 +38,9 @@ export default async function handler(req, res) {
       airF: regional.air.tempF ?? null,
       soilF: forecast?.soilF ?? null,
       daylightH: forecast?.daylightH != null ? Math.round(forecast.daylightH * 100) / 100 : null,
+      windSpeedMph: forecast?.windSpeedMph ?? null,
+      windDirDeg: forecast?.windDirDeg ?? null,
+      moonPhase: moonPhase(now.getTime() / 86400000 + 2440587.5),
       birdCount: birds.length,
       topBird: birds[0]?.comName || null,
     };

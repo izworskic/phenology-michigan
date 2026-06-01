@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, ReferenceLine, ResponsiveContainer, Tooltip } from "recharts";
 import { Bird, Fish, Flower2, Waves, Thermometer, Sprout, Egg, TreePine, Feather, Compass, Droplets, X, Sunrise, Snowflake, Sparkles, Link2, BarChart3, ArrowRight } from "lucide-react";
 import {
-  dayOfYear, normalMeanF, gddSeries, EVENTS, CAT, seasonOf, classify, RIVERS,
+  dayOfYear, normalMeanF, gddSeries, EVENTS, CAT, seasonOf, classify, RIVERS, moonPhase,
   MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring,
 } from "../lib/phenology";
 import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory } from "../lib/sources";
@@ -220,6 +220,31 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
 
   const indicators = useMemo(() => activeIndicators(doy).filter((i) => i.state !== "recent"), [doy]);
 
+  // Filter indicators by activity tag (hunt, fish, garden, water)
+  const [activeTags, setActiveTags] = useState(["hunt", "fish", "garden", "water", "bird"]);
+  const filteredIndicators = useMemo(
+    () => indicators.filter((i) => !i.tags || i.tags.some((t) => activeTags.includes(t))),
+    [indicators, activeTags]
+  );
+  const allTags = ["hunt", "fish", "garden", "water", "bird"];
+  const tagLabels = { hunt: "Hunting", fish: "Fishing", garden: "Garden", water: "Water/winds", bird: "Birds" };
+
+  // Detect correlations: overlapping events from different active categories
+  const correlations = useMemo(() => {
+    const corr = [];
+    const huntEvents = EVENTS.filter((e) => e.tags?.includes("hunt") && !(e.e < doy || doy > e.s + 60));
+    const fishEvents = EVENTS.filter((e) => e.tags?.includes("fish") && !(e.e < doy || doy > e.s + 60));
+    const waterEvents = EVENTS.filter((e) => e.tags?.includes("water") && !(e.e < doy || doy > e.s + 60));
+    if (activeTags.includes("hunt") && activeTags.includes("fish") && huntEvents.length && fishEvents.length) {
+      corr.push(`Hunting and fishing seasons align: ${huntEvents[0].name} and ${fishEvents[0].name} peak together.`);
+    }
+    if ((activeTags.includes("hunt") || activeTags.includes("fish")) && activeTags.includes("water") && waterEvents.length) {
+      const context = waterEvents[0].name.includes("NE") ? "Spring northeast winds cool the water and slow the calendar." : "Calm summer waters warm the bay and trigger walleye to go deep.";
+      corr.push(context);
+    }
+    return corr.length > 0 ? corr[0] : null;
+  }, [doy, activeTags]);
+
   // banked daily record
   const auNow = rivers.find((r) => r.id === "ausable") || {};
   const lyKey = (() => { const d = doyToDate(doy); return `${d.getFullYear() - 1}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; })();
@@ -260,11 +285,33 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
           <section style={{ marginTop: 22, background: "rgba(255,255,255,0.5)", border: "1px solid #e4dcc8", borderLeft: `4px solid ${season.color}`, borderRadius: 14, padding: "16px 20px" }}>
             <div style={{ fontSize: 11.5, letterSpacing: "0.14em", textTransform: "uppercase", color: "#8a7d62", marginBottom: 6 }}>The read</div>
             <p style={{ margin: 0, fontSize: 16, lineHeight: 1.6, color: "#3a3527", fontFamily: "Newsreader, Georgia, serif" }}>{read}</p>
+            {correlations && <p style={{ margin: "12px 0 0", fontSize: 14, lineHeight: 1.5, color: "#6a5f4a", fontFamily: "Newsreader, Georgia, serif", fontStyle: "italic", borderTop: "1px solid #e4dcc8", paddingTop: 12 }}>Correlation: {correlations}</p>}
           </section>
         )}
 
         <section className="pheno-2col" style={{ marginTop: 24 }}>
           <div style={{ background: "rgba(255,255,255,0.4)", border: "1px solid #e4dcc8", borderRadius: 18, padding: "18px 18px 8px" }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14, justifyContent: "center" }}>
+              {allTags.map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => setActiveTags((prev) => prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag])}
+                  style={{
+                    padding: "4px 10px",
+                    fontSize: 11,
+                    fontWeight: activeTags.includes(tag) ? 600 : 400,
+                    background: activeTags.includes(tag) ? "#d4c8a8" : "#f5f0e8",
+                    border: `1px solid ${activeTags.includes(tag) ? "#c4b898" : "#e4dcc8"}`,
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    color: "#5a5340",
+                    transition: "all 0.2s"
+                  }}
+                >
+                  {tagLabels[tag]}
+                </button>
+              ))}
+            </div>
             <Wheel doy={doy} accent={season} onSelect={setSel} />
             <div style={{ textAlign: "center", fontSize: 11, color: "#a89c83", fontStyle: "italic", marginTop: -2 }}>Tap any dot for the detail and projection.</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", justifyContent: "center", padding: "8px 4px 12px" }}>
@@ -279,7 +326,7 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
           </div>
         </section>
 
-        {indicators.length > 0 && (
+        {filteredIndicators.length > 0 && (
           <section style={{ marginTop: 30 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
               <Link2 size={16} color={CAT.bloom.color} />
@@ -287,7 +334,7 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
             </div>
             <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 12px", fontStyle: "italic" }}>The signals nature is giving right now, and what each one points to on the rivers, in the woods, and in the garden.</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 12 }}>
-              {indicators.map((ind, i) => {
+              {filteredIndicators.map((ind, i) => {
                 const tag = ind.state === "active" ? "active now" : `in about ${ind.days} days`;
                 const tagColor = ind.state === "active" ? "#5a8a4a" : "#b08828";
                 return (
