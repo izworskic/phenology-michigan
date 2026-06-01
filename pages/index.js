@@ -14,10 +14,25 @@ const CAT_ICON = { water: Waves, fish: Fish, hatch: Egg, bird: Bird, bloom: Flow
 const fmtDate = (doy) => doyToDate(doy).toLocaleDateString("en-US", { month: "long", day: "numeric" });
 const ordinal = (n) => { const s = ["th", "st", "nd", "rd"], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
 
+// Activity groups for the toggles. Each maps to the relevant categories plus any tagged events.
+// An angler's "Fishing" lights up the hatches and trout; a hunter's "Hunting" lights up deer and turkey.
+const ALL_GROUPS = ["hunt", "fish", "garden", "water", "bird"];
+const GROUP_LABEL = { hunt: "Hunting", fish: "Fishing", garden: "Garden", water: "Water/winds", bird: "Birds" };
+const GROUPS = {
+  hunt: (ev) => !!(ev.tags && ev.tags.includes("hunt")),
+  fish: (ev) => ev.cat === "fish" || ev.cat === "hatch" || !!(ev.tags && ev.tags.includes("fish")),
+  garden: (ev) => ev.cat === "garden" || ev.cat === "bloom" || !!(ev.tags && ev.tags.includes("garden")),
+  water: (ev) => ev.cat === "water" || !!(ev.tags && ev.tags.includes("water")),
+  bird: (ev) => ev.cat === "bird",
+};
+const eventGroups = (ev) => ALL_GROUPS.filter((g) => GROUPS[g](ev));
+// An event shows if it belongs to an active group, or to no group at all (seasonal ambiance like fireflies).
+const eventMatches = (ev, active) => { const gs = eventGroups(ev); return gs.length === 0 || gs.some((g) => active.includes(g)); };
+
 function doyAngle(doy) { return (doy / 365) * 360 - 90; }
 function polar(cx, cy, r, a) { const t = (a * Math.PI) / 180; return [cx + r * Math.cos(t), cy + r * Math.sin(t)]; }
 
-function Wheel({ doy, accent, onSelect }) {
+function Wheel({ doy, accent, onSelect, activeTags }) {
   const size = 340, cx = size / 2, cy = size / 2, R = 150;
   const months = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
   const seasons = [
@@ -29,6 +44,7 @@ function Wheel({ doy, accent, onSelect }) {
     return `M ${x0} ${y0} A ${r} ${r} 0 ${to - from > 182.5 ? 1 : 0} 1 ${x1} ${y1}`;
   };
   const [nx, ny] = polar(cx, cy, R - 8, doyAngle(doy));
+  const matches = (ev) => !activeTags || eventMatches(ev, activeTags);
   return (
     <svg viewBox={`0 0 ${size} ${size}`} style={{ width: "100%", maxWidth: 360, display: "block", margin: "0 auto" }}>
       {seasons.map((s, i) => <path key={i} d={arc(s.from, s.to, R + 14)} fill="none" stroke={s.color} strokeWidth="10" strokeLinecap="round" opacity="0.55" />)}
@@ -41,10 +57,11 @@ function Wheel({ doy, accent, onSelect }) {
       })}
       {EVENTS.map((ev, i) => {
         const [ex, ey] = polar(cx, cy, R - 30, doyAngle(ev.p % 365));
+        const on = matches(ev);
         return (
           <g key={i} style={{ cursor: "pointer" }} onClick={() => onSelect(ev)}>
             <circle cx={ex} cy={ey} r="11" fill="transparent" />
-            <circle cx={ex} cy={ey} r="3.6" fill={CAT[ev.cat].color} stroke="#fff" strokeWidth="0.6" />
+            <circle cx={ex} cy={ey} r={on ? "3.6" : "2.6"} fill={CAT[ev.cat].color} stroke="#fff" strokeWidth="0.6" opacity={on ? 1 : 0.18} />
           </g>
         );
       })}
@@ -220,29 +237,42 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
 
   const indicators = useMemo(() => activeIndicators(doy).filter((i) => i.state !== "recent"), [doy]);
 
-  // Filter indicators by activity tag (hunt, fish, garden, water)
-  const [activeTags, setActiveTags] = useState(["hunt", "fish", "garden", "water", "bird"]);
+  // Filter indicators by activity group (hunt, fish, garden, water, bird)
+  const [activeTags, setActiveTags] = useState([...ALL_GROUPS]);
   const filteredIndicators = useMemo(
-    () => indicators.filter((i) => !i.tags || i.tags.some((t) => activeTags.includes(t))),
+    () => indicators.filter((i) => eventMatches(i, activeTags)),
     [indicators, activeTags]
   );
-  const allTags = ["hunt", "fish", "garden", "water", "bird"];
-  const tagLabels = { hunt: "Hunting", fish: "Fishing", garden: "Garden", water: "Water/winds", bird: "Birds" };
+  const allTags = ALL_GROUPS;
+  const tagLabels = GROUP_LABEL;
 
-  // Detect correlations: overlapping events from different active categories
+  // Detect correlations: events from two different active groups whose windows genuinely overlap right now
   const correlations = useMemo(() => {
-    const corr = [];
-    const huntEvents = EVENTS.filter((e) => e.tags?.includes("hunt") && !(e.e < doy || doy > e.s + 60));
-    const fishEvents = EVENTS.filter((e) => e.tags?.includes("fish") && !(e.e < doy || doy > e.s + 60));
-    const waterEvents = EVENTS.filter((e) => e.tags?.includes("water") && !(e.e < doy || doy > e.s + 60));
-    if (activeTags.includes("hunt") && activeTags.includes("fish") && huntEvents.length && fishEvents.length) {
-      corr.push(`Hunting and fishing seasons align: ${huntEvents[0].name} and ${fishEvents[0].name} peak together.`);
+    const inWindow = (e) => {
+      const eMod = e.e % 365;
+      return e.e > 365 ? (doy >= e.s || doy <= eMod) : (doy >= e.s && doy <= e.e);
+    };
+    const soon = (e) => e.s - doy > 0 && e.s - doy <= 21;
+    const live = EVENTS.filter((e) => (inWindow(e) || soon(e)) && eventMatches(e, activeTags));
+    const overlaps = (a, b) => !(Math.min(a.e, 365) < b.s || Math.min(b.e, 365) < a.s);
+    // find the closest-peaking cross-group, cross-category pair
+    let best = null, bestGap = Infinity;
+    for (const a of live) {
+      const ga = eventGroups(a).filter((g) => activeTags.includes(g));
+      for (const b of live) {
+        if (a.name >= b.name) continue; // unordered unique pairs
+        if (a.cat === b.cat) continue;
+        const gb = eventGroups(b).filter((g) => activeTags.includes(g));
+        const differentGroups = ga.some((g) => !gb.includes(g)) || gb.some((g) => !ga.includes(g));
+        if (ga.length && gb.length && differentGroups && overlaps(a, b)) {
+          const gap = Math.abs((a.p % 365) - (b.p % 365));
+          if (gap < bestGap) { bestGap = gap; best = [a, b]; }
+        }
+      }
     }
-    if ((activeTags.includes("hunt") || activeTags.includes("fish")) && activeTags.includes("water") && waterEvents.length) {
-      const context = waterEvents[0].name.includes("NE") ? "Spring northeast winds cool the water and slow the calendar." : "Calm summer waters warm the bay and trigger walleye to go deep.";
-      corr.push(context);
-    }
-    return corr.length > 0 ? corr[0] : null;
+    if (!best) return null;
+    const [a, b] = best;
+    return `${a.name} and ${b.name} overlap on the calendar right now. Watch whether they track together as the years bank up.`;
   }, [doy, activeTags]);
 
   // banked daily record
@@ -312,7 +342,7 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
                 </button>
               ))}
             </div>
-            <Wheel doy={doy} accent={season} onSelect={setSel} />
+            <Wheel doy={doy} accent={season} onSelect={setSel} activeTags={activeTags} />
             <div style={{ textAlign: "center", fontSize: 11, color: "#a89c83", fontStyle: "italic", marginTop: -2 }}>Tap any dot for the detail and projection.</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 14px", justifyContent: "center", padding: "8px 4px 12px" }}>
               {Object.entries(CAT).map(([k, c]) => (<span key={k} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, color: "#8a7d62" }}><span style={{ width: 9, height: 9, borderRadius: 3, background: c.color, display: "inline-block" }} />{c.label}</span>))}
