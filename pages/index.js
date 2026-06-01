@@ -6,7 +6,7 @@ import {
   dayOfYear, normalMeanF, gddSeries, EVENTS, CAT, seasonOf, classify, RIVERS, moonPhase,
   MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring,
 } from "../lib/phenology";
-import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory, fetchSpringIndex } from "../lib/sources";
+import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory, fetchSpringIndex, fetchObservations } from "../lib/sources";
 import { readHistory } from "../lib/history";
 
 const SITE = "https://phenology.chrisizworski.com";
@@ -153,7 +153,7 @@ function EventPopout({ ev, doy, actualTotal, thresholds, season, onClose }) {
   );
 }
 
-export default function Home({ regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, springIndex, doy, season, normToday, dateStr, generatedAt }) {
+export default function Home({ regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, springIndex, observations, doy, season, normToday, dateStr, generatedAt }) {
   const [mounted, setMounted] = useState(false);
   const [riverId, setRiverId] = useState("ausable");
   const [sel, setSel] = useState(null);
@@ -198,18 +198,15 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
       const pace = Math.abs(daysApprox) <= 2 ? "essentially on schedule" : daysApprox > 2 ? `running about ${daysApprox} days early` : `running about ${Math.abs(daysApprox)} days late`;
       parts.push(`Degree days stand at ${actualTotal} against a normal of ${gddNow}, so the season is ${pace}.`);
     }
-    // USA-NPN Spring Index: independent observed-model spring timing vs the 1991-2020 normal
-    if (springIndex && (springIndex.leafDoy != null || springIndex.agddAnom != null)) {
-      const bits = [];
-      if (springIndex.leafDoy != null) {
-        const ld = doyToDate(springIndex.leafDoy).toLocaleDateString("en-US", { month: "long", day: "numeric" });
-        const anomTxt = springIndex.leafAnom == null || Math.abs(springIndex.leafAnom) < 1 ? "right on the long-term normal" : springIndex.leafAnom < 0 ? `${Math.abs(Math.round(springIndex.leafAnom))} days ahead of the normal` : `${Math.round(springIndex.leafAnom)} days behind the normal`;
-        bits.push(`The national spring index put first leaf-out near ${ld} this year, ${anomTxt}`);
-      }
-      if (springIndex.agddAnom != null && Math.abs(springIndex.agddAnom) >= 10) {
-        bits.push(`${springIndex.agddAnom > 0 ? "and heat is banking ahead of normal" : "and heat is lagging the normal"} by ${Math.abs(Math.round(springIndex.agddAnom))} degree days`);
-      }
-      if (bits.length) parts.push(bits.join(", ") + ".");
+    // USA-NPN accumulated-heat anomaly: a year-round read on whether the season is ahead of or behind normal
+    if (springIndex && springIndex.agddAnom != null && Math.abs(springIndex.agddAnom) >= 10 && doy >= 55 && doy <= 330) {
+      parts.push(`Against the long-term normal, accumulated heat is ${springIndex.agddAnom > 0 ? "running ahead" : "lagging"} by ${Math.abs(Math.round(springIndex.agddAnom))} growing degree days.`);
+    }
+    // Spring index leaf-out, shown only while it is still seasonally fresh (late winter into early summer)
+    if (springIndex && springIndex.leafDoy != null && doy <= 165) {
+      const ld = doyToDate(springIndex.leafDoy).toLocaleDateString("en-US", { month: "long", day: "numeric" });
+      const anomTxt = springIndex.leafAnom == null || Math.abs(springIndex.leafAnom) < 1 ? "right on the long-term normal" : springIndex.leafAnom < 0 ? `${Math.abs(Math.round(springIndex.leafAnom))} days ahead of the normal` : `${Math.round(springIndex.leafAnom)} days behind the normal`;
+      parts.push(`The national spring index put first leaf-out near ${ld} this year, ${anomTxt}.`);
     }
     // photoperiod and soil, the master clocks behind the calendar
     if (forecast?.daylightH != null) {
@@ -507,8 +504,28 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
           </div>
         </section>
 
+        {observations && observations.length > 0 && (
+          <section style={{ marginTop: 30 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
+              <Sprout size={16} color={CAT.garden.color} />
+              <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>Logged across Michigan</h2>
+              <span style={{ marginLeft: "auto", fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "#5a8a4a", border: "1px solid #bcd3ad", borderRadius: 6, padding: "1px 6px", whiteSpace: "nowrap" }}>live, USA-NPN</span>
+            </div>
+            <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 12px", fontStyle: "italic" }}>What Nature's Notebook observers are actually seeing right now statewide, whatever the season: flowering, leaf color, fruit, and animal activity as it happens.</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>
+              {observations.map((o, i) => (
+                <div key={i} style={{ border: "1px solid #e4dcc8", borderLeft: `3px solid ${o.kingdom === "Plantae" ? CAT.bloom.color : CAT.wild.color}`, borderRadius: 10, padding: "9px 12px", background: "rgba(255,255,255,0.5)" }}>
+                  <div style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#2b2a1f" }}>{o.name}</div>
+                  <div style={{ fontSize: 12, color: "#6a5f4a", marginTop: 2 }}>{o.phase}</div>
+                  <div style={{ fontSize: 11, color: "#a89c83", marginTop: 3 }}>{o.date ? new Date(o.date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         <footer style={{ marginTop: 28, paddingTop: 16, borderTop: "1px solid #e4dcc8", fontSize: 12, color: "#9a8f76", lineHeight: 1.55 }}>
-          One clock for the whole natural year, drawing on the <a href="https://michigantroutreport.com">Michigan Trout Report</a>, the <a href="https://michiganbirdingreport.com">Michigan Birding Report</a>, <a href="https://greatlakeslevels.org">Great Lakes Lake Levels</a>, and <a href="https://freighterviewfarms.com">Freighter View Farms</a>. Live data from USGS, NWS, NOAA CO-OPS, eBird, and Open-Meteo. Built and maintained by <a href="https://chrisizworski.com">Chris Izworski</a>. Updated {generatedAt}.
+          One clock for the whole natural year, drawing on the <a href="https://michigantroutreport.com">Michigan Trout Report</a>, the <a href="https://michiganbirdingreport.com">Michigan Birding Report</a>, <a href="https://greatlakeslevels.org">Great Lakes Lake Levels</a>, and <a href="https://freighterviewfarms.com">Freighter View Farms</a>. Live data from USGS, NWS, NOAA CO-OPS, eBird, USA-NPN, and Open-Meteo. Built and maintained by <a href="https://chrisizworski.com">Chris Izworski</a>. Updated {generatedAt}.
         </footer>
       </div>
 
@@ -521,10 +538,10 @@ export async function getServerSideProps({ res }) {
   res.setHeader("Cache-Control", "s-maxage=600, stale-while-revalidate=1800");
   const now = new Date();
   const doy = dayOfYear(now);
-  const [regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, springIndex] = await Promise.all([fetchRegional(), fetchRivers(), fetchGddActual(), fetchBirds(), fetchAusableStats(), fetchForecast(), fetchGddHistory(), readHistory(), fetchSpringIndex()]);
+  const [regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, springIndex, observations] = await Promise.all([fetchRegional(), fetchRivers(), fetchGddActual(), fetchBirds(), fetchAusableStats(), fetchForecast(), fetchGddHistory(), readHistory(), fetchSpringIndex(), fetchObservations()]);
   return {
     props: {
-      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, springIndex, doy,
+      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, springIndex, observations, doy,
       season: seasonOf(doy), normToday: Math.round(normalMeanF(doy)),
       dateStr: now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "America/Detroit" }),
       generatedAt: now.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/Detroit" }) + " ET",
