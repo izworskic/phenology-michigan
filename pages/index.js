@@ -1,16 +1,17 @@
 import Head from "next/head";
 import { useState, useEffect, useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, ReferenceLine, ResponsiveContainer, Tooltip } from "recharts";
-import { Bird, Fish, Flower2, Waves, Thermometer, Sprout, Egg, TreePine, Feather, Compass, Droplets, X, Sunrise, Snowflake, Sparkles } from "lucide-react";
+import { Bird, Fish, Flower2, Waves, Thermometer, Sprout, Egg, TreePine, Feather, Compass, Droplets, X, Sunrise, Snowflake, Sparkles, Link2, BarChart3, ArrowRight } from "lucide-react";
 import {
   dayOfYear, normalMeanF, gddSeries, EVENTS, CAT, seasonOf, classify, RIVERS,
-  MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators,
+  MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring,
 } from "../lib/phenology";
-import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast } from "../lib/sources";
+import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory } from "../lib/sources";
 
 const SITE = "https://phenology.chrisizworski.com";
 const CAT_ICON = { water: Waves, fish: Fish, hatch: Egg, bird: Bird, bloom: Flower2, garden: Sprout, wild: Feather };
 const fmtDate = (doy) => doyToDate(doy).toLocaleDateString("en-US", { month: "long", day: "numeric" });
+const ordinal = (n) => { const s = ["th", "st", "nd", "rd"], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
 
 function doyAngle(doy) { return (doy / 365) * 360 - 90; }
 function polar(cx, cy, r, a) { const t = (a * Math.PI) / 180; return [cx + r * Math.cos(t), cy + r * Math.sin(t)]; }
@@ -98,6 +99,7 @@ function EventPopout({ ev, doy, actualTotal, thresholds, season, onClose }) {
       }
     }
   }
+  const co = coOccurring(ev);
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(43,42,31,0.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, zIndex: 50 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ background: "#f7f3ea", border: `1px solid ${C.color}`, borderRadius: 16, maxWidth: 440, width: "100%", padding: "20px 22px", boxShadow: "0 18px 50px rgba(43,42,31,0.3)" }}>
@@ -110,12 +112,30 @@ function EventPopout({ ev, doy, actualTotal, thresholds, season, onClose }) {
         <div style={{ fontSize: 14, color: "#5a5240", marginBottom: 4 }}><strong style={{ color: season.color }}>{status}.</strong> Typical window {fmtDate(ev.s)} to {fmtDate(ev.e)}, peak near {fmtDate(ev.p)}.</div>
         <p style={{ fontSize: 14, color: "#5a5240", lineHeight: 1.5, margin: "8px 0 0" }}>{ev.note}</p>
         {projLine && <p style={{ fontSize: 13.5, color: "#5a5240", lineHeight: 1.5, margin: "12px 0 0", padding: "10px 12px", background: "rgba(176,136,40,0.1)", borderRadius: 10, borderLeft: `3px solid #b08828` }}>{projLine}</p>}
+        {ev.signal && (
+          <div style={{ margin: "12px 0 0", padding: "10px 12px", background: "rgba(90,138,74,0.1)", borderRadius: 10, borderLeft: "3px solid #5a8a4a" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase", color: "#5a8a4a", marginBottom: 4 }}><Link2 size={13} /> This is a signal</div>
+            <div style={{ fontSize: 13.5, color: "#5a5240", lineHeight: 1.5 }}>{ev.signal}</div>
+          </div>
+        )}
+        {co.length > 0 && (
+          <div style={{ margin: "14px 0 0" }}>
+            <div style={{ fontSize: 11, letterSpacing: "0.06em", textTransform: "uppercase", color: "#8a7d62", marginBottom: 6 }}>Runs with, in the same stretch</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {co.map((c, i) => (
+                <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, color: "#5a5240", background: "rgba(255,255,255,0.6)", border: `1px solid ${CAT[c.cat].color}`, borderRadius: 999, padding: "3px 10px" }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 2, background: CAT[c.cat].color }} />{c.name}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-export default function Home({ regional, rivers, gddActual, birds, stats, forecast, doy, season, normToday, dateStr, generatedAt }) {
+export default function Home({ regional, rivers, gddActual, birds, stats, forecast, gddHistory, doy, season, normToday, dateStr, generatedAt }) {
   const [mounted, setMounted] = useState(false);
   const [riverId, setRiverId] = useState("ausable");
   const [sel, setSel] = useState(null);
@@ -197,7 +217,7 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
     return parts.join(" ");
   }, [rivers, stats, gddAnom, daysApprox, actualTotal, gddNow, thresholds, doy, birds, forecast]);
 
-  const indicators = useMemo(() => activeIndicators(doy), [doy]);
+  const indicators = useMemo(() => activeIndicators(doy).filter((i) => i.state !== "recent"), [doy]);
 
   const personLd = {
     "@context": "https://schema.org", "@type": "WebSite", name: "Michigan Phenology", url: SITE,
@@ -254,21 +274,25 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
         {indicators.length > 0 && (
           <section style={{ marginTop: 30 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
-              <Sparkles size={16} color={CAT.bloom.color} />
-              <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>Indicator linkages</h2>
+              <Link2 size={16} color={CAT.bloom.color} />
+              <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>Connections in play</h2>
             </div>
-            <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 12px", fontStyle: "italic" }}>What the season's plant signals predict for the rivers, the woods, and the garden.</p>
+            <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 12px", fontStyle: "italic" }}>The signals nature is giving right now, and what each one points to on the rivers, in the woods, and in the garden.</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 12 }}>
               {indicators.map((ind, i) => {
-                const tag = ind.state === "active" ? "active now" : ind.state === "soon" ? `in about ${ind.days} days` : `${ind.days} days ago`;
-                const tagColor = ind.state === "active" ? "#5a8a4a" : ind.state === "soon" ? "#b08828" : "#a89c83";
+                const tag = ind.state === "active" ? "active now" : `in about ${ind.days} days`;
+                const tagColor = ind.state === "active" ? "#5a8a4a" : "#b08828";
                 return (
                   <div key={i} style={{ border: "1px solid #e4dcc8", borderLeft: `3px solid ${CAT[ind.cat].color}`, borderRadius: 12, padding: "12px 14px", background: "rgba(255,255,255,0.5)" }}>
-                    <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 6 }}>
+                      <span style={{ width: 9, height: 9, borderRadius: 3, background: CAT[ind.cat].color, display: "inline-block", position: "relative", top: 1 }} />
                       <span style={{ fontFamily: "Georgia, serif", fontSize: 14.5, color: "#2b2a1f", overflowWrap: "anywhere" }}>{ind.name}</span>
                       <span style={{ marginLeft: "auto", fontSize: 10.5, color: tagColor, whiteSpace: "nowrap", textTransform: "uppercase", letterSpacing: "0.05em" }}>{tag}</span>
                     </div>
-                    <div style={{ fontSize: 13, color: "#5a5240", lineHeight: 1.45 }}>{ind.signal}</div>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <ArrowRight size={15} color={CAT[ind.cat].color} style={{ flexShrink: 0, marginTop: 2 }} />
+                      <span style={{ fontSize: 13, color: "#5a5240", lineHeight: 1.45 }}>{ind.signal}</span>
+                    </div>
                   </div>
                 );
               })}
@@ -294,7 +318,28 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
             <Instrument Icon={Sprout} label="Soil, 6 inches" value={forecast?.soilF != null ? forecast.soilF : "n/a"} unit="deg F" sub={forecast?.soilF != null ? (forecast.soilF >= 50 ? "active; morels and warm-season planting" : "still cold for warm-season crops") : "unavailable"} live={forecast?.soilF != null} accent={CAT.garden.color} />
             <Instrument Icon={Snowflake} label="Frost watch" value={forecast?.frost?.length ? forecast.frost[0].low : (forecast?.coldest != null ? forecast.coldest : "n/a")} unit="deg F low" sub={forecast?.frost?.length ? `frost ${new Date(forecast.frost[0].date).toLocaleDateString("en-US", { weekday: "short" })} night; protect tender plants` : (forecast?.coldest != null ? "no frost in the 7-day outlook" : "unavailable")} live={forecast?.coldest != null} accent={CAT.water.color} />
           </div>
+          <p style={{ fontSize: 11.5, color: "#9a8f76", margin: "12px 2px 0", lineHeight: 1.55 }}>
+            <strong style={{ color: "#7a7058" }}>GDD</strong>, growing degree days: a running tally of heat above 50 degrees F that paces plants and insects. The higher the number, the further along the season. <strong style={{ color: "#7a7058" }}>cfs</strong>: cubic feet per second, the river's flow. <strong style={{ color: "#7a7058" }}>IGLD</strong>: the official Great Lakes height datum, in meters above sea level.
+          </p>
         </section>
+
+        {gddHistory && (
+          <section style={{ marginTop: 18, background: "rgba(255,255,255,0.5)", border: "1px solid #e4dcc8", borderRadius: 14, padding: "16px 20px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              <BarChart3 size={16} color={CAT.garden.color} />
+              <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>How this year ranks</h2>
+            </div>
+            <p style={{ margin: 0, fontSize: 15, lineHeight: 1.55, color: "#3a3527" }}>
+              The season has banked {gddHistory.cur} growing degree days to today, the {ordinal(gddHistory.rank)} warmest of the last {gddHistory.count} years and {gddHistory.cur >= gddHistory.mean ? "above" : "below"} the {gddHistory.mean} average. The warmest run to this date was {gddHistory.max.year} at {gddHistory.max.gdd}; the coldest was {gddHistory.min.year} at {gddHistory.min.gdd}.
+            </p>
+            <div style={{ position: "relative", height: 10, background: "#eadfca", borderRadius: 6, marginTop: 14 }}>
+              <div style={{ position: "absolute", left: `${Math.max(2, Math.min(98, ((gddHistory.cur - gddHistory.min.gdd) / Math.max(1, gddHistory.max.gdd - gddHistory.min.gdd)) * 100))}%`, top: -4, width: 4, height: 18, background: CAT.garden.color, borderRadius: 2, transform: "translateX(-2px)" }} />
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10.5, color: "#9a8f76", marginTop: 4 }}>
+              <span>coldest {gddHistory.min.gdd}</span><span style={{ color: CAT.garden.color, fontWeight: 600 }}>this year {gddHistory.cur}</span><span>warmest {gddHistory.max.gdd}</span>
+            </div>
+          </section>
+        )}
 
         <section className="pheno-2col-b" style={{ marginTop: 30 }}>
           <div style={{ background: "rgba(255,255,255,0.4)", border: "1px solid #e4dcc8", borderRadius: 18, padding: "18px 14px 8px" }}>
@@ -347,10 +392,10 @@ export async function getServerSideProps({ res }) {
   res.setHeader("Cache-Control", "s-maxage=600, stale-while-revalidate=1800");
   const now = new Date();
   const doy = dayOfYear(now);
-  const [regional, rivers, gddActual, birds, stats, forecast] = await Promise.all([fetchRegional(), fetchRivers(), fetchGddActual(), fetchBirds(), fetchAusableStats(), fetchForecast()]);
+  const [regional, rivers, gddActual, birds, stats, forecast, gddHistory] = await Promise.all([fetchRegional(), fetchRivers(), fetchGddActual(), fetchBirds(), fetchAusableStats(), fetchForecast(), fetchGddHistory()]);
   return {
     props: {
-      regional, rivers, gddActual, birds, stats, forecast, doy,
+      regional, rivers, gddActual, birds, stats, forecast, gddHistory, doy,
       season: seasonOf(doy), normToday: Math.round(normalMeanF(doy)),
       dateStr: now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "America/Detroit" }),
       generatedAt: now.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/Detroit" }) + " ET",
