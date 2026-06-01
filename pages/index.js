@@ -1,12 +1,12 @@
 import Head from "next/head";
 import { useState, useEffect, useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, ReferenceLine, ResponsiveContainer, Tooltip } from "recharts";
-import { Bird, Fish, Flower2, Waves, Thermometer, Sprout, Egg, TreePine, Feather, Compass, Droplets, X } from "lucide-react";
+import { Bird, Fish, Flower2, Waves, Thermometer, Sprout, Egg, TreePine, Feather, Compass, Droplets, X, Sunrise, Snowflake, Sparkles } from "lucide-react";
 import {
   dayOfYear, normalMeanF, gddSeries, EVENTS, CAT, seasonOf, classify, RIVERS,
-  MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate,
+  MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators,
 } from "../lib/phenology";
-import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats } from "../lib/sources";
+import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast } from "../lib/sources";
 
 const SITE = "https://phenology.chrisizworski.com";
 const CAT_ICON = { water: Waves, fish: Fish, hatch: Egg, bird: Bird, bloom: Flower2, garden: Sprout, wild: Feather };
@@ -115,7 +115,7 @@ function EventPopout({ ev, doy, actualTotal, thresholds, season, onClose }) {
   );
 }
 
-export default function Home({ regional, rivers, gddActual, birds, stats, doy, season, normToday, dateStr, generatedAt }) {
+export default function Home({ regional, rivers, gddActual, birds, stats, forecast, doy, season, normToday, dateStr, generatedAt }) {
   const [mounted, setMounted] = useState(false);
   const [riverId, setRiverId] = useState("ausable");
   const [sel, setSel] = useState(null);
@@ -160,6 +160,14 @@ export default function Home({ regional, rivers, gddActual, birds, stats, doy, s
       const pace = Math.abs(daysApprox) <= 2 ? "essentially on schedule" : daysApprox > 2 ? `running about ${daysApprox} days early` : `running about ${Math.abs(daysApprox)} days late`;
       parts.push(`Degree days stand at ${actualTotal} against a normal of ${gddNow}, so the season is ${pace}.`);
     }
+    // photoperiod and soil, the master clocks behind the calendar
+    if (forecast?.daylightH != null) {
+      const h = Math.floor(forecast.daylightH), m = Math.round((forecast.daylightH - h) * 60);
+      const dir = forecast.daylightDeltaMin > 0.2 ? "still lengthening" : forecast.daylightDeltaMin < -0.2 ? "shortening" : "near its turn";
+      let soilTxt = "";
+      if (forecast.soilF != null) soilTxt = forecast.soilF < 50 ? `, and the soil at six inches is ${forecast.soilF} degrees, still too cold for warm-season planting` : `, and the soil at six inches is ${forecast.soilF} degrees, warm enough for morels and the warm-season garden`;
+      parts.push(`Daylight is ${h} hours ${m} minutes, ${dir} about ${Math.abs(forecast.daylightDeltaMin)} minutes a day${soilTxt}.`);
+    }
     // next hatch projection
     const upcoming = EVENTS.filter((e) => e.cat === "hatch").map((e) => {
       const thr = thresholds[e.name]; if (thr == null || actualTotal == null) return null;
@@ -172,13 +180,24 @@ export default function Home({ regional, rivers, gddActual, birds, stats, doy, s
     if (activeHatch && nextHatch) parts.push(`The ${activeHatch.name.replace(/ hatch.*/i, "")} is on now; the ${nextHatch.name.replace(/ hatch.*/i, "")} projects to ${fmtDate(nextHatch.doy)}, about ${nextHatch.doy - doy} days out.`);
     else if (nextHatch) parts.push(`The next hatch worth waiting for is the ${nextHatch.name.replace(/ hatch.*/i, "")}, projected around ${fmtDate(nextHatch.doy)}, about ${nextHatch.doy - doy} days out.`);
     else if (activeHatch) parts.push(`The ${activeHatch.name.replace(/ hatch.*/i, "")} is the hatch on the water now.`);
+    // the indicator linkage worth acting on right now
+    const ind = activeIndicators(doy).find((i) => i.state === "active");
+    if (ind) parts.push(ind.signal);
+    // frost in the near outlook
+    if (forecast?.frost?.length) {
+      const f = forecast.frost[0];
+      const dt = new Date(f.date).toLocaleDateString("en-US", { weekday: "long" });
+      parts.push(`Frost is in the outlook: ${f.low} degrees ${dt} night. Cover or bring in tender plants.`);
+    }
     // birds
     if (birds.length) {
       const names = birds.slice(0, 2).map((b) => b.comName).join(" and ");
       parts.push(`On the bay, ${birds.length} notable ${birds.length === 1 ? "bird is" : "birds are"} being reported, including ${names}.`);
     }
     return parts.join(" ");
-  }, [rivers, stats, gddAnom, daysApprox, actualTotal, gddNow, thresholds, doy, birds]);
+  }, [rivers, stats, gddAnom, daysApprox, actualTotal, gddNow, thresholds, doy, birds, forecast]);
+
+  const indicators = useMemo(() => activeIndicators(doy), [doy]);
 
   const personLd = {
     "@context": "https://schema.org", "@type": "WebSite", name: "Michigan Phenology", url: SITE,
@@ -232,6 +251,31 @@ export default function Home({ regional, rivers, gddActual, birds, stats, doy, s
           </div>
         </section>
 
+        {indicators.length > 0 && (
+          <section style={{ marginTop: 30 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
+              <Sparkles size={16} color={CAT.bloom.color} />
+              <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>Indicator linkages</h2>
+            </div>
+            <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 12px", fontStyle: "italic" }}>What the season's plant signals predict for the rivers, the woods, and the garden.</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 12 }}>
+              {indicators.map((ind, i) => {
+                const tag = ind.state === "active" ? "active now" : ind.state === "soon" ? `in about ${ind.days} days` : `${ind.days} days ago`;
+                const tagColor = ind.state === "active" ? "#5a8a4a" : ind.state === "soon" ? "#b08828" : "#a89c83";
+                return (
+                  <div key={i} style={{ border: "1px solid #e4dcc8", borderLeft: `3px solid ${CAT[ind.cat].color}`, borderRadius: 12, padding: "12px 14px", background: "rgba(255,255,255,0.5)" }}>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 4 }}>
+                      <span style={{ fontFamily: "Georgia, serif", fontSize: 14.5, color: "#2b2a1f", overflowWrap: "anywhere" }}>{ind.name}</span>
+                      <span style={{ marginLeft: "auto", fontSize: 10.5, color: tagColor, whiteSpace: "nowrap", textTransform: "uppercase", letterSpacing: "0.05em" }}>{tag}</span>
+                    </div>
+                    <div style={{ fontSize: 13, color: "#5a5240", lineHeight: 1.45 }}>{ind.signal}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
         <section style={{ marginTop: 30 }}>
           <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 10, margin: "0 0 12px" }}>
             <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>Live instruments</h2>
@@ -246,6 +290,9 @@ export default function Home({ regional, rivers, gddActual, birds, stats, doy, s
             <Instrument Icon={Waves} label="Lake Huron level" value={regional.level != null ? regional.level.toFixed(2) : "176.95"} unit="m IGLD" sub={regional.level != null ? "Saginaw Bay, NOAA" : "seasonal normal"} live={regional.level != null} accent={CAT.water.color} />
             <Instrument Icon={Sprout} label="Degree days, actual" value={actualTotal != null ? actualTotal : gddNow} unit="GDD50" sub={actualTotal != null ? "observed since Jan 1, Open-Meteo" : "modeled"} live={actualTotal != null} accent={CAT.garden.color} />
             <Instrument Icon={TreePine} label="Season anomaly" value={gddAnom != null ? (gddAnom >= 0 ? "+" : "") + gddAnom : "0"} unit="GDD vs normal" sub={gddAnom != null ? `about ${Math.abs(daysApprox)} days ${gddAnom >= 0 ? "ahead" : "behind"} normal` : "real degree days pending"} live={gddAnom != null} accent={CAT.bird.color} />
+            <Instrument Icon={Sunrise} label="Daylight" value={forecast?.daylightH != null ? `${Math.floor(forecast.daylightH)}h ${Math.round((forecast.daylightH - Math.floor(forecast.daylightH)) * 60)}m` : "n/a"} unit="" sub={forecast?.daylightH != null ? `${forecast.daylightDeltaMin > 0 ? "+" : ""}${forecast.daylightDeltaMin} min/day${forecast.sunrise ? `, ${forecast.sunrise} to ${forecast.sunset}` : ""}` : "unavailable"} live={forecast?.daylightH != null} accent={season.color} />
+            <Instrument Icon={Sprout} label="Soil, 6 inches" value={forecast?.soilF != null ? forecast.soilF : "n/a"} unit="deg F" sub={forecast?.soilF != null ? (forecast.soilF >= 50 ? "active; morels and warm-season planting" : "still cold for warm-season crops") : "unavailable"} live={forecast?.soilF != null} accent={CAT.garden.color} />
+            <Instrument Icon={Snowflake} label="Frost watch" value={forecast?.frost?.length ? forecast.frost[0].low : (forecast?.coldest != null ? forecast.coldest : "n/a")} unit="deg F low" sub={forecast?.frost?.length ? `frost ${new Date(forecast.frost[0].date).toLocaleDateString("en-US", { weekday: "short" })} night; protect tender plants` : (forecast?.coldest != null ? "no frost in the 7-day outlook" : "unavailable")} live={forecast?.coldest != null} accent={CAT.water.color} />
           </div>
         </section>
 
@@ -300,10 +347,10 @@ export async function getServerSideProps({ res }) {
   res.setHeader("Cache-Control", "s-maxage=600, stale-while-revalidate=1800");
   const now = new Date();
   const doy = dayOfYear(now);
-  const [regional, rivers, gddActual, birds, stats] = await Promise.all([fetchRegional(), fetchRivers(), fetchGddActual(), fetchBirds(), fetchAusableStats()]);
+  const [regional, rivers, gddActual, birds, stats, forecast] = await Promise.all([fetchRegional(), fetchRivers(), fetchGddActual(), fetchBirds(), fetchAusableStats(), fetchForecast()]);
   return {
     props: {
-      regional, rivers, gddActual, birds, stats, doy,
+      regional, rivers, gddActual, birds, stats, forecast, doy,
       season: seasonOf(doy), normToday: Math.round(normalMeanF(doy)),
       dateStr: now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "America/Detroit" }),
       generatedAt: now.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/Detroit" }) + " ET",
