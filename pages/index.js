@@ -4,7 +4,7 @@ import { LineChart, Line, XAxis, YAxis, ReferenceLine, ResponsiveContainer, Tool
 import { Bird, Fish, Flower2, Waves, Thermometer, Sprout, Egg, TreePine, Feather, Compass, Droplets, X, Sunrise, Snowflake, Sparkles, Link2, BarChart3, ArrowRight } from "lucide-react";
 import {
   dayOfYear, normalMeanF, gddSeries, EVENTS, CAT, seasonOf, classify, RIVERS, moonPhase,
-  MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring,
+  MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring, emergenceForecast,
 } from "../lib/phenology";
 import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory, fetchBuoy, fetchAlerts, fetchRiverForecast, withTimeout } from "../lib/sources";
 import { readHistory } from "../lib/history";
@@ -269,6 +269,14 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
 
   const indicators = useMemo(() => activeIndicators(doy).filter((i) => i.state !== "recent"), [doy]);
 
+  // Computed hatch and emergence forecast: actual accumulated heat against known GDD thresholds,
+  // cross-checked against the live AuSable water temperature for the aquatic insects.
+  const emergence = useMemo(() => {
+    const au = rivers.find((r) => r.id === "ausable");
+    const auTempF = au && au.temp != null ? cToF(au.temp) : null;
+    return emergenceForecast(actualTotal, doy, auTempF);
+  }, [actualTotal, doy, rivers]);
+
   // Filter indicators by activity group (hunt, fish, garden, water, bird)
   const [activeTags, setActiveTags] = useState([...ALL_GROUPS]);
   const filteredIndicators = useMemo(
@@ -464,6 +472,33 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
             <strong style={{ color: "#7a7058" }}>GDD</strong>, growing degree days: a running tally of heat above 50 degrees F that paces plants and insects. The higher the number, the further along the season. <strong style={{ color: "#7a7058" }}>cfs</strong>: cubic feet per second, the river's flow. <strong style={{ color: "#7a7058" }}>IGLD</strong>: the official Great Lakes height datum, in meters above sea level.
           </p>
         </section>
+
+        {emergence && emergence.length > 0 && (
+          <section style={{ marginTop: 30 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
+              <Egg size={16} color={CAT.hatch.color} />
+              <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>Hatch and emergence forecast</h2>
+              <span style={{ marginLeft: "auto", fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "#7a7058", border: "1px solid #d8cca8", borderRadius: 6, padding: "1px 6px", whiteSpace: "nowrap" }}>computed</span>
+            </div>
+            <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 12px", fontStyle: "italic" }}>This season's accumulated heat against known degree-day thresholds, with the aquatic hatches cross-checked against the live AuSable water temperature. Estimates, not promises; emergence shifts with the weather.</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 10 }}>
+              {emergence.map((e, i) => {
+                const on = e.phase === "on";
+                const aquatic = e.kind === "mayfly" || e.kind === "caddis";
+                return (
+                  <div key={i} style={{ border: "1px solid #e4dcc8", borderLeft: `3px solid ${aquatic ? CAT.fish.color : CAT.wild.color}`, borderRadius: 10, padding: "9px 12px", background: on ? "rgba(122,160,90,0.10)" : "rgba(255,255,255,0.5)" }}>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                      <span style={{ fontFamily: "Georgia, serif", fontSize: 14.5, color: "#2b2a1f" }}>{e.name}</span>
+                      <span style={{ marginLeft: "auto", fontSize: 10.5, letterSpacing: "0.06em", textTransform: "uppercase", color: on ? "#3f6b2f" : "#7a7058", fontWeight: 600, whiteSpace: "nowrap" }}>{e.status}</span>
+                    </div>
+                    <div style={{ fontSize: 12, color: "#6a5f4a", marginTop: 3 }}>{e.note}</div>
+                    {e.waterNote && <div style={{ fontSize: 11, color: "#b08828", marginTop: 3 }}>{e.waterNote}</div>}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {gddHistory && (
           <section style={{ marginTop: 18, background: "rgba(255,255,255,0.5)", border: "1px solid #e4dcc8", borderRadius: 14, padding: "16px 20px" }}>
