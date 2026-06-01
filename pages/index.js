@@ -6,13 +6,14 @@ import {
   dayOfYear, normalMeanF, gddSeries, EVENTS, CAT, seasonOf, classify, RIVERS, moonPhase,
   MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring,
 } from "../lib/phenology";
-import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory, fetchSpringIndex, fetchObservations } from "../lib/sources";
+import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory, fetchSpringIndex, fetchObservations, fetchBay, fetchInaturalist, fetchDrought, fetchAlerts, withTimeout } from "../lib/sources";
 import { readHistory } from "../lib/history";
 
 const SITE = "https://phenology.chrisizworski.com";
 const CAT_ICON = { water: Waves, fish: Fish, hatch: Egg, bird: Bird, bloom: Flower2, garden: Sprout, wild: Feather };
 const fmtDate = (doy) => doyToDate(doy).toLocaleDateString("en-US", { month: "long", day: "numeric" });
 const ordinal = (n) => { const s = ["th", "st", "nd", "rd"], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
+const degToCompass = (d) => { if (d == null) return ""; const dirs = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]; return dirs[Math.round(d / 22.5) % 16]; };
 
 // Activity groups for the toggles. Each maps to the relevant categories plus any tagged events.
 // An angler's "Fishing" lights up the hatches and trout; a hunter's "Hunting" lights up deer and turkey.
@@ -153,7 +154,7 @@ function EventPopout({ ev, doy, actualTotal, thresholds, season, onClose }) {
   );
 }
 
-export default function Home({ regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, springIndex, observations, doy, season, normToday, dateStr, generatedAt }) {
+export default function Home({ regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt }) {
   const [mounted, setMounted] = useState(false);
   const [riverId, setRiverId] = useState("ausable");
   const [sel, setSel] = useState(null);
@@ -242,8 +243,15 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
       const names = birds.slice(0, 2).map((b) => b.comName).join(" and ");
       parts.push(`On the bay, ${birds.length} notable ${birds.length === 1 ? "bird is" : "birds are"} being reported, including ${names}.`);
     }
+    // Saginaw Bay ice (winter signal) and drought context, each only when it has something to say
+    if (bay && bay.iceConc != null && bay.iceConc >= 5) {
+      parts.push(`Saginaw Bay is ${Math.round(bay.iceConc)} percent ice covered.`);
+    }
+    if (drought && drought.label && drought.label !== "no drought") {
+      parts.push(`Bay County is in ${drought.label} on the latest Drought Monitor.`);
+    }
     return parts.join(" ");
-  }, [rivers, stats, gddAnom, daysApprox, actualTotal, gddNow, thresholds, doy, birds, forecast, springIndex]);
+  }, [rivers, stats, gddAnom, daysApprox, actualTotal, gddNow, thresholds, doy, birds, forecast, springIndex, bay, drought]);
 
   const indicators = useMemo(() => activeIndicators(doy).filter((i) => i.state !== "recent"), [doy]);
 
@@ -320,6 +328,17 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
           </div>
           <p style={{ margin: "10px 0 0", fontSize: 14.5, color: "#7a7058", fontStyle: "italic" }}>{dateStr}.</p>
         </header>
+
+        {alerts && alerts.length > 0 && (
+          <div style={{ marginTop: 16, border: "1px solid #e3c08a", background: "rgba(243, 224, 178, 0.45)", borderRadius: 10, padding: "10px 14px", display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+            <Snowflake size={15} color="#b08828" />
+            <span style={{ fontSize: 12.5, color: "#7a5e1f", fontWeight: 600 }}>Active for the bay counties:</span>
+            {alerts.map((a, i) => (
+              <span key={i} style={{ fontSize: 12, color: "#7a5e1f", border: "1px solid #e3c08a", borderRadius: 999, padding: "2px 10px", background: "rgba(255,255,255,0.5)" }}>{a.event}</span>
+            ))}
+            <span style={{ fontSize: 11, color: "#9a8f76", marginLeft: "auto" }}>NWS</span>
+          </div>
+        )}
 
         {read && (
           <section style={{ marginTop: 22, background: "rgba(255,255,255,0.5)", border: "1px solid #e4dcc8", borderLeft: `4px solid ${season.color}`, borderRadius: 14, padding: "16px 20px" }}>
@@ -412,6 +431,17 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
             <Instrument Icon={Sunrise} label="Daylight" value={forecast?.daylightH != null ? `${Math.floor(forecast.daylightH)}h ${Math.round((forecast.daylightH - Math.floor(forecast.daylightH)) * 60)}m` : "n/a"} unit="" sub={forecast?.daylightH != null ? `${forecast.daylightDeltaMin > 0 ? "+" : ""}${forecast.daylightDeltaMin} min/day${forecast.sunrise ? `, ${forecast.sunrise} to ${forecast.sunset}` : ""}` : "unavailable"} live={forecast?.daylightH != null} accent={season.color} />
             <Instrument Icon={Sprout} label="Soil, 6 inches" value={forecast?.soilF != null ? forecast.soilF : "n/a"} unit="deg F" sub={forecast?.soilF != null ? (forecast.soilF >= 50 ? "active; morels and warm-season planting" : "still cold for warm-season crops") : "unavailable"} live={forecast?.soilF != null} accent={CAT.garden.color} />
             <Instrument Icon={Snowflake} label="Frost watch" value={forecast?.frost?.length ? forecast.frost[0].low : (forecast?.coldest != null ? forecast.coldest : "n/a")} unit="deg F low" sub={forecast?.frost?.length ? `frost ${new Date(forecast.frost[0].date).toLocaleDateString("en-US", { weekday: "short" })} night; protect tender plants` : (forecast?.coldest != null ? "no frost in the 7-day outlook" : "unavailable")} live={forecast?.coldest != null} accent={CAT.water.color} />
+            {bay && bay.windMph != null && (
+              <Instrument Icon={Compass} label="Saginaw Bay wind" value={bay.windMph} unit="mph" sub={`out of the ${degToCompass(bay.windDirDeg)}, buoy 45203${bay.waveFt != null ? `, ${bay.waveFt} ft seas` : ""}`} live={true} accent={CAT.water.color} />
+            )}
+            {bay && bay.waterTempF != null && (
+              <Instrument Icon={Waves} label="Bay water, buoy" value={bay.waterTempF} unit="deg F" sub={bay.waterTempF >= 43 && bay.waterTempF <= 50 ? "in the walleye spawn window" : "Saginaw Bay buoy 45203"} live={true} accent={CAT.fish.color} />
+            )}
+            {bay && bay.iceConc != null && bay.iceConc >= 1 ? (
+              <Instrument Icon={Snowflake} label="Bay ice cover" value={Math.round(bay.iceConc)} unit="percent" sub={`Saginaw Bay, GLERL satellite${bay.iceDate ? `, ${bay.iceDate}` : ""}`} live={true} accent={CAT.water.color} />
+            ) : (bay && bay.glseaF != null && (
+              <Instrument Icon={Thermometer} label="Lake surface, satellite" value={bay.glseaF} unit="deg F" sub={`GLSEA whole-bay average${bay.glseaDate ? `, ${bay.glseaDate}` : ""}`} live={true} accent={CAT.fish.color} />
+            ))}
           </div>
           <p style={{ fontSize: 11.5, color: "#9a8f76", margin: "12px 2px 0", lineHeight: 1.55 }}>
             <strong style={{ color: "#7a7058" }}>GDD</strong>, growing degree days: a running tally of heat above 50 degrees F that paces plants and insects. The higher the number, the further along the season. <strong style={{ color: "#7a7058" }}>cfs</strong>: cubic feet per second, the river's flow. <strong style={{ color: "#7a7058" }}>IGLD</strong>: the official Great Lakes height datum, in meters above sea level.
@@ -504,6 +534,25 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
           </div>
         </section>
 
+        {inat && inat.length > 0 && (
+          <section style={{ marginTop: 30 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
+              <Feather size={16} color={CAT.wild.color} />
+              <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>Seen near Saginaw Bay</h2>
+              <span style={{ marginLeft: "auto", fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "#5a8a4a", border: "1px solid #bcd3ad", borderRadius: 6, padding: "1px 6px", whiteSpace: "nowrap" }}>live, iNaturalist</span>
+            </div>
+            <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 12px", fontStyle: "italic" }}>Research-grade sightings within sixty kilometers of the bay, every kind of living thing, most recent first. The closest thing to a field notebook for the whole region.</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {inat.map((o, i) => (
+                <div key={i} style={{ border: "1px solid #e4dcc8", borderRadius: 999, padding: "5px 12px", background: "rgba(255,255,255,0.6)", fontSize: 13, color: "#2b2a1f" }}>
+                  <span style={{ fontFamily: "Georgia, serif" }}>{o.name}</span>
+                  {o.date ? <span style={{ color: "#a89c83", fontSize: 11, marginLeft: 6 }}>{new Date(o.date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span> : null}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {observations && observations.length > 0 && (
           <section style={{ marginTop: 30 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
@@ -525,7 +574,7 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
         )}
 
         <footer style={{ marginTop: 28, paddingTop: 16, borderTop: "1px solid #e4dcc8", fontSize: 12, color: "#9a8f76", lineHeight: 1.55 }}>
-          One clock for the whole natural year, drawing on the <a href="https://michigantroutreport.com">Michigan Trout Report</a>, the <a href="https://michiganbirdingreport.com">Michigan Birding Report</a>, <a href="https://greatlakeslevels.org">Great Lakes Lake Levels</a>, and <a href="https://freighterviewfarms.com">Freighter View Farms</a>. Live data from USGS, NWS, NOAA CO-OPS, eBird, USA-NPN, and Open-Meteo. Built and maintained by <a href="https://chrisizworski.com">Chris Izworski</a>. Updated {generatedAt}.
+          One clock for the whole natural year, drawing on the <a href="https://michigantroutreport.com">Michigan Trout Report</a>, the <a href="https://michiganbirdingreport.com">Michigan Birding Report</a>, <a href="https://greatlakeslevels.org">Great Lakes Lake Levels</a>, and <a href="https://freighterviewfarms.com">Freighter View Farms</a>. Live data from USGS, NWS, NOAA CO-OPS and NDBC, GLERL CoastWatch, eBird, iNaturalist, USA-NPN, US Drought Monitor, and Open-Meteo. Built and maintained by <a href="https://chrisizworski.com">Chris Izworski</a>. Updated {generatedAt}.
         </footer>
       </div>
 
@@ -538,10 +587,21 @@ export async function getServerSideProps({ res }) {
   res.setHeader("Cache-Control", "s-maxage=600, stale-while-revalidate=1800");
   const now = new Date();
   const doy = dayOfYear(now);
-  const [regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, springIndex, observations] = await Promise.all([fetchRegional(), fetchRivers(), fetchGddActual(), fetchBirds(), fetchAusableStats(), fetchForecast(), fetchGddHistory(), readHistory(), fetchSpringIndex(), fetchObservations()]);
+  // Live sources (change through the day) fetched directly. Daily-cadence and slower external
+  // sources are wrapped in a timeout so a single slow feed can never stall the page; all run in parallel.
+  const T = (p, fb) => withTimeout(p, 8000, fb);
+  const [regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, springIndex, observations, bay, inat, drought, alerts] = await Promise.all([
+    fetchRegional(), fetchRivers(), fetchGddActual(), fetchBirds(), fetchAusableStats(), fetchForecast(), fetchGddHistory(), readHistory(),
+    T(fetchSpringIndex(), { leafDoy: null, leafAnom: null, bloomAnom: null, agddAnom: null }),
+    T(fetchObservations(), []),
+    T(fetchBay(), { windDirDeg: null, windMph: null, waterTempF: null, airTempF: null, waveFt: null, iceConc: null, iceDate: null, glseaF: null, glseaDate: null }),
+    T(fetchInaturalist(), []),
+    T(fetchDrought(), null),
+    T(fetchAlerts(), []),
+  ]);
   return {
     props: {
-      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, springIndex, observations, doy,
+      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, springIndex, observations, bay, inat, drought, alerts, doy,
       season: seasonOf(doy), normToday: Math.round(normalMeanF(doy)),
       dateStr: now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "America/Detroit" }),
       generatedAt: now.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/Detroit" }) + " ET",
