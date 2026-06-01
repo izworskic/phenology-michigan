@@ -42,7 +42,7 @@ export default async function handler(req, res) {
       topBird: birds[0]?.comName || null,
     };
     if (!historyConfigured()) {
-      log.push(`[${ts()}] snapshot ${snap.date} ready but storage not configured; set UPSTASH_REDIS_REST_TOKEN`);
+      log.push(`[${ts()}] snapshot ${snap.date} ready but storage not configured; set GH_TOKEN`);
     } else {
       const r = await appendSnapshot(snap);
       log.push(`[${ts()}] snapshot ${snap.date}: ${r.ok ? `banked, ${r.count} days on record` : `write failed: ${r.reason}`}`);
