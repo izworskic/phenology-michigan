@@ -6,7 +6,7 @@ import {
   dayOfYear, normalMeanF, gddSeries, EVENTS, CAT, seasonOf, classify, RIVERS, moonPhase,
   MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring,
 } from "../lib/phenology";
-import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory, fetchBuoy, fetchAlerts, withTimeout } from "../lib/sources";
+import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory, fetchBuoy, fetchAlerts, fetchRiverForecast, withTimeout } from "../lib/sources";
 import { readHistory } from "../lib/history";
 import { readSignals, emptySignals } from "../lib/signals";
 
@@ -155,7 +155,7 @@ function EventPopout({ ev, doy, actualTotal, thresholds, season, onClose }) {
   );
 }
 
-export default function Home({ regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt }) {
+export default function Home({ regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt }) {
   const [mounted, setMounted] = useState(false);
   const [riverId, setRiverId] = useState("ausable");
   const [sel, setSel] = useState(null);
@@ -194,6 +194,19 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
         tempCtx = f < 50 ? " The water is still cold, so fish are sluggish and midday is your window." : f < 58 ? " The water is warming into the trout window." : f <= 65 ? " The water sits in the prime window, so hatches and rises should come on the evening." : f <= 68 ? " The water is on the warm edge; fish early and late and handle fish quickly." : " The water is stressfully warm; back off the trout and consider cooler tailwater or a different target.";
       }
       parts.push(`The AuSable is at ${a.flow} cfs${flowCtx}${a.trend && a.trend !== "steady" ? `, ${a.trend} over the past two days` : ""}, and ${a.temp != null ? Math.round(cToF(a.temp)) + " degrees F." : "no live water temperature is posting."}${tempCtx}`);
+    }
+    // NWS river forecast, only when one is active (high-water events)
+    if (riverForecast && riverForecast.active) {
+      const day = riverForecast.crestTime ? new Date(riverForecast.crestTime).toLocaleDateString("en-US", { weekday: "long", timeZone: "America/Detroit" }) : null;
+      if (riverForecast.cresting && riverForecast.crestFt != null) {
+        parts.push(`The Weather Service has the AuSable at Mio cresting near ${riverForecast.crestFt} feet${day ? ` ${day}` : ""}, then easing.`);
+      } else if (riverForecast.trend !== "steady") {
+        parts.push(`The Weather Service forecast has the AuSable at Mio ${riverForecast.trend}${riverForecast.crestFt != null ? ` toward ${riverForecast.crestFt} feet` : ""} over the coming days.`);
+      }
+    }
+    // snow on the ground, the winter signal
+    if (forecast && forecast.snowDepthIn != null && forecast.snowDepthIn >= 0.5) {
+      parts.push(`There are ${forecast.snowDepthIn} inches of snow on the ground.`);
     }
     // season pace
     if (gddAnom != null) {
@@ -252,7 +265,7 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
       parts.push(`Bay County is in ${drought.label} on the latest Drought Monitor.`);
     }
     return parts.join(" ");
-  }, [rivers, stats, gddAnom, daysApprox, actualTotal, gddNow, thresholds, doy, birds, forecast, springIndex, bay, drought]);
+  }, [rivers, stats, gddAnom, daysApprox, actualTotal, gddNow, thresholds, doy, birds, forecast, springIndex, bay, drought, riverForecast]);
 
   const indicators = useMemo(() => activeIndicators(doy).filter((i) => i.state !== "recent"), [doy]);
 
@@ -432,6 +445,9 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
             <Instrument Icon={Sunrise} label="Daylight" value={forecast?.daylightH != null ? `${Math.floor(forecast.daylightH)}h ${Math.round((forecast.daylightH - Math.floor(forecast.daylightH)) * 60)}m` : "n/a"} unit="" sub={forecast?.daylightH != null ? `${forecast.daylightDeltaMin > 0 ? "+" : ""}${forecast.daylightDeltaMin} min/day${forecast.sunrise ? `, ${forecast.sunrise} to ${forecast.sunset}` : ""}` : "unavailable"} live={forecast?.daylightH != null} accent={season.color} />
             <Instrument Icon={Sprout} label="Soil, 6 inches" value={forecast?.soilF != null ? forecast.soilF : "n/a"} unit="deg F" sub={forecast?.soilF != null ? (forecast.soilF >= 50 ? "active; morels and warm-season planting" : "still cold for warm-season crops") : "unavailable"} live={forecast?.soilF != null} accent={CAT.garden.color} />
             <Instrument Icon={Snowflake} label="Frost watch" value={forecast?.frost?.length ? forecast.frost[0].low : (forecast?.coldest != null ? forecast.coldest : "n/a")} unit="deg F low" sub={forecast?.frost?.length ? `frost ${new Date(forecast.frost[0].date).toLocaleDateString("en-US", { weekday: "short" })} night; protect tender plants` : (forecast?.coldest != null ? "no frost in the 7-day outlook" : "unavailable")} live={forecast?.coldest != null} accent={CAT.water.color} />
+            {forecast && forecast.snowDepthIn != null && forecast.snowDepthIn >= 0.5 && (
+              <Instrument Icon={Snowflake} label="Snow on ground" value={forecast.snowDepthIn} unit="in" sub="modeled, Open-Meteo" live={true} accent={CAT.water.color} />
+            )}
             {bay && bay.windMph != null && (
               <Instrument Icon={Compass} label="Saginaw Bay wind" value={bay.windMph} unit="mph" sub={`out of the ${degToCompass(bay.windDirDeg)}, buoy 45203${bay.waveFt != null ? `, ${bay.waveFt} ft seas` : ""}`} live={true} accent={CAT.water.color} />
             )}
@@ -598,11 +614,12 @@ export async function getServerSideProps({ res }) {
     T(fetchAlerts(), []),
     T(readSignals(), null),
   ]);
+  const riverForecast = await T(fetchRiverForecast(), { active: false });
   const sig = signals || emptySignals();
   const bay = { ...buoy, ...(sig.bayDaily || {}) };
   return {
     props: {
-      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history,
+      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast,
       springIndex: sig.springIndex || emptySignals().springIndex,
       observations: sig.observations || [], inat: sig.inat || [], drought: sig.drought || null,
       bay, alerts, doy,
