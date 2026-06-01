@@ -6,7 +6,7 @@ import {
   dayOfYear, normalMeanF, gddSeries, EVENTS, CAT, seasonOf, classify, RIVERS, moonPhase,
   MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring,
 } from "../lib/phenology";
-import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory } from "../lib/sources";
+import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory, fetchSpringIndex } from "../lib/sources";
 import { readHistory } from "../lib/history";
 
 const SITE = "https://phenology.chrisizworski.com";
@@ -153,7 +153,7 @@ function EventPopout({ ev, doy, actualTotal, thresholds, season, onClose }) {
   );
 }
 
-export default function Home({ regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, doy, season, normToday, dateStr, generatedAt }) {
+export default function Home({ regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, springIndex, doy, season, normToday, dateStr, generatedAt }) {
   const [mounted, setMounted] = useState(false);
   const [riverId, setRiverId] = useState("ausable");
   const [sel, setSel] = useState(null);
@@ -198,6 +198,19 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
       const pace = Math.abs(daysApprox) <= 2 ? "essentially on schedule" : daysApprox > 2 ? `running about ${daysApprox} days early` : `running about ${Math.abs(daysApprox)} days late`;
       parts.push(`Degree days stand at ${actualTotal} against a normal of ${gddNow}, so the season is ${pace}.`);
     }
+    // USA-NPN Spring Index: independent observed-model spring timing vs the 1991-2020 normal
+    if (springIndex && (springIndex.leafDoy != null || springIndex.agddAnom != null)) {
+      const bits = [];
+      if (springIndex.leafDoy != null) {
+        const ld = doyToDate(springIndex.leafDoy).toLocaleDateString("en-US", { month: "long", day: "numeric" });
+        const anomTxt = springIndex.leafAnom == null || Math.abs(springIndex.leafAnom) < 1 ? "right on the long-term normal" : springIndex.leafAnom < 0 ? `${Math.abs(Math.round(springIndex.leafAnom))} days ahead of the normal` : `${Math.round(springIndex.leafAnom)} days behind the normal`;
+        bits.push(`The national spring index put first leaf-out near ${ld} this year, ${anomTxt}`);
+      }
+      if (springIndex.agddAnom != null && Math.abs(springIndex.agddAnom) >= 10) {
+        bits.push(`${springIndex.agddAnom > 0 ? "and heat is banking ahead of normal" : "and heat is lagging the normal"} by ${Math.abs(Math.round(springIndex.agddAnom))} degree days`);
+      }
+      if (bits.length) parts.push(bits.join(", ") + ".");
+    }
     // photoperiod and soil, the master clocks behind the calendar
     if (forecast?.daylightH != null) {
       const h = Math.floor(forecast.daylightH), m = Math.round((forecast.daylightH - h) * 60);
@@ -233,7 +246,7 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
       parts.push(`On the bay, ${birds.length} notable ${birds.length === 1 ? "bird is" : "birds are"} being reported, including ${names}.`);
     }
     return parts.join(" ");
-  }, [rivers, stats, gddAnom, daysApprox, actualTotal, gddNow, thresholds, doy, birds, forecast]);
+  }, [rivers, stats, gddAnom, daysApprox, actualTotal, gddNow, thresholds, doy, birds, forecast, springIndex]);
 
   const indicators = useMemo(() => activeIndicators(doy).filter((i) => i.state !== "recent"), [doy]);
 
@@ -508,10 +521,10 @@ export async function getServerSideProps({ res }) {
   res.setHeader("Cache-Control", "s-maxage=600, stale-while-revalidate=1800");
   const now = new Date();
   const doy = dayOfYear(now);
-  const [regional, rivers, gddActual, birds, stats, forecast, gddHistory, history] = await Promise.all([fetchRegional(), fetchRivers(), fetchGddActual(), fetchBirds(), fetchAusableStats(), fetchForecast(), fetchGddHistory(), readHistory()]);
+  const [regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, springIndex] = await Promise.all([fetchRegional(), fetchRivers(), fetchGddActual(), fetchBirds(), fetchAusableStats(), fetchForecast(), fetchGddHistory(), readHistory(), fetchSpringIndex()]);
   return {
     props: {
-      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, doy,
+      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, springIndex, doy,
       season: seasonOf(doy), normToday: Math.round(normalMeanF(doy)),
       dateStr: now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric", timeZone: "America/Detroit" }),
       generatedAt: now.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/Detroit" }) + " ET",
