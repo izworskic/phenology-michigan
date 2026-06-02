@@ -9,6 +9,7 @@ import {
 import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory, fetchBuoy, fetchAlerts, fetchRiverForecast, withTimeout } from "../lib/sources";
 import { readHistory } from "../lib/history";
 import { readSignals, emptySignals } from "../lib/signals";
+import { skyTonight } from "../lib/sky";
 
 const SITE = "https://phenology.chrisizworski.com";
 const CAT_ICON = { water: Waves, fish: Fish, hatch: Egg, bird: Bird, bloom: Flower2, garden: Sprout, wild: Feather };
@@ -155,7 +156,7 @@ function EventPopout({ ev, doy, actualTotal, thresholds, season, onClose }) {
   );
 }
 
-export default function Home({ regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt }) {
+export default function Home({ regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt }) {
   const [mounted, setMounted] = useState(false);
   const [riverId, setRiverId] = useState("ausable");
   const [sel, setSel] = useState(null);
@@ -538,6 +539,34 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
           </section>
         )}
 
+        {sky && sky.constellations && sky.constellations.length > 0 && (
+          <section style={{ marginTop: 30, background: "linear-gradient(180deg, rgba(28,32,54,0.96), rgba(20,24,44,0.98))", border: "1px solid #2c3457", borderRadius: 14, padding: "18px 20px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
+              <Sparkles size={16} color="#cdd6ff" />
+              <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#aeb8e0", margin: 0 }}>Night sky tonight</h2>
+              <span style={{ marginLeft: "auto", fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "#8b95c4", border: "1px solid #3a4470", borderRadius: 6, padding: "1px 6px", whiteSpace: "nowrap" }}>computed</span>
+            </div>
+            <p style={{ fontSize: 13, color: "#c4cbe8", margin: "0 0 4px" }}>
+              The moon is a <strong style={{ color: "#eef1ff" }}>{sky.moon.name}</strong>, {sky.moon.illum} percent lit. After dark, looking up from the bay:
+            </p>
+            {sky.meteor && (
+              <div style={{ margin: "10px 0", padding: "9px 13px", borderRadius: 10, background: "rgba(120,140,220,0.16)", border: "1px solid #3a4470" }}>
+                <span style={{ fontSize: 13, color: "#eef1ff", fontFamily: "Georgia, serif" }}>The {sky.meteor.name} meteor shower {sky.meteor.when}</span>
+                <span style={{ fontSize: 12, color: "#bcc4e8" }}> &mdash; {sky.meteor.note}; {sky.meteor.moonNote}.</span>
+              </div>
+            )}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 8, marginTop: 12 }}>
+              {sky.constellations.map((c, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "baseline", gap: 8, padding: "6px 0", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                  <span style={{ fontFamily: "Georgia, serif", fontSize: 14.5, color: "#eef1ff", minWidth: 96 }}>{c.name}</span>
+                  <span style={{ fontSize: 11.5, color: "#aeb8e0" }}>{c.where}{c.circumpolar ? ", circling the pole" : ""}. {c.note}.</span>
+                </div>
+              ))}
+            </div>
+            <p style={{ fontSize: 11, color: "#7b85b4", margin: "12px 2px 0", fontStyle: "italic" }}>Positions computed for about 10 pm local from this date and latitude. Brighter moonlight dims the faintest stars.</p>
+          </section>
+        )}
+
         {gddHistory && (
           <section style={{ marginTop: 18, background: "rgba(255,255,255,0.5)", border: "1px solid #e4dcc8", borderRadius: 14, padding: "16px 20px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
@@ -690,9 +719,10 @@ export async function getServerSideProps({ res }) {
   const riverForecast = await T(fetchRiverForecast(), { active: false });
   const sig = signals || emptySignals();
   const bay = { ...buoy, ...(sig.bayDaily || {}) };
+  const sky = skyTonight(43.5945, -83.8889, now);
   return {
     props: {
-      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast,
+      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky,
       springIndex: sig.springIndex || emptySignals().springIndex,
       observations: sig.observations || [], inat: sig.inat || [], drought: sig.drought || null,
       bay, alerts, doy,
