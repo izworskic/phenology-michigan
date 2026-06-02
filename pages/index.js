@@ -1,10 +1,10 @@
 import Head from "next/head";
 import { useState, useEffect, useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, ReferenceLine, ResponsiveContainer, Tooltip } from "recharts";
-import { Bird, Fish, Flower2, Waves, Thermometer, Sprout, Egg, TreePine, Feather, Compass, Droplets, X, Sunrise, Snowflake, Sparkles, Link2, BarChart3, ArrowRight, Target, Check, Clock } from "lucide-react";
+import { Bird, Fish, Flower2, Waves, Thermometer, Sprout, Egg, TreePine, Feather, Compass, Droplets, X, Sunrise, Snowflake, Sparkles, Link2, BarChart3, ArrowRight, Target, Check, Clock, Leaf } from "lucide-react";
 import {
   dayOfYear, normalMeanF, gddSeries, EVENTS, CAT, seasonOf, classify, RIVERS, moonPhase,
-  MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring, emergenceForecast, gardenWindow, LAST_FROST_DOY, FIRST_FROST_DOY, huntingForecast, rutClock,
+  MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring, emergenceForecast, gardenWindow, LAST_FROST_DOY, FIRST_FROST_DOY, huntingForecast, rutClock, fallColor,
 } from "../lib/phenology";
 import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory, fetchBuoy, fetchAlerts, fetchRiverForecast, fetchAurora, withTimeout } from "../lib/sources";
 import { readHistory } from "../lib/history";
@@ -333,8 +333,10 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
     const hatching = (emergence || []).filter((e) => e.phase === "on").slice(0, 3).map((e) => e.name);
     const planting = (garden || []).filter((g) => g.ready).slice(0, 3).map((g) => g.name);
     const overhead = sky && sky.constellations && sky.constellations.length ? sky.constellations[0].name : null;
-    return { chips, hatching, planting, overhead };
-  }, [river, bay, daysApprox, actualTotal, sky, forecast, emergence, garden]);
+    const fc = fallColor(doy);
+    const color = fc ? fc.stage : null;
+    return { chips, hatching, planting, overhead, color };
+  }, [river, bay, daysApprox, actualTotal, sky, forecast, emergence, garden, doy]);
 
   // Stage two: tabbed detail deck. One panel shows at a time so each is a short screen.
   const [tab, setTab] = useState("water");
@@ -378,6 +380,7 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
   // Hunting: Michigan season board, the rut clock, and today's legal shooting hours.
   const hunting = useMemo(() => huntingForecast(doy), [doy]);
   const rut = useMemo(() => rutClock(doy), [doy]);
+  const fallColorNow = useMemo(() => fallColor(doy), [doy]);
   const legal = useMemo(() => {
     if (!forecast || !forecast.sunriseISO || !forecast.sunsetISO) return null;
     const shift = (iso, delta) => {
@@ -523,11 +526,12 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
                 );
               })}
             </div>
-            {(moment.hatching.length > 0 || moment.planting.length > 0 || moment.overhead) && (
+            {(moment.hatching.length > 0 || moment.planting.length > 0 || moment.overhead || moment.color) && (
               <div style={{ marginTop: 9, fontSize: 13, color: "#5a513c", lineHeight: 1.6, display: "flex", flexWrap: "wrap", gap: "2px 16px" }}>
                 {moment.hatching.length > 0 && <span onClick={() => pickTab("water")} style={{ cursor: "pointer" }}><Egg size={12} style={{ verticalAlign: "-1px" }} color={CAT.hatch.color} /> <strong style={{ color: "#3a3527" }}>Hatching:</strong> {moment.hatching.join(", ")}</span>}
                 {moment.planting.length > 0 && <span onClick={() => pickTab("garden")} style={{ cursor: "pointer" }}><Sprout size={12} style={{ verticalAlign: "-1px" }} color={CAT.garden.color} /> <strong style={{ color: "#3a3527" }}>Plant now:</strong> {moment.planting.join(", ")}</span>}
                 {moment.overhead && <span onClick={() => pickTab("sky")} style={{ cursor: "pointer" }}><Sparkles size={12} style={{ verticalAlign: "-1px" }} color="#7b6db0" /> <strong style={{ color: "#3a3527" }}>Overhead:</strong> {moment.overhead}</span>}
+                {moment.color && <span onClick={() => pickTab("life")} style={{ cursor: "pointer" }}><Leaf size={12} style={{ verticalAlign: "-1px" }} color="#b5651d" /> <strong style={{ color: "#3a3527" }}>Color:</strong> {moment.color}</span>}
               </div>
             )}
           </section>
@@ -846,6 +850,23 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
             </div>
           </div>
         </section>
+        )}
+
+        {tab === "life" && fallColorNow && (
+          <section style={{ marginTop: 18, background: "linear-gradient(180deg, rgba(60,30,12,0.05), rgba(140,75,20,0.10))", border: "1px solid #d8b98f", borderLeft: "4px solid #b5651d", borderRadius: 14, padding: "16px 20px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              <Leaf size={16} color="#b5651d" />
+              <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a5a2a", margin: 0 }}>Fall color</h2>
+              <span style={{ marginLeft: "auto", fontSize: 10.5, color: "#b5651d", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>{fallColorNow.stage}</span>
+            </div>
+            <p style={{ margin: "0 0 8px", fontSize: 15.5, lineHeight: 1.55, color: "#3a3527" }}>
+              About <strong style={{ color: "#9a4f1a" }}>{fallColorNow.pct}</strong> across the Saginaw Bay area. {fallColorNow.label}
+              {(fallColorNow.stage === "coming on" || fallColorNow.stage === "peak") && <> Down on the rivers it runs with the trout: the brook trout color up in spawning orange and the browns turn buttery gold, the same photoperiod turning the leaves.</>}
+            </p>
+            <p style={{ fontSize: 11.5, color: "#9a7b58", margin: 0, lineHeight: 1.55, fontStyle: "italic" }}>
+              An estimate from the calendar; northern Michigan and the UP peak a week or two ahead, and cool nights pull it earlier. The state runs a live statewide map at michigan.org/fall-color-map.
+            </p>
+          </section>
         )}
 
         {tab === "life" && (
