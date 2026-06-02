@@ -1,10 +1,10 @@
 import Head from "next/head";
 import { useState, useEffect, useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, ReferenceLine, ResponsiveContainer, Tooltip } from "recharts";
-import { Bird, Fish, Flower2, Waves, Thermometer, Sprout, Egg, TreePine, Feather, Compass, Droplets, X, Sunrise, Snowflake, Sparkles, Link2, BarChart3, ArrowRight } from "lucide-react";
+import { Bird, Fish, Flower2, Waves, Thermometer, Sprout, Egg, TreePine, Feather, Compass, Droplets, X, Sunrise, Snowflake, Sparkles, Link2, BarChart3, ArrowRight , Target } from "lucide-react";
 import {
   dayOfYear, normalMeanF, gddSeries, EVENTS, CAT, seasonOf, classify, RIVERS, moonPhase,
-  MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring, emergenceForecast, gardenWindow, LAST_FROST_DOY, FIRST_FROST_DOY,
+  MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring, emergenceForecast, gardenWindow, LAST_FROST_DOY, FIRST_FROST_DOY, huntingForecast, rutClock,
 } from "../lib/phenology";
 import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory, fetchBuoy, fetchAlerts, fetchRiverForecast, fetchAurora, withTimeout } from "../lib/sources";
 import { readHistory } from "../lib/history";
@@ -358,7 +358,22 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
       </div>
     );
   };
-  const TABS = [["water", "Water & fish"], ["garden", "Garden"], ["sky", "Sky"], ["life", "Life"], ["trends", "Trends"]];
+  const TABS = [["water", "Water & fish"], ["hunting", "Hunting"], ["garden", "Garden"], ["sky", "Sky"], ["life", "Life"], ["trends", "Trends"]];
+
+  // Hunting: Michigan season board, the rut clock, and today's legal shooting hours.
+  const hunting = useMemo(() => huntingForecast(doy), [doy]);
+  const rut = useMemo(() => rutClock(doy), [doy]);
+  const legal = useMemo(() => {
+    if (!forecast || !forecast.sunriseISO || !forecast.sunsetISO) return null;
+    const shift = (iso, delta) => {
+      const p = iso.slice(11, 16).split(":");
+      let mins = (+p[0]) * 60 + (+p[1]) + delta;
+      mins = (mins + 1440) % 1440;
+      let h = Math.floor(mins / 60); const m = mins % 60; const ap = h >= 12 ? "PM" : "AM"; h = h % 12 || 12;
+      return `${h}:${String(m).padStart(2, "0")} ${ap}`;
+    };
+    return { start: shift(forecast.sunriseISO, -30), end: shift(forecast.sunsetISO, 30) };
+  }, [forecast]);
 
   // Aurora verdict for this latitude from the Kp index, OVATION probability, and tonight's moon.
   const auroraRead = useMemo(() => {
@@ -610,6 +625,43 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
                 );
               })}
             </div>
+          </section>
+        )}
+
+        {tab === "hunting" && (
+          <section style={{ marginTop: 18 }}>
+            <div style={{ background: "rgba(255,255,255,0.5)", border: "1px solid #e4dcc8", borderLeft: "4px solid #8a6a2f", borderRadius: 14, padding: "16px 20px", marginBottom: 18 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                <Target size={16} color="#8a6a2f" />
+                <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>The rut</h2>
+              </div>
+              <p style={{ margin: 0, fontSize: 15.5, lineHeight: 1.55, color: "#3a3527" }}>
+                {rut.phase
+                  ? <>Deer are in the <strong style={{ color: "#7a5a2f" }}>{rut.phase}</strong>.</>
+                  : rut.days <= 250
+                    ? <>Peak rut is about <strong style={{ color: "#7a5a2f" }}>{rut.days} days</strong> out, around mid-November.</>
+                    : <>The rut is behind us for this year. Deer are back on a food-and-bed pattern.</>}
+                {legal && <> Legal shooting hours today run <strong style={{ color: "#7a5a2f" }}>{legal.start}</strong> to <strong style={{ color: "#7a5a2f" }}>{legal.end}</strong>, a half hour either side of the sun.</>}
+                {forecast && forecast.windSpeedMph != null && <> Wind near the bay is {forecast.windSpeedMph} mph out of the {degToCompass(forecast.windDirDeg)}.</>}
+              </p>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 10px" }}>
+              <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>Michigan season board</h2>
+              <span style={{ marginLeft: "auto", fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "#b08828", border: "1px solid #e3d2a6", borderRadius: 6, padding: "1px 6px" }}>verify DNR digest</span>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12 }}>
+              {hunting.map((h, i) => (
+                <div key={i} style={{ border: `1px solid ${h.open ? "#bcd3ad" : "#e4dcc8"}`, background: h.open ? "rgba(228,243,221,0.55)" : "rgba(255,255,255,0.4)", borderRadius: 12, padding: "10px 13px" }}>
+                  <div style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 16, color: "#2b2a1f" }}>{h.name}</div>
+                  <div style={{ fontSize: 12.5, fontWeight: 600, color: h.open ? "#4f7a3f" : "#9a7b3a", margin: "2px 0" }}>{h.status}</div>
+                  <div style={{ fontSize: 11.5, color: "#9a8f76", lineHeight: 1.45 }}>{h.note}</div>
+                </div>
+              ))}
+            </div>
+            <p style={{ fontSize: 11.5, color: "#9a8f76", margin: "12px 2px 0", lineHeight: 1.55, fontStyle: "italic" }}>
+              Dates are typical statewide windows and shift each year and by zone or deer management unit. The current Michigan DNR hunting digest is the authority. The rut timing is photoperiod-driven and lands in mid-November most years; cold fronts and the days right around the peak put the most deer on their feet in daylight.
+            </p>
           </section>
         )}
 
