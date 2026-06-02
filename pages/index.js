@@ -305,9 +305,9 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
   // soil-temperature need, with frost-sensitive crops gated on the average last frost having passed.
   const garden = useMemo(() => {
     const frostClear = !!forecast && (!forecast.frost || forecast.frost.length === 0);
-    return gardenWindow(forecast?.soilF ?? null, frostClear, doy >= LAST_FROST_DOY);
+    return gardenWindow(doy, forecast?.soilF ?? null, frostClear);
   }, [forecast, doy]);
-  const showGarden = doy >= 90 && doy <= 185 && garden.length > 0;
+  const showGarden = garden.length > 0;
 
   // Stage one of the at-a-glance redesign: a compact "moment" derived from values already computed.
   // A row of live chips plus a one-line highlight of what is hatching, plantable, and overhead.
@@ -710,7 +710,7 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
               <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>Garden planting window</h2>
               <span style={{ marginLeft: "auto", fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "#7a7058", border: "1px solid #d8cca8", borderRadius: 6, padding: "1px 6px", whiteSpace: "nowrap" }}>computed</span>
             </div>
-            <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 12px", fontStyle: "italic" }}>Live soil temperature and the seven-day frost outlook against what each crop wants. Cool-season crops are best sown on the early side; the tender ones wait for warm soil and frost behind us.</p>
+            <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 12px", fontStyle: "italic" }}>Planting windows anchored to the area average last spring frost (about May 15) and first fall frost (about October 5), the way the almanac sets them. Cool-season crops get a spring and a fall window; the tender ones wait for their window plus warm soil and no frost in the outlook.</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 10 }}>
               {garden.map((g, i) => (
                 <div key={i} style={{ border: "1px solid #e4dcc8", borderLeft: `3px solid ${g.ready ? CAT.garden.color : "#cdbf9a"}`, borderRadius: 10, padding: "9px 12px", background: g.ready ? "rgba(122,160,90,0.10)" : "rgba(255,255,255,0.5)" }}>
