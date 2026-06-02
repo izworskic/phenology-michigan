@@ -6,7 +6,7 @@ import {
   dayOfYear, normalMeanF, gddSeries, EVENTS, CAT, seasonOf, classify, RIVERS, moonPhase,
   MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring, emergenceForecast, gardenWindow, LAST_FROST_DOY, FIRST_FROST_DOY,
 } from "../lib/phenology";
-import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory, fetchBuoy, fetchAlerts, fetchRiverForecast, withTimeout } from "../lib/sources";
+import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory, fetchBuoy, fetchAlerts, fetchRiverForecast, fetchAurora, withTimeout } from "../lib/sources";
 import { readHistory } from "../lib/history";
 import { readSignals, emptySignals } from "../lib/signals";
 import { skyTonight } from "../lib/sky";
@@ -156,7 +156,7 @@ function EventPopout({ ev, doy, actualTotal, thresholds, season, onClose }) {
   );
 }
 
-export default function Home({ regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt }) {
+export default function Home({ regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt }) {
   const [mounted, setMounted] = useState(false);
   const [riverId, setRiverId] = useState("ausable");
   const [sel, setSel] = useState(null);
@@ -359,6 +359,24 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
     );
   };
   const TABS = [["water", "Water & fish"], ["garden", "Garden"], ["sky", "Sky"], ["life", "Life"], ["trends", "Trends"]];
+
+  // Aurora verdict for this latitude from the Kp index, OVATION probability, and tonight's moon.
+  const auroraRead = useMemo(() => {
+    if (!aurora) return null;
+    const kp = Math.max(aurora.kpNow || 0, aurora.kpPeak || 0);
+    const moonBright = sky && sky.moon && sky.moon.illum > 60;
+    let level, verdict;
+    if ((aurora.ovationBay != null && aurora.ovationBay >= 15) || kp >= 7) {
+      level = "likely"; verdict = "Aurora is possible from the bay tonight. Get somewhere dark with an open view to the north.";
+    } else if ((aurora.ovationNorth != null && aurora.ovationNorth >= 20) || kp >= 6) {
+      level = "watch"; verdict = "A real chance over northern Michigan and the UP, with a low northern glow possible from the bay if it strengthens.";
+    } else if (kp >= 5) {
+      level = "watch"; verdict = "Minor storm levels. Worth watching the northern horizon from up north; a long shot this far south.";
+    } else {
+      level = "quiet"; verdict = "Geomagnetic activity is quiet. No aurora expected.";
+    }
+    return { level, verdict, kp, moonBright };
+  }, [aurora, sky]);
 
   // Filter indicators by activity group (hunt, fish, garden, water, bird)
   const [activeTags, setActiveTags] = useState([...ALL_GROUPS]);
@@ -617,6 +635,24 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
           </section>
         )}
 
+        {tab === "sky" && auroraRead && (
+          <section style={{ marginTop: 18, background: "linear-gradient(180deg, rgba(20,30,30,0.97), rgba(14,24,26,0.98))", border: "1px solid #1f4a44", borderRadius: 14, padding: "16px 20px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 8px" }}>
+              <span style={{ width: 10, height: 10, borderRadius: "50%", background: auroraRead.level === "likely" ? "#62e08a" : auroraRead.level === "watch" ? "#e3c08a" : "#5f7a76", boxShadow: auroraRead.level !== "quiet" ? `0 0 8px ${auroraRead.level === "likely" ? "#62e08a" : "#e3c08a"}` : "none" }} />
+              <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#aee0d2", margin: 0 }}>Aurora watch</h2>
+              <span style={{ marginLeft: "auto", fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "#8bc4b6", border: "1px solid #2f7066", borderRadius: 6, padding: "1px 6px", whiteSpace: "nowrap" }}>live, NOAA SWPC</span>
+            </div>
+            <p style={{ fontSize: 14, color: "#d4e8e2", margin: "0 0 8px", lineHeight: 1.5 }}>{auroraRead.verdict}{auroraRead.moonBright && auroraRead.level !== "quiet" ? " A bright moon tonight will mute the fainter color." : ""}</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 18px", fontSize: 12.5, color: "#9fc4bc" }}>
+              <span>Kp now <strong style={{ color: "#eef7f4" }}>{aurora.kpNow != null ? aurora.kpNow : "n/a"}</strong></span>
+              {aurora.kpPeak != null && <span>forecast peak <strong style={{ color: "#eef7f4" }}>{aurora.kpPeak}</strong>{aurora.kpPeakTime ? ` ${new Date(aurora.kpPeakTime).toLocaleDateString("en-US", { weekday: "short", timeZone: "America/Detroit" })}` : ""}</span>}
+              {aurora.ovationBay != null && aurora.ovationBay > 0 && <span>overhead chance here <strong style={{ color: "#eef7f4" }}>{aurora.ovationBay}%</strong></span>}
+              {aurora.ovationNorth != null && aurora.ovationNorth > 0 && <span>northern Michigan <strong style={{ color: "#eef7f4" }}>{aurora.ovationNorth}%</strong></span>}
+            </div>
+            <p style={{ fontSize: 11, color: "#6f928b", margin: "10px 2px 0", fontStyle: "italic" }}>From NOAA Space Weather Prediction Center. The bay needs roughly Kp 7 for a horizon view; northern Michigan and the UP, closer to Kp 5.</p>
+          </section>
+        )}
+
         {tab === "sky" && sky && sky.constellations && sky.constellations.length > 0 && (
           <section style={{ marginTop: 30, background: "linear-gradient(180deg, rgba(28,32,54,0.96), rgba(20,24,44,0.98))", border: "1px solid #2c3457", borderRadius: 14, padding: "18px 20px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
@@ -780,7 +816,7 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
         )}
 
         <footer style={{ marginTop: 28, paddingTop: 16, borderTop: "1px solid #e4dcc8", fontSize: 12, color: "#9a8f76", lineHeight: 1.55 }}>
-          One clock for the whole natural year, drawing on the <a href="https://michigantroutreport.com">Michigan Trout Report</a>, the <a href="https://michiganbirdingreport.com">Michigan Birding Report</a>, <a href="https://greatlakeslevels.org">Great Lakes Lake Levels</a>, and <a href="https://freighterviewfarms.com">Freighter View Farms</a>. Live data from USGS, NWS, NOAA CO-OPS and NDBC, GLERL CoastWatch, eBird, iNaturalist, USA-NPN, US Drought Monitor, and Open-Meteo. Built and maintained by <a href="https://chrisizworski.com">Chris Izworski</a>. Updated {generatedAt}.
+          One clock for the whole natural year, drawing on the <a href="https://michigantroutreport.com">Michigan Trout Report</a>, the <a href="https://michiganbirdingreport.com">Michigan Birding Report</a>, <a href="https://greatlakeslevels.org">Great Lakes Lake Levels</a>, and <a href="https://freighterviewfarms.com">Freighter View Farms</a>. Live data from USGS, NWS, NOAA CO-OPS and NDBC, GLERL CoastWatch, NOAA SWPC, eBird, iNaturalist, USA-NPN, US Drought Monitor, and Open-Meteo. Built and maintained by <a href="https://chrisizworski.com">Chris Izworski</a>. Updated {generatedAt}.
         </footer>
       </div>
 
@@ -804,12 +840,13 @@ export async function getServerSideProps({ res }) {
     T(readSignals(), null),
   ]);
   const riverForecast = await T(fetchRiverForecast(), { active: false });
+  const aurora = await T(fetchAurora(), { kpNow: null, kpPeak: null, kpPeakTime: null, ovationBay: null, ovationNorth: null });
   const sig = signals || emptySignals();
   const bay = { ...buoy, ...(sig.bayDaily || {}) };
   const sky = skyTonight(43.5945, -83.8889, now);
   return {
     props: {
-      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky,
+      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora,
       springIndex: sig.springIndex || emptySignals().springIndex,
       observations: sig.observations || [], inat: sig.inat || [], drought: sig.drought || null,
       bay, alerts, doy,
