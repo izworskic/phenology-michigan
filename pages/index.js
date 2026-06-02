@@ -294,6 +294,33 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
   }, [forecast, doy]);
   const showGarden = doy >= 90 && doy <= 185 && garden.length > 0;
 
+  // Stage one of the at-a-glance redesign: a compact "moment" derived from values already computed.
+  // A row of live chips plus a one-line highlight of what is hatching, plantable, and overhead.
+  const moment = useMemo(() => {
+    const chips = [];
+    if (river && river.flow != null) {
+      const arrow = river.trend === "rising" ? "\u2197" : river.trend === "dropping" ? "\u2198" : "\u2192";
+      chips.push({ k: "river", label: river.name, value: `${river.flow}`, unit: "cfs", sub: river.trend && river.trend !== "steady" ? `${arrow} ${river.trend}` : "steady" });
+    }
+    const wTemp = river && river.temp != null ? Math.round(cToF(river.temp)) : (bay && bay.waterTempF != null ? bay.waterTempF : null);
+    if (wTemp != null) chips.push({ k: "water", label: "Water", value: `${wTemp}`, unit: "\u00B0F", sub: river && river.temp != null ? "river" : "the bay" });
+    if (daysApprox != null) {
+      const pace = Math.abs(daysApprox) <= 2 ? "on time" : daysApprox > 0 ? `${daysApprox}d early` : `${Math.abs(daysApprox)}d late`;
+      chips.push({ k: "heat", label: "Season", value: pace, unit: "", sub: actualTotal != null ? `${actualTotal} GDD` : "" });
+    }
+    if (sky && sky.moon) chips.push({ k: "moon", label: "Moon", value: `${sky.moon.illum}`, unit: "%", sub: sky.moon.name });
+    if (forecast && forecast.frost && forecast.frost.length) {
+      chips.push({ k: "frost", label: "Frost", value: `${forecast.frost[0].low}`, unit: "\u00B0F", sub: new Date(forecast.frost[0].date).toLocaleDateString("en-US", { weekday: "short" }) + " night" });
+    } else if (forecast && forecast.daylightH != null) {
+      const h = Math.floor(forecast.daylightH), m = Math.round((forecast.daylightH - h) * 60);
+      chips.push({ k: "day", label: "Daylight", value: `${h}:${String(m).padStart(2, "0")}`, unit: "", sub: forecast.daylightDeltaMin != null ? `${forecast.daylightDeltaMin > 0 ? "+" : ""}${forecast.daylightDeltaMin} min/day` : "" });
+    }
+    const hatching = (emergence || []).filter((e) => e.phase === "on").slice(0, 3).map((e) => e.name);
+    const planting = (garden || []).filter((g) => g.ready).slice(0, 3).map((g) => g.name);
+    const overhead = sky && sky.constellations && sky.constellations.length ? sky.constellations[0].name : null;
+    return { chips, hatching, planting, overhead };
+  }, [river, bay, daysApprox, actualTotal, sky, forecast, emergence, garden]);
+
   // Filter indicators by activity group (hunt, fish, garden, water, bird)
   const [activeTags, setActiveTags] = useState([...ALL_GROUPS]);
   const filteredIndicators = useMemo(
@@ -379,8 +406,29 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
           </div>
         )}
 
+        {moment && moment.chips.length > 0 && (
+          <section style={{ marginTop: 18 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {moment.chips.map((c, i) => (
+                <div key={i} style={{ flex: "1 1 auto", minWidth: 90, border: "1px solid #e4dcc8", borderRadius: 12, padding: "8px 12px", background: "rgba(255,255,255,0.62)", textAlign: "center" }}>
+                  <div style={{ fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "#9a8f76", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.label}</div>
+                  <div style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 19, color: "#2b2a1f", lineHeight: 1.2, whiteSpace: "nowrap" }}>{c.value}{c.unit ? <span style={{ fontSize: 11, color: "#7a7058" }}> {c.unit}</span> : null}</div>
+                  <div style={{ fontSize: 10.5, color: "#8a7d62", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.sub}</div>
+                </div>
+              ))}
+            </div>
+            {(moment.hatching.length > 0 || moment.planting.length > 0 || moment.overhead) && (
+              <div style={{ marginTop: 9, fontSize: 13, color: "#5a513c", lineHeight: 1.6, display: "flex", flexWrap: "wrap", gap: "2px 16px" }}>
+                {moment.hatching.length > 0 && <span><Egg size={12} style={{ verticalAlign: "-1px" }} color={CAT.hatch.color} /> <strong style={{ color: "#3a3527" }}>Hatching:</strong> {moment.hatching.join(", ")}</span>}
+                {moment.planting.length > 0 && <span><Sprout size={12} style={{ verticalAlign: "-1px" }} color={CAT.garden.color} /> <strong style={{ color: "#3a3527" }}>Plant now:</strong> {moment.planting.join(", ")}</span>}
+                {moment.overhead && <span><Sparkles size={12} style={{ verticalAlign: "-1px" }} color="#7b6db0" /> <strong style={{ color: "#3a3527" }}>Overhead:</strong> {moment.overhead}</span>}
+              </div>
+            )}
+          </section>
+        )}
+
         {read && (
-          <section style={{ marginTop: 22, background: "rgba(255,255,255,0.5)", border: "1px solid #e4dcc8", borderLeft: `4px solid ${season.color}`, borderRadius: 14, padding: "16px 20px" }}>
+          <section style={{ marginTop: 18, background: "rgba(255,255,255,0.5)", border: "1px solid #e4dcc8", borderLeft: `4px solid ${season.color}`, borderRadius: 14, padding: "16px 20px" }}>
             <div style={{ fontSize: 11.5, letterSpacing: "0.14em", textTransform: "uppercase", color: "#8a7d62", marginBottom: 6 }}>The read</div>
             <p style={{ margin: 0, fontSize: 16, lineHeight: 1.6, color: "#3a3527", fontFamily: "Newsreader, Georgia, serif" }}>{read}</p>
             {correlations && <p style={{ margin: "12px 0 0", fontSize: 14, lineHeight: 1.5, color: "#6a5f4a", fontFamily: "Newsreader, Georgia, serif", fontStyle: "italic", borderTop: "1px solid #e4dcc8", paddingTop: 12 }}>Correlation: {correlations}</p>}
