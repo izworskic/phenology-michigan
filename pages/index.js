@@ -1,7 +1,7 @@
 import Head from "next/head";
 import { useState, useEffect, useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, ReferenceLine, ResponsiveContainer, Tooltip } from "recharts";
-import { Bird, Fish, Flower2, Waves, Thermometer, Sprout, Egg, TreePine, Feather, Compass, Droplets, X, Sunrise, Snowflake, Sparkles, Link2, BarChart3, ArrowRight , Target } from "lucide-react";
+import { Bird, Fish, Flower2, Waves, Thermometer, Sprout, Egg, TreePine, Feather, Compass, Droplets, X, Sunrise, Snowflake, Sparkles, Link2, BarChart3, ArrowRight, Target, Check, Clock } from "lucide-react";
 import {
   dayOfYear, normalMeanF, gddSeries, EVENTS, CAT, seasonOf, classify, RIVERS, moonPhase,
   MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring, emergenceForecast, gardenWindow, LAST_FROST_DOY, FIRST_FROST_DOY, huntingForecast, rutClock,
@@ -155,6 +155,19 @@ function EventPopout({ ev, doy, actualTotal, thresholds, season, onClose }) {
     </div>
   );
 }
+
+// Which folk correlations can be checked against a live sensor, and the threshold that confirms them.
+// Only the ones with a defensible measurable; the rest stand on their phenological text alone.
+const SIGNAL_CHECKS = {
+  "Forsythia bloom": { kind: "soil", min: 55 },
+  "Lilac first bloom": { kind: "soil", min: 57 },
+  "Dandelion bloom": { kind: "soil", min: 50 },
+  "Oak leaf-out, squirrel's ear": { kind: "soil", min: 55 },
+  "Flowering dogwood bloom": { kind: "soil", min: 60 },
+  "Walleye spring spawn": { kind: "water", min: 42, max: 52 },
+  "Brook and brown trout spawn": { kind: "water", max: 49 },
+  "First hard frost": { kind: "frost" },
+};
 
 export default function Home({ regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt }) {
   const [mounted, setMounted] = useState(false);
@@ -399,6 +412,22 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
     () => indicators.filter((i) => eventMatches(i, activeTags)),
     [indicators, activeTags]
   );
+  // For a given signal, test it against today's live sensor reading so a folk correlation can be
+  // confirmed or shown as not-yet-there. Returns null when there is nothing measurable to check.
+  const liveCheck = useMemo(() => {
+    const soilF = forecast?.soilF ?? null;
+    const waterF = bay && bay.waterTempF != null ? bay.waterTempF : (river && river.temp != null ? Math.round(cToF(river.temp)) : null);
+    const frostN = forecast?.frost?.length || 0;
+    return (name) => {
+      const c = SIGNAL_CHECKS[name];
+      if (!c) return null;
+      if (c.kind === "soil") { if (soilF == null) return null; return { ok: soilF >= c.min, label: `soil ${soilF}\u00B0F`, want: `the cue is ${c.min}\u00B0F` }; }
+      if (c.kind === "water") { if (waterF == null) return null; const ok = (c.min == null || waterF >= c.min) && (c.max == null || waterF <= c.max); const want = c.min != null && c.max != null ? `the window is ${c.min} to ${c.max}\u00B0F` : c.max != null ? `the cue is ${c.max}\u00B0F or cooler` : `the cue is ${c.min}\u00B0F or warmer`; return { ok, label: `water ${waterF}\u00B0F`, want }; }
+      if (c.kind === "frost") { return { ok: frostN > 0, label: frostN > 0 ? "frost in the 7-day outlook" : "no frost in the 7-day outlook", want: "" }; }
+      return null;
+    };
+  }, [forecast, bay, river]);
+  const confirmedCount = useMemo(() => filteredIndicators.reduce((n, i) => { const c = liveCheck(i.name); return n + (c && c.ok ? 1 : 0); }, 0), [filteredIndicators, liveCheck]);
   const allTags = ALL_GROUPS;
   const tagLabels = GROUP_LABEL;
 
@@ -553,11 +582,12 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
               <Link2 size={16} color={CAT.bloom.color} />
               <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>Connections in play</h2>
             </div>
-            <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 12px", fontStyle: "italic" }}>The signals nature is giving right now, and what each one points to on the rivers, in the woods, and in the garden.</p>
+            <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 12px", fontStyle: "italic" }}>The signals nature is giving right now, and what each one points to on the rivers, in the woods, and in the garden.{confirmedCount > 0 ? ` ${confirmedCount} ${confirmedCount === 1 ? "is" : "are"} backed by today's readings.` : ""}</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 12 }}>
               {filteredIndicators.map((ind, i) => {
                 const tag = ind.state === "active" ? "active now" : `in about ${ind.days} days`;
                 const tagColor = ind.state === "active" ? "#5a8a4a" : "#b08828";
+                const chk = liveCheck(ind.name);
                 return (
                   <div key={i} style={{ border: "1px solid #e4dcc8", borderLeft: `3px solid ${CAT[ind.cat].color}`, borderRadius: 12, padding: "12px 14px", background: "rgba(255,255,255,0.5)" }}>
                     <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 6 }}>
@@ -569,6 +599,12 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
                       <ArrowRight size={15} color={CAT[ind.cat].color} style={{ flexShrink: 0, marginTop: 2 }} />
                       <span style={{ fontSize: 13, color: "#5a5240", lineHeight: 1.45 }}>{ind.signal}</span>
                     </div>
+                    {chk && (
+                      <div style={{ marginTop: 8, fontSize: 11.5, display: "inline-flex", alignItems: "center", gap: 5, borderRadius: 8, padding: "3px 9px", background: chk.ok ? "rgba(228,243,221,0.75)" : "rgba(244,237,222,0.75)", color: chk.ok ? "#42702f" : "#9a7b3a", border: `1px solid ${chk.ok ? "#bcd3ad" : "#e3d2a6"}` }}>
+                        {chk.ok ? <Check size={13} /> : <Clock size={13} />}
+                        <span>{chk.ok ? `today's reading agrees: ${chk.label}` : `${chk.label}${chk.want ? `, ${chk.want}` : ""}`}</span>
+                      </div>
+                    )}
                   </div>
                 );
               })}
