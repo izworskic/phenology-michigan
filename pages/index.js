@@ -166,6 +166,8 @@ const SIGNAL_CHECKS = {
   "Flowering dogwood bloom": { kind: "soil", min: 60 },
   "Walleye spring spawn": { kind: "water", min: 42, max: 52 },
   "Brook and brown trout spawn": { kind: "water", max: 49 },
+  "Fireflies emerge": { kind: "water", min: 62 },
+  "Walleye summer lows": { kind: "water", min: 70 },
   "First hard frost": { kind: "frost" },
 };
 
