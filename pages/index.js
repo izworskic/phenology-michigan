@@ -321,6 +321,45 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
     return { chips, hatching, planting, overhead };
   }, [river, bay, daysApprox, actualTotal, sky, forecast, emergence, garden]);
 
+  // Stage two: tabbed detail deck. One panel shows at a time so each is a short screen.
+  const [tab, setTab] = useState("water");
+  useEffect(() => { try { const t = localStorage.getItem("phenoTab"); if (t) setTab(t); } catch (e) {} }, []);
+  const pickTab = (t) => {
+    setTab(t);
+    try { localStorage.setItem("phenoTab", t); } catch (e) {}
+    if (typeof document !== "undefined") { const el = document.getElementById("deck"); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }
+  };
+
+  // Live instruments, each tagged with the tab it belongs to, so the grid can be split by theme.
+  const instruments = useMemo(() => {
+    const a = [];
+    a.push({ tab: "water", Icon: Droplets, label: `${river ? river.name : "River"} flow`, value: river && river.flow != null ? river.flow : "n/a", unit: "cfs", sub: river && river.flow != null ? `USGS gauge${river.trend && river.trend !== "steady" ? ", " + river.trend : ""}` : "no live reading", live: !!(river && river.flow != null), accent: CAT.water.color });
+    a.push({ tab: "water", Icon: Fish, label: "River water", value: river && river.temp != null ? Math.round(cToF(river.temp)) : "n/a", unit: "deg F", sub: river && river.temp != null ? `${river.name}, USGS` : "no temperature sensor on this gauge", live: !!(river && river.temp != null), accent: CAT.fish.color });
+    a.push({ tab: "water", Icon: Waves, label: "Lake Huron level", value: regional.level != null ? regional.level.toFixed(2) : "176.95", unit: "m IGLD", sub: regional.level != null ? "Saginaw Bay, NOAA" : "seasonal normal", live: regional.level != null, accent: CAT.water.color });
+    if (bay && bay.windMph != null) a.push({ tab: "water", Icon: Compass, label: "Saginaw Bay wind", value: bay.windMph, unit: "mph", sub: `out of the ${degToCompass(bay.windDirDeg)}, buoy 45203${bay.waveFt != null ? `, ${bay.waveFt} ft seas` : ""}`, live: true, accent: CAT.water.color });
+    if (bay && bay.waterTempF != null) a.push({ tab: "water", Icon: Waves, label: "Bay water, buoy", value: bay.waterTempF, unit: "deg F", sub: bay.waterTempF >= 43 && bay.waterTempF <= 50 ? "in the walleye spawn window" : "Saginaw Bay buoy 45203", live: true, accent: CAT.fish.color });
+    if (bay && bay.iceConc != null && bay.iceConc >= 1) a.push({ tab: "water", Icon: Snowflake, label: "Bay ice cover", value: Math.round(bay.iceConc), unit: "percent", sub: `Saginaw Bay, GLERL satellite${bay.iceDate ? `, ${bay.iceDate}` : ""}`, live: true, accent: CAT.water.color });
+    else if (bay && bay.glseaF != null) a.push({ tab: "water", Icon: Thermometer, label: "Lake surface, satellite", value: bay.glseaF, unit: "deg F", sub: `GLSEA whole-bay average${bay.glseaDate ? `, ${bay.glseaDate}` : ""}`, live: true, accent: CAT.fish.color });
+    a.push({ tab: "garden", Icon: Sprout, label: "Soil, 6 inches", value: forecast?.soilF != null ? forecast.soilF : "n/a", unit: "deg F", sub: forecast?.soilF != null ? (forecast.soilF >= 50 ? "active; morels and warm-season planting" : "still cold for warm-season crops") : "unavailable", live: forecast?.soilF != null, accent: CAT.garden.color });
+    a.push({ tab: "garden", Icon: Snowflake, label: "Frost watch", value: forecast?.frost?.length ? forecast.frost[0].low : (forecast?.coldest != null ? forecast.coldest : "n/a"), unit: "deg F low", sub: forecast?.frost?.length ? `frost ${new Date(forecast.frost[0].date).toLocaleDateString("en-US", { weekday: "short" })} night; protect tender plants` : (forecast?.coldest != null ? "no frost in the 7-day outlook" : "unavailable"), live: forecast?.coldest != null, accent: CAT.water.color });
+    if (forecast && forecast.snowDepthIn != null && forecast.snowDepthIn >= 0.5) a.push({ tab: "garden", Icon: Snowflake, label: "Snow on ground", value: forecast.snowDepthIn, unit: "in", sub: "modeled, Open-Meteo", live: true, accent: CAT.water.color });
+    a.push({ tab: "sky", Icon: Sunrise, label: "Daylight", value: forecast?.daylightH != null ? `${Math.floor(forecast.daylightH)}h ${Math.round((forecast.daylightH - Math.floor(forecast.daylightH)) * 60)}m` : "n/a", unit: "", sub: forecast?.daylightH != null ? `${forecast.daylightDeltaMin > 0 ? "+" : ""}${forecast.daylightDeltaMin} min/day${forecast.sunrise ? `, ${forecast.sunrise} to ${forecast.sunset}` : ""}` : "unavailable", live: forecast?.daylightH != null, accent: season.color });
+    a.push({ tab: "trends", Icon: Thermometer, label: "Bay City air, now", value: airF != null ? airF : normToday, unit: "deg F", sub: airF != null ? `current observation${regional.air.forecast ? ", " + regional.air.forecast.toLowerCase() : ""}` : "seasonal normal", live: airF != null, accent: season.color });
+    a.push({ tab: "trends", Icon: Sprout, label: "Degree days, actual", value: actualTotal != null ? actualTotal : gddNow, unit: "GDD50", sub: actualTotal != null ? "observed since Jan 1, Open-Meteo" : "modeled", live: actualTotal != null, accent: CAT.garden.color });
+    a.push({ tab: "trends", Icon: TreePine, label: "Season anomaly", value: gddAnom != null ? (gddAnom >= 0 ? "+" : "") + gddAnom : "0", unit: "GDD vs normal", sub: gddAnom != null ? `about ${Math.abs(daysApprox)} days ${gddAnom >= 0 ? "ahead" : "behind"} normal` : "real degree days pending", live: gddAnom != null, accent: CAT.bird.color });
+    return a;
+  }, [river, airF, normToday, regional, actualTotal, gddNow, gddAnom, daysApprox, forecast, bay, season]);
+  const InstrumentGrid = ({ which }) => {
+    const items = instruments.filter((x) => x.tab === which);
+    if (!items.length) return null;
+    return (
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 12, marginBottom: 18 }}>
+        {items.map((x, i) => <Instrument key={i} Icon={x.Icon} label={x.label} value={x.value} unit={x.unit} sub={x.sub} live={x.live} accent={x.accent} />)}
+      </div>
+    );
+  };
+  const TABS = [["water", "Water & fish"], ["garden", "Garden"], ["sky", "Sky"], ["life", "Life"], ["trends", "Trends"]];
+
   // Filter indicators by activity group (hunt, fish, garden, water, bird)
   const [activeTags, setActiveTags] = useState([...ALL_GROUPS]);
   const filteredIndicators = useMemo(
@@ -409,19 +448,22 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
         {moment && moment.chips.length > 0 && (
           <section style={{ marginTop: 18 }}>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {moment.chips.map((c, i) => (
-                <div key={i} style={{ flex: "1 1 auto", minWidth: 90, border: "1px solid #e4dcc8", borderRadius: 12, padding: "8px 12px", background: "rgba(255,255,255,0.62)", textAlign: "center" }}>
+              {moment.chips.map((c, i) => {
+                const dest = { river: "water", water: "water", heat: "trends", moon: "sky", frost: "garden", day: "sky" }[c.k] || "water";
+                return (
+                <div key={i} onClick={() => pickTab(dest)} style={{ flex: "1 1 auto", minWidth: 90, border: "1px solid #e4dcc8", borderRadius: 12, padding: "8px 12px", background: "rgba(255,255,255,0.62)", textAlign: "center", cursor: "pointer" }}>
                   <div style={{ fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "#9a8f76", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.label}</div>
                   <div style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 19, color: "#2b2a1f", lineHeight: 1.2, whiteSpace: "nowrap" }}>{c.value}{c.unit ? <span style={{ fontSize: 11, color: "#7a7058" }}> {c.unit}</span> : null}</div>
                   <div style={{ fontSize: 10.5, color: "#8a7d62", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.sub}</div>
                 </div>
-              ))}
+                );
+              })}
             </div>
             {(moment.hatching.length > 0 || moment.planting.length > 0 || moment.overhead) && (
               <div style={{ marginTop: 9, fontSize: 13, color: "#5a513c", lineHeight: 1.6, display: "flex", flexWrap: "wrap", gap: "2px 16px" }}>
-                {moment.hatching.length > 0 && <span><Egg size={12} style={{ verticalAlign: "-1px" }} color={CAT.hatch.color} /> <strong style={{ color: "#3a3527" }}>Hatching:</strong> {moment.hatching.join(", ")}</span>}
-                {moment.planting.length > 0 && <span><Sprout size={12} style={{ verticalAlign: "-1px" }} color={CAT.garden.color} /> <strong style={{ color: "#3a3527" }}>Plant now:</strong> {moment.planting.join(", ")}</span>}
-                {moment.overhead && <span><Sparkles size={12} style={{ verticalAlign: "-1px" }} color="#7b6db0" /> <strong style={{ color: "#3a3527" }}>Overhead:</strong> {moment.overhead}</span>}
+                {moment.hatching.length > 0 && <span onClick={() => pickTab("water")} style={{ cursor: "pointer" }}><Egg size={12} style={{ verticalAlign: "-1px" }} color={CAT.hatch.color} /> <strong style={{ color: "#3a3527" }}>Hatching:</strong> {moment.hatching.join(", ")}</span>}
+                {moment.planting.length > 0 && <span onClick={() => pickTab("garden")} style={{ cursor: "pointer" }}><Sprout size={12} style={{ verticalAlign: "-1px" }} color={CAT.garden.color} /> <strong style={{ color: "#3a3527" }}>Plant now:</strong> {moment.planting.join(", ")}</span>}
+                {moment.overhead && <span onClick={() => pickTab("sky")} style={{ cursor: "pointer" }}><Sparkles size={12} style={{ verticalAlign: "-1px" }} color="#7b6db0" /> <strong style={{ color: "#3a3527" }}>Overhead:</strong> {moment.overhead}</span>}
               </div>
             )}
           </section>
@@ -501,44 +543,32 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
           </section>
         )}
 
-        <section style={{ marginTop: 30 }}>
-          <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 10, margin: "0 0 12px" }}>
-            <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>Live instruments</h2>
-            <span style={{ fontSize: 12, color: "#9a8f76", marginLeft: 6 }}>River:</span>
-            {rivers.map((r) => (<button key={r.id} className="pheno-pill" data-on={r.id === riverId ? "1" : "0"} onClick={() => setRiverId(r.id)}>{r.name}</button>))}
-            {river && <span style={{ fontSize: 12, color: "#9a8f76", fontStyle: "italic" }}>{river.note}</span>}
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 14 }}>
-            <Instrument Icon={Droplets} label={`${river ? river.name : "River"} flow`} value={river && river.flow != null ? river.flow : "n/a"} unit="cfs" sub={river && river.flow != null ? `USGS gauge${river.trend && river.trend !== "steady" ? ", " + river.trend : ""}` : "no live reading"} live={!!(river && river.flow != null)} accent={CAT.water.color} />
-            <Instrument Icon={Fish} label="River water" value={river && river.temp != null ? Math.round(cToF(river.temp)) : "n/a"} unit="deg F" sub={river && river.temp != null ? `${river.name}, USGS` : "no temperature sensor on this gauge"} live={!!(river && river.temp != null)} accent={CAT.fish.color} />
-            <Instrument Icon={Thermometer} label="Bay City air, now" value={airF != null ? airF : normToday} unit="deg F" sub={airF != null ? `current observation${regional.air.forecast ? ", " + regional.air.forecast.toLowerCase() : ""}` : "seasonal normal"} live={airF != null} accent={season.color} />
-            <Instrument Icon={Waves} label="Lake Huron level" value={regional.level != null ? regional.level.toFixed(2) : "176.95"} unit="m IGLD" sub={regional.level != null ? "Saginaw Bay, NOAA" : "seasonal normal"} live={regional.level != null} accent={CAT.water.color} />
-            <Instrument Icon={Sprout} label="Degree days, actual" value={actualTotal != null ? actualTotal : gddNow} unit="GDD50" sub={actualTotal != null ? "observed since Jan 1, Open-Meteo" : "modeled"} live={actualTotal != null} accent={CAT.garden.color} />
-            <Instrument Icon={TreePine} label="Season anomaly" value={gddAnom != null ? (gddAnom >= 0 ? "+" : "") + gddAnom : "0"} unit="GDD vs normal" sub={gddAnom != null ? `about ${Math.abs(daysApprox)} days ${gddAnom >= 0 ? "ahead" : "behind"} normal` : "real degree days pending"} live={gddAnom != null} accent={CAT.bird.color} />
-            <Instrument Icon={Sunrise} label="Daylight" value={forecast?.daylightH != null ? `${Math.floor(forecast.daylightH)}h ${Math.round((forecast.daylightH - Math.floor(forecast.daylightH)) * 60)}m` : "n/a"} unit="" sub={forecast?.daylightH != null ? `${forecast.daylightDeltaMin > 0 ? "+" : ""}${forecast.daylightDeltaMin} min/day${forecast.sunrise ? `, ${forecast.sunrise} to ${forecast.sunset}` : ""}` : "unavailable"} live={forecast?.daylightH != null} accent={season.color} />
-            <Instrument Icon={Sprout} label="Soil, 6 inches" value={forecast?.soilF != null ? forecast.soilF : "n/a"} unit="deg F" sub={forecast?.soilF != null ? (forecast.soilF >= 50 ? "active; morels and warm-season planting" : "still cold for warm-season crops") : "unavailable"} live={forecast?.soilF != null} accent={CAT.garden.color} />
-            <Instrument Icon={Snowflake} label="Frost watch" value={forecast?.frost?.length ? forecast.frost[0].low : (forecast?.coldest != null ? forecast.coldest : "n/a")} unit="deg F low" sub={forecast?.frost?.length ? `frost ${new Date(forecast.frost[0].date).toLocaleDateString("en-US", { weekday: "short" })} night; protect tender plants` : (forecast?.coldest != null ? "no frost in the 7-day outlook" : "unavailable")} live={forecast?.coldest != null} accent={CAT.water.color} />
-            {forecast && forecast.snowDepthIn != null && forecast.snowDepthIn >= 0.5 && (
-              <Instrument Icon={Snowflake} label="Snow on ground" value={forecast.snowDepthIn} unit="in" sub="modeled, Open-Meteo" live={true} accent={CAT.water.color} />
-            )}
-            {bay && bay.windMph != null && (
-              <Instrument Icon={Compass} label="Saginaw Bay wind" value={bay.windMph} unit="mph" sub={`out of the ${degToCompass(bay.windDirDeg)}, buoy 45203${bay.waveFt != null ? `, ${bay.waveFt} ft seas` : ""}`} live={true} accent={CAT.water.color} />
-            )}
-            {bay && bay.waterTempF != null && (
-              <Instrument Icon={Waves} label="Bay water, buoy" value={bay.waterTempF} unit="deg F" sub={bay.waterTempF >= 43 && bay.waterTempF <= 50 ? "in the walleye spawn window" : "Saginaw Bay buoy 45203"} live={true} accent={CAT.fish.color} />
-            )}
-            {bay && bay.iceConc != null && bay.iceConc >= 1 ? (
-              <Instrument Icon={Snowflake} label="Bay ice cover" value={Math.round(bay.iceConc)} unit="percent" sub={`Saginaw Bay, GLERL satellite${bay.iceDate ? `, ${bay.iceDate}` : ""}`} live={true} accent={CAT.water.color} />
-            ) : (bay && bay.glseaF != null && (
-              <Instrument Icon={Thermometer} label="Lake surface, satellite" value={bay.glseaF} unit="deg F" sub={`GLSEA whole-bay average${bay.glseaDate ? `, ${bay.glseaDate}` : ""}`} live={true} accent={CAT.fish.color} />
-            ))}
-          </div>
-          <p style={{ fontSize: 11.5, color: "#9a8f76", margin: "12px 2px 0", lineHeight: 1.55 }}>
-            <strong style={{ color: "#7a7058" }}>GDD</strong>, growing degree days: a running tally of heat above 50 degrees F that paces plants and insects. The higher the number, the further along the season. <strong style={{ color: "#7a7058" }}>cfs</strong>: cubic feet per second, the river's flow. <strong style={{ color: "#7a7058" }}>IGLD</strong>: the official Great Lakes height datum, in meters above sea level.
-          </p>
-        </section>
+        <nav id="deck" style={{ position: "sticky", top: 0, zIndex: 30, display: "flex", gap: 5, flexWrap: "wrap", margin: "28px 0 0", padding: "10px 0", background: "rgba(244,240,231,0.94)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", borderBottom: "1px solid #e4dcc8" }}>
+          {TABS.map(([id, label]) => (
+            <button key={id} onClick={() => pickTab(id)} style={{ border: `1px solid ${tab === id ? season.color : "#ddd4be"}`, background: tab === id ? season.color : "transparent", color: tab === id ? "#fff" : "#6a5f4a", borderRadius: 999, padding: "6px 14px", fontSize: 12.5, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>{label}</button>
+          ))}
+        </nav>
 
-        {emergence && emergence.length > 0 && (
+        <div style={{ marginTop: 18 }}>
+          {tab === "water" && (
+            <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 10, margin: "0 0 12px" }}>
+              <span style={{ fontSize: 12, color: "#9a8f76" }}>River:</span>
+              {rivers.map((r) => (<button key={r.id} className="pheno-pill" data-on={r.id === riverId ? "1" : "0"} onClick={() => setRiverId(r.id)}>{r.name}</button>))}
+              {river && <span style={{ fontSize: 12, color: "#9a8f76", fontStyle: "italic" }}>{river.note}</span>}
+            </div>
+          )}
+          {tab === "water" && <InstrumentGrid which="water" />}
+          {tab === "garden" && <InstrumentGrid which="garden" />}
+          {tab === "sky" && <InstrumentGrid which="sky" />}
+          {tab === "trends" && <InstrumentGrid which="trends" />}
+          {tab === "trends" && (
+            <p style={{ fontSize: 11.5, color: "#9a8f76", margin: "0 2px 18px", lineHeight: 1.55 }}>
+              <strong style={{ color: "#7a7058" }}>GDD</strong>, growing degree days: a running tally of heat above 50 degrees F that paces plants and insects. The higher the number, the further along the season. <strong style={{ color: "#7a7058" }}>cfs</strong>: cubic feet per second, the river's flow. <strong style={{ color: "#7a7058" }}>IGLD</strong>: the official Great Lakes height datum, in meters above sea level.
+            </p>
+          )}
+        </div>
+
+        {tab === "water" && emergence && emergence.length > 0 && (
           <section style={{ marginTop: 30 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
               <Egg size={16} color={CAT.hatch.color} />
@@ -565,7 +595,7 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
           </section>
         )}
 
-        {showGarden && (
+        {tab === "garden" && showGarden && (
           <section style={{ marginTop: 30 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
               <Sprout size={16} color={CAT.garden.color} />
@@ -587,7 +617,7 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
           </section>
         )}
 
-        {sky && sky.constellations && sky.constellations.length > 0 && (
+        {tab === "sky" && sky && sky.constellations && sky.constellations.length > 0 && (
           <section style={{ marginTop: 30, background: "linear-gradient(180deg, rgba(28,32,54,0.96), rgba(20,24,44,0.98))", border: "1px solid #2c3457", borderRadius: 14, padding: "18px 20px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
               <Sparkles size={16} color="#cdd6ff" />
@@ -615,7 +645,7 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
           </section>
         )}
 
-        {gddHistory && (
+        {tab === "trends" && gddHistory && (
           <section style={{ marginTop: 18, background: "rgba(255,255,255,0.5)", border: "1px solid #e4dcc8", borderRadius: 14, padding: "16px 20px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
               <BarChart3 size={16} color={CAT.garden.color} />
@@ -633,6 +663,7 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
           </section>
         )}
 
+        {tab === "trends" && (
         <section style={{ marginTop: 18, background: "rgba(255,255,255,0.5)", border: "1px solid #e4dcc8", borderRadius: 14, padding: "16px 20px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
             <Feather size={16} color={CAT.wild.color} />
@@ -663,8 +694,10 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
             </>
           )}
         </section>
+        )}
 
-        <section className="pheno-2col-b" style={{ marginTop: 30 }}>
+        {tab === "trends" && (
+        <section style={{ marginTop: 30 }}>
           <div style={{ background: "rgba(255,255,255,0.4)", border: "1px solid #e4dcc8", borderRadius: 18, padding: "18px 14px 8px" }}>
             <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: "0 0 6px", paddingLeft: 6 }}>Degree day accumulation</h2>
             <div style={{ display: "flex", gap: 16, paddingLeft: 6, marginBottom: 8, fontSize: 11.5, color: "#9a8f76" }}>
@@ -686,6 +719,11 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
               ) : <div style={{ height: "100%" }} />}
             </div>
           </div>
+        </section>
+        )}
+
+        {tab === "life" && (
+        <section style={{ marginTop: 30 }}>
           <div style={{ background: "rgba(255,255,255,0.4)", border: "1px solid #e4dcc8", borderRadius: 18, padding: "16px 18px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
               <Bird size={16} color={CAT.bird.color} />
@@ -700,8 +738,9 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
             )) : <div style={{ fontSize: 12.5, color: "#9a8f76", padding: "6px 0" }}>No notable reports in the last ten days. Check back during a migration wave.</div>}
           </div>
         </section>
+        )}
 
-        {inat && inat.length > 0 && (
+        {tab === "life" && inat && inat.length > 0 && (
           <section style={{ marginTop: 30 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
               <Feather size={16} color={CAT.wild.color} />
@@ -720,7 +759,7 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
           </section>
         )}
 
-        {observations && observations.length > 0 && (
+        {tab === "life" && observations && observations.length > 0 && (
           <section style={{ marginTop: 30 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
               <Sprout size={16} color={CAT.garden.color} />
