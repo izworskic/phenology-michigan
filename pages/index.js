@@ -4,7 +4,7 @@ import { LineChart, Line, XAxis, YAxis, ReferenceLine, ResponsiveContainer, Tool
 import { Bird, Fish, Flower2, Waves, Thermometer, Sprout, Egg, TreePine, Feather, Compass, Droplets, X, Sunrise, Snowflake, Sparkles, Link2, BarChart3, ArrowRight, Target, Check, Clock, Leaf } from "lucide-react";
 import {
   dayOfYear, normalMeanF, gddSeries, EVENTS, CAT, seasonOf, classify, RIVERS, moonPhase,
-  MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring, emergenceForecast, gardenWindow, LAST_FROST_DOY, FIRST_FROST_DOY, huntingForecast, rutClock, fallColor,
+  MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring, emergenceForecast, gardenWindow, LAST_FROST_DOY, FIRST_FROST_DOY, huntingForecast, rutClock, fallColor, bayHatch,
 } from "../lib/phenology";
 import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory, fetchBuoy, fetchAlerts, fetchRiverForecast, fetchAurora, withTimeout } from "../lib/sources";
 import { readHistory } from "../lib/history";
@@ -381,6 +381,7 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
   const hunting = useMemo(() => huntingForecast(doy), [doy]);
   const rut = useMemo(() => rutClock(doy), [doy]);
   const fallColorNow = useMemo(() => fallColor(doy), [doy]);
+  const bayHatches = useMemo(() => bayHatch(doy, bay && bay.waterTempF != null ? bay.waterTempF : null), [doy, bay]);
   const legal = useMemo(() => {
     if (!forecast || !forecast.sunriseISO || !forecast.sunsetISO) return null;
     const shift = (iso, delta) => {
@@ -666,6 +667,25 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
                   </div>
                 );
               })}
+            </div>
+          </section>
+        )}
+
+        {tab === "water" && bayHatches.length > 0 && (
+          <section style={{ marginTop: 18, background: "linear-gradient(180deg, rgba(63,125,140,0.06), rgba(63,125,140,0.12))", border: "1px solid #b9d2d8", borderLeft: "4px solid #3f7d8c", borderRadius: 14, padding: "16px 20px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <Waves size={16} color="#3f7d8c" />
+              <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#356470", margin: 0 }}>Saginaw Bay hatches</h2>
+            </div>
+            <p style={{ fontSize: 12, color: "#5f8088", margin: "0 0 12px", fontStyle: "italic" }}>The bay's warmwater emergences, keyed to the buoy water temperature. The Hex is the big one, and the walleye and perch feed on all of it.</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
+              {bayHatches.map((h, i) => (
+                <div key={i} style={{ border: `1px solid ${h.ready ? "#8fc0bf" : "#cfe0e2"}`, background: h.ready ? "rgba(228,243,242,0.6)" : "rgba(255,255,255,0.45)", borderRadius: 12, padding: "11px 14px" }}>
+                  <div style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 16, color: "#2b2a1f" }}>{h.name}</div>
+                  <div style={{ fontSize: 12.5, fontWeight: 600, color: h.ready ? "#2f7a6e" : "#5f8088", margin: "2px 0" }}>{h.status}{h.water ? <span style={{ fontWeight: 400, color: "#7a9aa0" }}> , {h.water}</span> : null}</div>
+                  <div style={{ fontSize: 11.5, color: "#7a9098", lineHeight: 1.45 }}>{h.note}</div>
+                </div>
+              ))}
             </div>
           </section>
         )}
