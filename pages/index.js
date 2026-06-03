@@ -195,21 +195,41 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
 
   // ---- The read: deterministic synthesis across the streams ----
   const read = useMemo(() => {
-    const a = rivers.find((r) => r.id === "ausable") || {};
     const parts = [];
-    // river hydrology and temperature
-    if (a.flow != null) {
-      let flowCtx = "";
-      if (stats?.medianFlow) {
-        const ratio = a.flow / stats.medianFlow;
-        flowCtx = ratio > 1.3 ? `, running high against the ${stats.medianFlow} cfs median for the date` : ratio < 0.7 ? `, thin against the ${stats.medianFlow} cfs median for the date` : `, near the ${stats.medianFlow} cfs median for the date`;
+    // Lead with Saginaw Bay, the home water.
+    if (bay && bay.iceConc != null && bay.iceConc >= 5) {
+      parts.push(`Saginaw Bay is ${Math.round(bay.iceConc)} percent ice covered${bay.windMph != null ? `, wind ${bay.windMph} mph out of the ${degToCompass(bay.windDirDeg)}` : ""}, a hard-water and shoreline season.`);
+    } else if (bay && bay.waterTempF != null) {
+      const windTxt = bay.windMph != null ? `, ${bay.windMph} mph out of the ${degToCompass(bay.windDirDeg)}${bay.waveFt != null ? ` and ${bay.waveFt}-foot chop` : ""}` : "";
+      let fishTxt = "";
+      if (doy >= 105 && doy <= 140) fishTxt = " The walleye are on the spawning run in the rivers and the shallows.";
+      else if (doy >= 195 && doy <= 245) fishTxt = " Summer heat has the walleye deep; work the structure early and late.";
+      else if (doy >= 260 && doy <= 312) fishTxt = " The walleye are feeding up shallow as the water cools, the second run of the year.";
+      else if (bay.waterTempF >= 60) fishTxt = " Good water for getting the kayak out along the beach.";
+      parts.push(`Saginaw Bay is ${bay.waterTempF} degrees${windTxt}.${fishTxt}`);
+    } else if (bay && bay.glseaF != null) {
+      parts.push(`Saginaw Bay's surface is about ${bay.glseaF} degrees by satellite.`);
+    }
+    // Bay hatches: the lake flies and the Hex.
+    const bh = bayHatch(doy, bay && bay.waterTempF != null ? bay.waterTempF : null);
+    const bhOn = bh.filter((x) => x.ready).map((x) => x.name.replace(/,.*$/, ""));
+    const hexBay = bh.find((x) => /hex/i.test(x.name));
+    if (bhOn.length) parts.push(`The ${bhOn.join(" and ")} ${bhOn.length === 1 ? "is" : "are"} coming off the bay${hexBay && hexBay.ready ? ", and the walleye and perch are gorging on it" : ""}.`);
+    else if (hexBay && !hexBay.ready && /days out/.test(hexBay.status)) parts.push(`The Hex on the bay is ${hexBay.status}.`);
+    // Local rivers: Kawkawlin a half mile down the shore, Saginaw up the way.
+    const sag = rivers.find((r) => r.id === "saginaw") || {};
+    if (sag.flow != null) {
+      parts.push(`The Kawkawlin reaches the bay a half mile down the shore, and the Saginaw River up the way is running ${sag.flow} cfs${sag.trend && sag.trend !== "steady" ? `, ${sag.trend}` : ""}.`);
+    }
+    // The AuSable, the occasional trip north, only in trout-relevant seasons.
+    if ((doy >= 100 && doy <= 195) || (doy >= 255 && doy <= 300)) {
+      const a = rivers.find((r) => r.id === "ausable") || {};
+      if (a.flow != null) {
+        const t = a.temp != null ? `${Math.round(cToF(a.temp))} degrees` : "no posted water temperature";
+        let tempCtx = "";
+        if (a.temp != null) { const f = cToF(a.temp); tempCtx = f < 50 ? ", still cold" : f <= 65 ? ", in the trout window" : ", on the warm edge"; }
+        parts.push(`If you make the run up to the AuSable, it is at ${a.flow} cfs and ${t}${tempCtx}.`);
       }
-      let tempCtx = "";
-      if (a.temp != null) {
-        const f = cToF(a.temp);
-        tempCtx = f < 50 ? " The water is still cold, so fish are sluggish and midday is your window." : f < 58 ? " The water is warming into the trout window." : f <= 65 ? " The water sits in the prime window, so hatches and rises should come on the evening." : f <= 68 ? " The water is on the warm edge; fish early and late and handle fish quickly." : " The water is stressfully warm; back off the trout and consider cooler tailwater or a different target.";
-      }
-      parts.push(`The AuSable is at ${a.flow} cfs${flowCtx}${a.trend && a.trend !== "steady" ? `, ${a.trend} over the past two days` : ""}, and ${a.temp != null ? Math.round(cToF(a.temp)) + " degrees F." : "no live water temperature is posting."}${tempCtx}`);
     }
     // NWS river forecast, only when one is active (high-water events)
     if (riverForecast && riverForecast.active) {
@@ -276,15 +296,20 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
       const dt = new Date(f.date).toLocaleDateString("en-US", { weekday: "long" });
       parts.push(`Frost is in the outlook: ${f.low} degrees ${dt} night. Cover or bring in tender plants.`);
     }
+    // Hunting near Pinconning, fifteen miles up, in season.
+    if (doy >= 274 && doy <= 350) {
+      const rc = rutClock(doy);
+      if (rc.phase) parts.push(`Out at Pinconning, the deer are in the ${rc.phase}.`);
+      else if (doy <= 320) parts.push(`Out at Pinconning, the deer seasons are open and the rut is building.`);
+    } else if (doy >= 110 && doy <= 140) {
+      parts.push(`Spring turkey is on out around Pinconning.`);
+    }
     // birds
     if (birds.length) {
       const names = birds.slice(0, 2).map((b) => b.comName).join(" and ");
       parts.push(`On the bay, ${birds.length} notable ${birds.length === 1 ? "bird is" : "birds are"} being reported, including ${names}.`);
     }
-    // Saginaw Bay ice (winter signal) and drought context, each only when it has something to say
-    if (bay && bay.iceConc != null && bay.iceConc >= 5) {
-      parts.push(`Saginaw Bay is ${Math.round(bay.iceConc)} percent ice covered.`);
-    }
+    // drought context, only when it has something to say (bay ice is covered in the lead)
     if (drought && drought.label && drought.label !== "no drought") {
       parts.push(`Bay County is in ${drought.label} on the latest Drought Monitor.`);
     }
