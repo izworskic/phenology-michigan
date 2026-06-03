@@ -1,7 +1,7 @@
 import Head from "next/head";
 import { useState, useEffect, useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, ReferenceLine, ResponsiveContainer, Tooltip } from "recharts";
-import { Bird, Fish, Flower2, Waves, Thermometer, Sprout, Egg, TreePine, Feather, Compass, Droplets, X, Sunrise, Snowflake, Sparkles, Link2, BarChart3, ArrowRight, Target, Check, Clock, Leaf } from "lucide-react";
+import { Bird, Fish, Flower2, Waves, Thermometer, Sprout, Egg, TreePine, Feather, Compass, Droplets, X, Sunrise, Snowflake, Sparkles, Link2, BarChart3, ArrowRight, Target, Check, Clock, Leaf, ChevronRight } from "lucide-react";
 import {
   dayOfYear, normalMeanF, gddSeries, EVENTS, CAT, seasonOf, classify, RIVERS, moonPhase,
   MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring, emergenceForecast, gardenWindow, LAST_FROST_DOY, FIRST_FROST_DOY, huntingForecast, rutClock, fallColor, bayHatch,
@@ -89,15 +89,15 @@ function Instrument({ Icon, label, value, unit, sub, live, accent }) {
   );
 }
 
-function EventRow({ ev, doy, state }) {
+function EventRow({ ev, doy, state, onSelect }) {
   const C = CAT[ev.cat]; const Icon = CAT_ICON[ev.cat];
   const tag = state === "active" ? "now" : state === "imminent" ? `${ev.s - doy} d` : `${doy - ev.e} d ago`;
   const tagColor = state === "active" ? "#5a8a4a" : state === "imminent" ? "#b08828" : "#a89c83";
   return (
-    <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "9px 0", borderBottom: "1px solid #ece4d2" }}>
+    <div onClick={onSelect ? () => onSelect(ev) : undefined} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "9px 0", borderBottom: "1px solid #ece4d2", cursor: onSelect ? "pointer" : "default" }}>
       <div style={{ width: 26, height: 26, borderRadius: 8, background: C.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}><Icon size={15} color="#fff" /></div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}><span style={{ fontFamily: "Georgia, serif", fontSize: 14.5, color: "#2b2a1f", overflowWrap: "anywhere" }}>{ev.name}</span><span style={{ marginLeft: "auto", fontSize: 11, color: tagColor, whiteSpace: "nowrap" }}>{tag}</span></div>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}><span style={{ fontFamily: "Georgia, serif", fontSize: 14.5, color: "#2b2a1f", overflowWrap: "anywhere" }}>{ev.name}</span><span style={{ marginLeft: "auto", fontSize: 11, color: tagColor, whiteSpace: "nowrap" }}>{tag}</span>{onSelect && <ChevronRight size={15} color="#c4b896" style={{ flexShrink: 0, alignSelf: "center" }} />}</div>
         <div style={{ fontSize: 12, color: "#9a8f76", lineHeight: 1.35 }}>{ev.note}</div>
       </div>
     </div>
@@ -603,9 +603,9 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
           </div>
           <div>
             <h2 style={{ fontSize: 17, margin: "2px 0 8px", color: season.color }}>Happening now</h2>
-            {active.length ? active.map((ev, i) => <EventRow key={i} ev={ev} doy={doy} state="active" />) : <div style={{ fontSize: 13, color: "#9a8f76", padding: "8px 0" }}>A quiet stretch on the calendar.</div>}
-            {imminent.length > 0 && <><h2 style={{ fontSize: 17, margin: "20px 0 8px", color: "#b08828" }}>Next three weeks</h2>{imminent.map((ev, i) => <EventRow key={i} ev={ev} doy={doy} state="imminent" />)}</>}
-            {recent.length > 0 && <><h2 style={{ fontSize: 17, margin: "20px 0 8px", color: "#a89c83" }}>Just past</h2>{recent.map((ev, i) => <EventRow key={i} ev={ev} doy={doy} state="recent" />)}</>}
+            {active.length ? active.map((ev, i) => <EventRow key={i} ev={ev} doy={doy} state="active" onSelect={setSel} />) : <div style={{ fontSize: 13, color: "#9a8f76", padding: "8px 0" }}>A quiet stretch on the calendar.</div>}
+            {imminent.length > 0 && <><h2 style={{ fontSize: 17, margin: "20px 0 8px", color: "#b08828" }}>Next three weeks</h2>{imminent.map((ev, i) => <EventRow key={i} ev={ev} doy={doy} state="imminent" onSelect={setSel} />)}</>}
+            {recent.length > 0 && <><h2 style={{ fontSize: 17, margin: "20px 0 8px", color: "#a89c83" }}>Just past</h2>{recent.map((ev, i) => <EventRow key={i} ev={ev} doy={doy} state="recent" onSelect={setSel} />)}</>}
           </div>
         </section>
 
