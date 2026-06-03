@@ -219,7 +219,8 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
     // Local rivers: Kawkawlin a half mile down the shore, Saginaw up the way.
     const sag = rivers.find((r) => r.id === "saginaw") || {};
     if (sag.flow != null) {
-      parts.push(`The Kawkawlin reaches the bay a half mile down the shore, and the Saginaw River up the way is running ${sag.flow} cfs${sag.trend && sag.trend !== "steady" ? `, ${sag.trend}` : ""}.`);
+      const sagTxt = sag.flow < 50 ? "running slack, pushed around by the bay's wind and seiche" : `running ${sag.flow} cfs${sag.trend && sag.trend !== "steady" ? `, ${sag.trend}` : ""}`;
+      parts.push(`The Kawkawlin reaches the bay a half mile down the shore, and the Saginaw River up the way is ${sagTxt}.`);
     }
     // The AuSable, the occasional trip north, only in trout-relevant seasons.
     if ((doy >= 100 && doy <= 195) || (doy >= 255 && doy <= 300)) {
