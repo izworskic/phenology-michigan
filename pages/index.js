@@ -196,6 +196,11 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
   // ---- The read: deterministic synthesis across the streams ----
   const read = useMemo(() => {
     const parts = [];
+    // The hottest thing leads. When a marquee event is on (the Hex coming off the bay, the rut
+    // moving at Pinconning), its sentence is hoisted to the front of the read; otherwise the
+    // read keeps its bay-first order.
+    let hotIdx = null;
+    const markHot = () => { if (hotIdx == null) hotIdx = parts.length - 1; };
     // Lead with Saginaw Bay, the home water.
     if (bay && bay.iceConc != null && bay.iceConc >= 5) {
       parts.push(`Saginaw Bay is ${Math.round(bay.iceConc)} percent ice covered${bay.windMph != null ? `, wind ${bay.windMph} mph out of the ${degToCompass(bay.windDirDeg)}` : ""}, a hard-water and shoreline season.`);
@@ -214,7 +219,7 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
     const bh = bayHatch(doy, bay && bay.waterTempF != null ? bay.waterTempF : null);
     const bhOn = bh.filter((x) => x.ready).map((x) => x.name.replace(/,.*$/, ""));
     const hexBay = bh.find((x) => /hex/i.test(x.name));
-    if (bhOn.length) parts.push(`The ${bhOn.join(" and ")} ${bhOn.length === 1 ? "is" : "are"} coming off the bay${hexBay && hexBay.ready ? ", and the walleye and perch are gorging on it" : ""}.`);
+    if (bhOn.length) { parts.push(`The ${bhOn.join(" and ")} ${bhOn.length === 1 ? "is" : "are"} coming off the bay${hexBay && hexBay.ready ? ", and the walleye and perch are gorging on it" : ""}.`); if (hexBay && hexBay.ready) markHot(); }
     else if (hexBay && !hexBay.ready && /days out/.test(hexBay.status)) parts.push(`The Hex on the bay is ${hexBay.status}.`);
     // Local rivers: Kawkawlin a half mile down the shore, Saginaw up the way.
     const sag = rivers.find((r) => r.id === "saginaw") || {};
@@ -300,7 +305,7 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
     // Hunting near Pinconning, fifteen miles up, in season.
     if (doy >= 274 && doy <= 350) {
       const rc = rutClock(doy);
-      if (rc.phase) parts.push(`Out at Pinconning, the deer are in the ${rc.phase}.`);
+      if (rc.phase) { parts.push(`Out at Pinconning, the deer are in the ${rc.phase}.`); if (/seeking|chasing|peak rut/.test(rc.phase)) markHot(); }
       else if (doy <= 320) parts.push(`Out at Pinconning, the deer seasons are open and the rut is building.`);
     } else if (doy >= 110 && doy <= 140) {
       parts.push(`Spring turkey is on out around Pinconning.`);
@@ -314,6 +319,7 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
     if (drought && drought.label && drought.label !== "no drought") {
       parts.push(`Bay County is in ${drought.label} on the latest Drought Monitor.`);
     }
+    if (hotIdx != null && hotIdx > 0) { const [hot] = parts.splice(hotIdx, 1); parts.unshift(hot); }
     return parts.join(" ");
   }, [rivers, stats, gddAnom, daysApprox, actualTotal, gddNow, thresholds, doy, birds, forecast, springIndex, bay, drought, riverForecast]);
 
@@ -334,6 +340,10 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
     return gardenWindow(doy, forecast?.soilF ?? null, frostClear);
   }, [forecast, doy]);
   const showGarden = garden.length > 0;
+
+  // Bay hatches computed ahead of the moment so the Hex and the lake flies can surface
+  // in the top highlight line the moment the buoy water temp says they are on.
+  const bayHatches = useMemo(() => bayHatch(doy, bay && bay.waterTempF != null ? bay.waterTempF : null), [doy, bay]);
 
   // Stage one of the at-a-glance redesign: a compact "moment" derived from values already computed.
   // A row of live chips plus a one-line highlight of what is hatching, plantable, and overhead.
@@ -356,13 +366,15 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
       const h = Math.floor(forecast.daylightH), m = Math.round((forecast.daylightH - h) * 60);
       chips.push({ k: "day", label: "Daylight", value: `${h}:${String(m).padStart(2, "0")}`, unit: "", sub: forecast.daylightDeltaMin != null ? `${forecast.daylightDeltaMin > 0 ? "+" : ""}${forecast.daylightDeltaMin} min/day` : "" });
     }
-    const hatching = (emergence || []).filter((e) => e.phase === "on").slice(0, 3).map((e) => e.name);
+    const riverHatching = (emergence || []).filter((e) => e.phase === "on").map((e) => e.name);
+    const bayOn = (bayHatches || []).filter((b) => b.ready).map((b) => `${b.name.replace(/,.*$/, "")} (bay)`);
+    const hatching = [...bayOn, ...riverHatching].slice(0, 3);
     const planting = (garden || []).filter((g) => g.ready).slice(0, 3).map((g) => g.name);
     const overhead = sky && sky.constellations && sky.constellations.length ? sky.constellations[0].name : null;
     const fc = fallColor(doy);
     const color = fc ? fc.stage : null;
     return { chips, hatching, planting, overhead, color };
-  }, [river, bay, daysApprox, actualTotal, sky, forecast, emergence, garden, doy]);
+  }, [river, bay, daysApprox, actualTotal, sky, forecast, emergence, garden, doy, bayHatches]);
 
   // Stage two: tabbed detail deck. One panel shows at a time so each is a short screen.
   const [tab, setTab] = useState("water");
@@ -407,7 +419,6 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
   const hunting = useMemo(() => huntingForecast(doy), [doy]);
   const rut = useMemo(() => rutClock(doy), [doy]);
   const fallColorNow = useMemo(() => fallColor(doy), [doy]);
-  const bayHatches = useMemo(() => bayHatch(doy, bay && bay.waterTempF != null ? bay.waterTempF : null), [doy, bay]);
   const legal = useMemo(() => {
     if (!forecast || !forecast.sunriseISO || !forecast.sunsetISO) return null;
     const shift = (iso, delta) => {
@@ -500,9 +511,29 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
   const bankTrend = useMemo(() => history.filter((h) => h.gdd != null).slice(-60).map((h) => ({ doy: h.doy, gdd: h.gdd })), [history]);
 
   const personLd = {
-    "@context": "https://schema.org", "@type": "WebSite", name: "Michigan Phenology", url: SITE,
-    description: "A real-time phenology dashboard for Saginaw Bay and northeastern Michigan, with interpreted river, hatch, bird, and growing degree day conditions.",
-    author: { "@type": "Person", name: "Chris Izworski", url: "https://chrisizworski.com", sameAs: ["https://chrisizworski.com", "https://michigantroutreport.com/chris-izworski/", "https://michiganbirdingreport.com/chris-izworski", "https://greatlakeslevels.org", "https://github.com/izworskic", "https://www.youtube.com/@izworskic", "https://www.wikidata.org/wiki/Q138283432"] },
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite", "@id": SITE + "/#website", name: "Michigan Phenology", url: SITE,
+        description: "A real-time phenology dashboard for Saginaw Bay and northeastern Michigan, with interpreted river, hatch, bird, and growing degree day conditions.",
+        author: { "@id": SITE + "/#person" },
+      },
+      {
+        "@type": "WebPage", "@id": SITE + "/#webpage", url: SITE + "/", isPartOf: { "@id": SITE + "/#website" },
+        name: "Michigan Phenology by Chris Izworski: Saginaw Bay and the AuSable in Real Time",
+        description: "An interpreted real-time read on the natural year across Saginaw Bay and northeastern Michigan: live river conditions, projected hatches, bird movement, and growing degree days, by Chris Izworski.",
+        author: { "@id": SITE + "/#person" }, primaryImageOfPage: SITE + "/og-card.png", inLanguage: "en-US",
+        breadcrumb: { "@id": SITE + "/#breadcrumb" },
+      },
+      {
+        "@type": "BreadcrumbList", "@id": SITE + "/#breadcrumb",
+        itemListElement: [{ "@type": "ListItem", position: 1, name: "Michigan Phenology", item: SITE + "/" }],
+      },
+      {
+        "@type": "Person", "@id": SITE + "/#person", name: "Chris Izworski", url: "https://chrisizworski.com",
+        sameAs: ["https://chrisizworski.com", "https://michigantroutreport.com/chris-izworski/", "https://michiganbirdingreport.com/chris-izworski", "https://greatlakeslevels.org", "https://github.com/izworskic", "https://www.youtube.com/@izworskic", "https://www.wikidata.org/wiki/Q138283432"],
+      },
+    ],
   };
 
   return (
@@ -514,6 +545,13 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
         <meta property="og:title" content="Michigan Phenology by Chris Izworski" />
         <meta property="og:description" content="The natural year of Saginaw Bay and the AuSable, interpreted in real time." />
         <meta property="og:url" content={SITE + "/"} /><meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Michigan Phenology" />
+        <meta property="og:image" content={SITE + "/og-card.png"} />
+        <meta property="og:image:width" content="1200" /><meta property="og:image:height" content="630" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Michigan Phenology by Chris Izworski" />
+        <meta name="twitter:description" content="The natural year of Saginaw Bay and the AuSable, interpreted in real time." />
+        <meta name="twitter:image" content={SITE + "/og-card.png"} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(personLd) }} />
       </Head>
 
@@ -990,14 +1028,23 @@ export async function getServerSideProps({ res }) {
   // Live sources change through the day and are fetched every load. Daily-cadence signals
   // (spring index, observations, iNaturalist, drought, ice, lake-surface temp) are read once
   // from the banked bundle the cron refreshes daily, so the page makes one cheap call for all of them.
-  const [regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, buoy, alerts, signals] = await Promise.all([
-    fetchRegional(), fetchRivers(), fetchGddActual(), fetchBirds(), fetchAusableStats(), fetchForecast(), fetchGddHistory(), readHistory(),
+  // Every source is timeout-guarded so no single hung upstream can stall the page,
+  // and everything runs in one parallel batch so worst-case latency is one timeout, not several.
+  const [regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, buoy, alerts, signals, riverForecast, aurora] = await Promise.all([
+    T(fetchRegional(), { air: { tempF: null, forecast: null }, level: null }),
+    T(fetchRivers(), []),
+    T(fetchGddActual(), null),
+    T(fetchBirds(), []),
+    T(fetchAusableStats(), { medianFlow: null }),
+    T(fetchForecast(), { soilF: null, daylightH: null, daylightDeltaMin: null, sunrise: null, sunset: null, lows: [], frost: [], coldest: null, windSpeedMph: null, windDirDeg: null, snowDepthIn: null }),
+    T(fetchGddHistory(), null),
+    T(readHistory(), []),
     T(fetchBuoy(), { windDirDeg: null, windMph: null, waterTempF: null, airTempF: null, waveFt: null }),
     T(fetchAlerts(), []),
     T(readSignals(), null),
+    T(fetchRiverForecast(), { active: false }),
+    T(fetchAurora(), { kpNow: null, kpPeak: null, kpPeakTime: null, ovationBay: null, ovationNorth: null }),
   ]);
-  const riverForecast = await T(fetchRiverForecast(), { active: false });
-  const aurora = await T(fetchAurora(), { kpNow: null, kpPeak: null, kpPeakTime: null, ovationBay: null, ovationNorth: null });
   const sig = signals || emptySignals();
   const bay = { ...buoy, ...(sig.bayDaily || {}) };
   const sky = skyTonight(43.5945, -83.8889, now);

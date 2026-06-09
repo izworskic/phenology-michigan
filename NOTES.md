@@ -54,6 +54,14 @@ Env vars set in Vercel: GH_TOKEN (snapshot + signals writes), CRON_SECRET, EBIRD
 - Connections in play: the active phenology signals and what each points to, with live-sensor confirmation chips where there is a measurable driver (forsythia/lilac/etc. vs soil temp; walleye/trout/firefly vs water temp; frost vs the outlook). The intro counts how many are backed by today's readings.
 - The wheel and the three lists (Happening now / Next three weeks / Just past) are all clickable and open the EventPopout: status, window dates, description, the signal correlation, and what it runs with.
 
+## June 9 2026 hardening and polish
+
+- SSR resilience: every source in getServerSideProps is now timeout-guarded (8s) with a shape-matched fallback, and riverForecast plus aurora moved into the single parallel batch. Worst case is one timeout, not a hung page or serial stacking.
+- The read now hoists the hottest sentence to the lead: the Hex coming off the bay, or the rut at Pinconning from seeking through peak. Otherwise the bay-first order stands. (Was an offered-not-built item; now built.)
+- Bay hatches surface in the moment highlight: bayHatches is computed before the moment useMemo, and ready bay hatches join the Hatching line tagged "(bay)", listed first.
+- Social cards: static /og-card.png (1200x630, parchment aesthetic, season wheel motif), og:image and twitter:card meta added. Static file, no runtime cost.
+- JSON-LD expanded to the domain-playbook @graph: WebSite + WebPage + BreadcrumbList + Person with sameAs cluster.
+
 ## Recently added phenology
 
 - Trees flowering: red and silver maple, willow catkins, aspen catkins, black cherry, oak catkins (tagged to fishing, runs with morels and the Hendrickson), white pine pollen, basswood.
@@ -66,8 +74,6 @@ Env vars set in Vercel: GH_TOKEN (snapshot + signals writes), CRON_SECRET, EBIRD
 
 - Frost dates drive the whole garden window. LAST_FROST_DOY and FIRST_FROST_DOY in lib/phenology.js are regional averages (about May 15 and Oct 5). The bay likely runs a little different. Set the owner's real dates and every window shifts.
 - Fall color peak is set to about Oct 15 (doy 288) for the bay in fallColor(). Confirm against a real season and nudge.
-- Offered but not built: have the read REORDER so the hottest thing leads (the Hex during the hatch, the rut in November) rather than a fixed order.
-- Offered but not built: surface the bay Hex in the moment highlight up top when it is on (needs the bay hatch computed before the moment useMemo).
 - Offered but not built: draw correlation lines on the wheel between dots that share a driver.
 - Localization to any Michigan address was discussed and deferred. Lookups verified (zip to lat/lon, USGS nearest gauges, FCC county, NWS zone).
 
