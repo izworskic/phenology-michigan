@@ -1,0 +1,13 @@
+# Michigan Phenology
+> A real-time phenology dashboard for Saginaw Bay and northeastern Michigan by Chris Izworski: live river conditions, projected hatches, bird movement, growing degree days, aurora, and the garden, interpreted as one natural year.
+
+All insights are computed from live sources (USGS, NWS, NOAA, eBird, Open-Meteo, NDBC buoys), not generated text.
+
+## Key sections
+- [Dashboard](https://phenology.chrisizworski.com/): the moment, the read, and the season wheel
+- Water: Au Sable and Rifle river conditions, Saginaw Bay buoy, bay hatches
+- Land: growing degree days, garden windows, frost outlook
+- Sky: daylight, aurora Kp, moon
+
+## Author
+Chris Izworski (https://chrisizworski.com), Michigan outdoor writer and trout angler. Related sites: Michigan Trout Report (https://michigantroutreport.com), Michigan Trout Daily (https://daily.michigantroutreport.com), Michigan Birding Report (https://michiganbirdingreport.com), Great Lakes Levels (https://greatlakeslevels.org).
