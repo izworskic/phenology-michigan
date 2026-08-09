@@ -7,7 +7,7 @@ import {
   MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring, emergenceForecast, gardenWindow, LAST_FROST_DOY, FIRST_FROST_DOY, huntingForecast, rutClock, fallColor, bayHatch,
 } from "../lib/phenology";
 import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory, fetchBuoy, fetchAlerts, fetchRiverForecast, fetchAurora, withTimeout } from "../lib/sources";
-import { readHistory } from "../lib/history";
+import { readHistory, readAlmanac } from "../lib/history";
 import { readSignals, emptySignals } from "../lib/signals";
 import { skyTonight } from "../lib/sky";
 
@@ -171,7 +171,7 @@ const SIGNAL_CHECKS = {
   "First hard frost": { kind: "frost" },
 };
 
-export default function Home({ regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt }) {
+export default function Home({ almanac, regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt }) {
   const [mounted, setMounted] = useState(false);
   const [riverId, setRiverId] = useState("ausable");
   const [sel, setSel] = useState(null);
@@ -640,6 +640,16 @@ export default function Home({ regional, rivers, gddActual, birds, stats, foreca
             </div>
           </div>
           <div>
+            {almanac && almanac.text && (
+              <div style={{ margin: "0 0 22px", padding: "16px 18px", background: "#fbf9f4", border: "1px solid #e6e0d2", borderRadius: 8 }}>
+                <h2 style={{ fontSize: 17, margin: "0 0 2px", color: season.color }}>The almanac</h2>
+                <p style={{ fontSize: 11.5, margin: "0 0 10px", color: "#9a8f76", letterSpacing: ".02em" }}>
+                  Where the year stands, read from the day&apos;s numbers and the calendar. Written each morning, kept as a record. Not a field report.
+                </p>
+                <p style={{ fontSize: 15, lineHeight: 1.62, margin: 0, color: "#3c3a33" }}>{almanac.text}</p>
+                <p style={{ fontSize: 11.5, margin: "10px 0 0", color: "#9a8f76" }}>{almanac.date}</p>
+              </div>
+            )}
             <h2 style={{ fontSize: 17, margin: "2px 0 8px", color: season.color }}>Happening now</h2>
             {active.length ? active.map((ev, i) => <EventRow key={i} ev={ev} doy={doy} state="active" onSelect={setSel} />) : <div style={{ fontSize: 13, color: "#9a8f76", padding: "8px 0" }}>A quiet stretch on the calendar.</div>}
             {imminent.length > 0 && <><h2 style={{ fontSize: 17, margin: "20px 0 8px", color: "#b08828" }}>Next three weeks</h2>{imminent.map((ev, i) => <EventRow key={i} ev={ev} doy={doy} state="imminent" onSelect={setSel} />)}</>}
@@ -1030,7 +1040,7 @@ export async function getServerSideProps({ res }) {
   // from the banked bundle the cron refreshes daily, so the page makes one cheap call for all of them.
   // Every source is timeout-guarded so no single hung upstream can stall the page,
   // and everything runs in one parallel batch so worst-case latency is one timeout, not several.
-  const [regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, buoy, alerts, signals, riverForecast, aurora] = await Promise.all([
+  const [regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, almanacRows, buoy, alerts, signals, riverForecast, aurora] = await Promise.all([
     T(fetchRegional(), { air: { tempF: null, forecast: null }, level: null }),
     T(fetchRivers(), []),
     T(fetchGddActual(), null),
@@ -1039,6 +1049,7 @@ export async function getServerSideProps({ res }) {
     T(fetchForecast(), { soilF: null, daylightH: null, daylightDeltaMin: null, sunrise: null, sunset: null, lows: [], frost: [], coldest: null, windSpeedMph: null, windDirDeg: null, snowDepthIn: null }),
     T(fetchGddHistory(), null),
     T(readHistory(), []),
+    T(readAlmanac(), []),
     T(fetchBuoy(), { windDirDeg: null, windMph: null, waterTempF: null, airTempF: null, waveFt: null }),
     T(fetchAlerts(), []),
     T(readSignals(), null),
@@ -1050,6 +1061,7 @@ export async function getServerSideProps({ res }) {
   const sky = skyTonight(43.5945, -83.8889, now);
   return {
     props: {
+      almanac: (almanacRows || []).slice(-1)[0] || null,
       regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora,
       springIndex: sig.springIndex || emptySignals().springIndex,
       observations: sig.observations || [], inat: sig.inat || [], drought: sig.drought || null,

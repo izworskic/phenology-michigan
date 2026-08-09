@@ -82,3 +82,17 @@ Env vars set in Vercel: GH_TOKEN (snapshot + signals writes), CRON_SECRET, EBIRD
 - No em dashes anywhere, in code, content, or commits. Use colon, comma, period, semicolon, or restructure.
 - Honest curation over AI slop. Everything computed and labeled as an estimate where it is one. No fabricated data.
 - Value-function matrix before building. Terse output.
+
+## The almanac note (added 2026-08-09)
+A short written entry each morning, in the register of A Sand County Almanac, generated from the
+day's banked snapshot and the events actually inside their calendar window, then banked to
+`data/almanac.json` so the entries accumulate into a record of their own. Leopold's phenology
+mattered because it was KEPT, not because any one day was remarkable.
+
+The prompt is told not to invent a sighting, a count, a bloom or a hatch as observed fact, and the
+page frames the block as "where the year stands, read from the day's numbers and the calendar,
+not a field report". Keep that framing: the prose is present tense and reads like observation, so
+the label is what stops it from being mistaken for one.
+
+A failed note is logged but is NOT fatal to the refresh. The readings are the record; the note is
+a reading of it.
