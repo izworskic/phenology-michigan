@@ -1,5 +1,5 @@
 import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchForecast } from "../../lib/sources";
-import { dayOfYear, gddSeries, seasonOf, cToF, moonPhase, EVENTS } from "../../lib/phenology";
+import { dayOfYear, gddSeries, seasonOf, cToF, moonPhase, EVENTS, seasonOffsetDays, seasonOffsetPhrase } from "../../lib/phenology";
 import { appendSnapshot, historyConfigured, appendAlmanac } from "../../lib/history";
 import { writeAlmanac } from "../../lib/almanac";
 import { gatherSignals, writeSignals, signalsConfigured } from "../../lib/signals";
@@ -44,6 +44,7 @@ export default async function handler(req, res) {
       windSpeedMph: forecast?.windSpeedMph ?? null,
       windDirDeg: forecast?.windDirDeg ?? null,
       moonPhase: moonPhase(now.getTime() / 86400000 + 2440587.5),
+      seasonOffsetDays: seasonOffsetDays(gdd?.total ?? null, doy),
       birdCount: birds.length,
       topBird: birds[0]?.comName || null,
     };
@@ -59,7 +60,8 @@ export default async function handler(req, res) {
       // is NOT fatal: the readings are the record, the note is the reading of it.
       const inWindow = EVENTS.filter((e) => doy >= e.s && doy <= e.e);
       const soonEvents = EVENTS.filter((e) => e.s > doy && e.s <= doy + 21);
-      const note = await writeAlmanac(snap, inWindow, soonEvents);
+      const offDays = seasonOffsetDays(snap.gdd, snap.doy);
+      const note = await writeAlmanac(snap, inWindow, soonEvents, seasonOffsetPhrase(offDays));
       if (note.ok) {
         const a = await appendAlmanac({ date: snap.date, doy: snap.doy, text: note.text, words: note.words });
         log.push(`[${ts()}] almanac ${snap.date}: ${a.ok ? `written, ${a.count} entries on record` : `write failed: ${a.reason}`}`);

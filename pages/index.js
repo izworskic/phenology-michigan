@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, ReferenceLine, ResponsiveContainer, Tooltip } from "recharts";
 import { Bird, Fish, Flower2, Waves, Thermometer, Sprout, Egg, TreePine, Feather, Compass, Droplets, X, Sunrise, Snowflake, Sparkles, Link2, BarChart3, ArrowRight, Target, Check, Clock, Leaf, ChevronRight } from "lucide-react";
 import {
-  dayOfYear, normalMeanF, gddSeries, EVENTS, CAT, seasonOf, classify, RIVERS, moonPhase,
+  dayOfYear, normalMeanF, gddSeries, EVENTS, CAT, seasonOf, classify, RIVERS, moonPhase, seasonOffsetDays, seasonOffsetPhrase,
   MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring, emergenceForecast, gardenWindow, LAST_FROST_DOY, FIRST_FROST_DOY, huntingForecast, rutClock, fallColor, bayHatch,
 } from "../lib/phenology";
 import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory, fetchBuoy, fetchAlerts, fetchRiverForecast, fetchAurora, withTimeout } from "../lib/sources";
@@ -181,7 +181,15 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
   const gddNow = normal[Math.min(364, doy - 1)].gdd;
   const thresholds = useMemo(() => hatchThresholds(), []);
   const river = rivers.find((r) => r.id === riverId) || rivers[0];
-  const { active, imminent, recent } = useMemo(() => classify(doy, river ? river.hatchOffset : 0), [doy, river]);
+  // How far this year is running from normal, read out of the banked record. This is the whole
+  // point of keeping the record: the calendar says what usually happens, the record says whether
+  // this year is early or late, and the event lists below are shifted accordingly.
+  const seasonOffset = useMemo(() => seasonOffsetDays(gddActual?.total ?? null, doy), [gddActual, doy]);
+  const seasonPhrase = seasonOffsetPhrase(seasonOffset);
+  const { active, imminent, recent } = useMemo(
+    () => classify(doy, river ? river.hatchOffset : 0, seasonOffset || 0),
+    [doy, river, seasonOffset],
+  );
 
   const chart = useMemo(() => {
     const am = {}; (gddActual?.series || []).forEach((p) => { am[p.doy] = p.gdd; });
@@ -640,6 +648,18 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
             </div>
           </div>
           <div>
+            {seasonPhrase && (
+              <div style={{ margin: "0 0 14px", padding: "12px 16px", background: "#f4f1e8", border: "1px solid #e0d9c8", borderRadius: 8 }}>
+                <div style={{ fontSize: 11.5, color: "#9a8f76", letterSpacing: ".04em", textTransform: "uppercase", marginBottom: 3 }}>The season itself</div>
+                <div style={{ fontSize: 16.5, color: "#3c3a33", lineHeight: 1.45 }}>
+                  By the heat it has gathered, the year is <strong style={{ color: season.color }}>{seasonPhrase}</strong>.
+                </div>
+                <div style={{ fontSize: 12, color: "#9a8f76", marginTop: 6, lineHeight: 1.5 }}>
+                  {actualTotal != null ? `${actualTotal} growing degree days gathered so far against ${gddNow} normal for the date. ` : ""}
+                  The hatches, blooms and garden dates below are shifted to match. Bird migration and lake levels are not, since they follow daylight and the basin rather than the heat.
+                </div>
+              </div>
+            )}
             {almanac && almanac.text && (
               <div style={{ margin: "0 0 22px", padding: "16px 18px", background: "#fbf9f4", border: "1px solid #e6e0d2", borderRadius: 8 }}>
                 <h2 style={{ fontSize: 17, margin: "0 0 2px", color: season.color }}>The almanac</h2>

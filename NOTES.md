@@ -110,3 +110,22 @@ birdCount, topBird, water temperatures and lake level are NOT backfilled and sta
 reproduces eBird sightings or instantaneous gauge readings. Every reconstructed row carries
 `backfilled: true` and `backfilledFields`, and the script never overwrites a day that was really
 recorded.
+
+## The season's own clock (2026-08-09)
+`seasonOffsetDays(gdd, doy)` in lib/phenology.js converts the accumulated growing degree days
+against the normal curve into DAYS: how far this year is running ahead of or behind its own
+record. It returns null below 120 GDD, where a few degree days swing the answer wildly, and
+`seasonOffsetPhrase` refuses to dress up a difference under three days as meaningful.
+
+This is the part that is actually Leopold. His phenology was not a calendar of what happens, it
+was a record of when things happened, kept year on year, and its value was that it revealed
+whether the season itself was early or late. The first version of the almanac here imitated his
+PROSE, which is the least important thing about the book. This reads the record and says something.
+
+`classify(doy, hatchOffset, seasonOffset)` shifts the event windows by that offset, but ONLY for
+heat-driven categories: hatch, bloom, garden, wild, fish. Bird migration follows photoperiod and
+weather far to the south, and lake levels follow basin hydrology. A warm spring in Michigan does
+not move the equinox. Shifting everything would have been easier and wrong.
+
+The offset is banked on each snapshot as `seasonOffsetDays` and passed to the almanac writer, so
+the daily entry can say a bloom is running a week late instead of just naming it.
