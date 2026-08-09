@@ -13,6 +13,7 @@ export default async function handler(req, res) {
   }
 
   const log = [];
+  const failures = [];
   const ts = () => new Date().toISOString();
 
   // Build today's snapshot from the live sources and bank it. This fetch also warms the cache.
@@ -46,12 +47,15 @@ export default async function handler(req, res) {
       topBird: birds[0]?.comName || null,
     };
     if (!historyConfigured()) {
+      failures.push("storage not configured: GH_TOKEN missing");
       log.push(`[${ts()}] snapshot ${snap.date} ready but storage not configured; set GH_TOKEN`);
     } else {
       const r = await appendSnapshot(snap);
+      if (!r.ok) failures.push(`snapshot write: ${r.reason}`);
       log.push(`[${ts()}] snapshot ${snap.date}: ${r.ok ? `banked, ${r.count} days on record` : `write failed: ${r.reason}`}`);
     }
   } catch (e) {
+    failures.push(`snapshot: ${e.message}`);
     log.push(`[${ts()}] snapshot failed: ${e.message}`);
   }
 
@@ -59,14 +63,17 @@ export default async function handler(req, res) {
   // hitting six slow external APIs on every cache miss.
   try {
     if (!signalsConfigured()) {
+      failures.push("storage not configured: GH_TOKEN missing");
       log.push(`[${ts()}] signals ready but storage not configured; set GH_TOKEN`);
     } else {
       const bundle = await gatherSignals();
       const r = await writeSignals(bundle);
+      if (!r.ok) failures.push(`signals write: ${r.reason}`);
       const counts = `obs ${bundle.observations.length}, inat ${bundle.inat.length}, ice ${bundle.bayDaily.iceConc}`;
       log.push(`[${ts()}] signals: ${r.ok ? `banked (${counts})` : `write failed: ${r.reason}`}`);
     }
   } catch (e) {
+    failures.push(`signals: ${e.message}`);
     log.push(`[${ts()}] signals failed: ${e.message}`);
   }
 
@@ -79,5 +86,9 @@ export default async function handler(req, res) {
     log.push(`[${ts()}] ping failed: ${e.message}`);
   }
 
-  res.status(200).json({ ok: true, configured: historyConfigured(), log });
+  // A refresh that banked nothing is a failed refresh. Returning 200 here is what hid a dead
+  // GH_TOKEN for 45 days: every write 401'd while the workflow's `curl --fail` saw success.
+  // IndexNow ping failures are deliberately NOT fatal; they do not affect the recorded data.
+  const ok = failures.length === 0;
+  res.status(ok ? 200 : 500).json({ ok, configured: historyConfigured(), failures, log });
 }
