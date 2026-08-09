@@ -96,3 +96,17 @@ the label is what stops it from being mistaken for one.
 
 A failed note is logged but is NOT fatal to the refresh. The readings are the record; the note is
 a reading of it.
+
+## Backfill (scripts/backfill.mjs, added 2026-08-09)
+`node scripts/backfill.mjs <start> <end> [--write]`. Dry run by default.
+
+Reconstructs snapshot rows after an outage. Air, soil and wind are read from the HOURLY archive at
+13:00 UTC, the hour the daily job fires, because a first pass using daily aggregates ran soil 14 F
+warm and would have left a step change at the seam that looks like a real phenological signal.
+Validated against the recorded series: open-meteo at the sampling hour reproduces recorded values
+within about 2 F on both sides of the June and August seams.
+
+birdCount, topBird, water temperatures and lake level are NOT backfilled and stay null. No archive
+reproduces eBird sightings or instantaneous gauge readings. Every reconstructed row carries
+`backfilled: true` and `backfilledFields`, and the script never overwrites a day that was really
+recorded.
