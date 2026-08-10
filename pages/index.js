@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, ReferenceLine, ResponsiveContainer, Tooltip } from "recharts";
 import { Bird, Fish, Flower2, Waves, Thermometer, Sprout, Egg, TreePine, Feather, Compass, Droplets, X, Sunrise, Snowflake, Sparkles, Link2, BarChart3, ArrowRight, Target, Check, Clock, Leaf, ChevronRight } from "lucide-react";
 import {
-  dayOfYear, normalMeanF, gddSeries, EVENTS, CAT, seasonOf, classify, RIVERS, moonPhase, seasonOffsetDays, seasonOffsetPhrase,
+  dayOfYear, normalMeanF, gddSeries, EVENTS, CAT, seasonOf, classify, RIVERS, moonPhase, seasonOffsetDays, seasonOffsetPhrase, turningYear, monthOfDoy,
   MID_MONTH_DOY, MONTH_ABBR, cToF, hatchThresholds, projectOnset, doyToDate, activeIndicators, coOccurring, emergenceForecast, gardenWindow, LAST_FROST_DOY, FIRST_FROST_DOY, huntingForecast, rutClock, fallColor, bayHatch,
 } from "../lib/phenology";
 import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableStats, fetchForecast, fetchGddHistory, fetchBuoy, fetchAlerts, fetchRiverForecast, fetchAurora, withTimeout } from "../lib/sources";
@@ -186,6 +186,8 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
   // this year is early or late, and the event lists below are shifted accordingly.
   const seasonOffset = useMemo(() => seasonOffsetDays(gddActual?.total ?? null, doy), [gddActual, doy]);
   const seasonPhrase = seasonOffsetPhrase(seasonOffset);
+  const year = useMemo(() => turningYear(), []);
+  const thisMonth = monthOfDoy(doy);
   const { active, imminent, recent } = useMemo(
     () => classify(doy, river ? river.hatchOffset : 0, seasonOffset || 0),
     [doy, river, seasonOffset],
@@ -737,6 +739,45 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
             </p>
           )}
         </div>
+
+
+        <section style={{ marginTop: 34 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
+            <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>The turning year</h2>
+            <span style={{ marginLeft: "auto", fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "#7a7058", border: "1px solid #d8cca8", borderRadius: 6, padding: "1px 6px", whiteSpace: "nowrap" }}>the usual year</span>
+          </div>
+          <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 16px", fontStyle: "italic" }}>
+            All seventy-one events, filed under the month each one peaks in. These are the ordinary dates, the year as it usually runs here.
+            {seasonPhrase && seasonOffset !== null && Math.abs(seasonOffset) >= 3
+              ? ` This year is ${seasonPhrase}, so the heat-driven ones are arriving off these dates by about that much.`
+              : ""}
+            {" "}The months are uneven on purpose. May carries fifteen of them and January carries two, which is what the year is actually like here.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(290px, 1fr))", gap: 12 }}>
+            {year.map((mo) => {
+              const isNow = mo.m === thisMonth;
+              return (
+                <div key={mo.m} style={{ border: isNow ? `1px solid ${season.color}` : "1px solid #e4dcc8", borderRadius: 10, padding: "12px 14px", background: isNow ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.45)" }}>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                    <h3 style={{ fontFamily: "Georgia, serif", fontSize: 17, margin: 0, color: isNow ? season.color : "#2b2a1f" }}>{mo.name}</h3>
+                    {isNow && <span style={{ fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: season.color, fontWeight: 600 }}>we are here</span>}
+                    <span style={{ marginLeft: "auto", fontSize: 11, color: "#a89b80" }}>{mo.events.length}</span>
+                  </div>
+                  <p style={{ fontSize: 13, lineHeight: 1.55, color: "#5b5340", margin: "6px 0 10px" }}>{mo.line}</p>
+                  <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+                    {mo.events.map((ev) => (
+                      <li key={ev.name} style={{ display: "flex", gap: 8, alignItems: "baseline", fontSize: 12.5, padding: "2px 0", color: "#4a4436" }}>
+                        <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: 7, background: CAT[ev.cat].color, flex: "0 0 auto", marginTop: 5 }} />
+                        <span>{ev.name}</span>
+                        <span style={{ marginLeft: "auto", fontSize: 11, color: "#a89b80", whiteSpace: "nowrap" }}>{ev.peakLabel}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+        </section>
 
         {tab === "water" && emergence && emergence.length > 0 && (
           <section style={{ marginTop: 30 }}>

@@ -129,3 +129,22 @@ not move the equinox. Shifting everything would have been easier and wrong.
 
 The offset is banked on each snapshot as `seasonOffsetDays` and passed to the almanac writer, so
 the daily entry can say a bloom is running a week late instead of just naming it.
+
+## The turning year (2026-08-09)
+`MONTHS`, `monthOfDoy`, `doyToLabel` and `turningYear()` in lib/phenology.js, rendered as a
+twelve-month section on the page. Every one of the 71 events is filed under the month its PEAK
+falls in, so a thing spanning a boundary appears once, where it is most itself. All 71 are
+accounted for; none are dropped.
+
+Part I of A Sand County Almanac is an almanac in the plain sense: twelve months on one piece of
+ground, each with its own character. This site had the dates and showed them only as now, soon and
+just past. A dashboard tells you where you are. An almanac tells you where you are in something
+larger.
+
+The months are deliberately uneven. May carries fifteen events, January two. That is not a data
+gap, it is what the year is like here, and Leopold's January essay is about a thaw and a skunk
+track because that is all January offers. DO NOT PAD THE THIN MONTHS.
+
+The section is labelled "the usual year" and states plainly that these are ordinary dates, then
+notes how far this year is running off them. The month lines are hand written and permanent, not
+generated: they are the frame, not the daily content.
