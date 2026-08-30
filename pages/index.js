@@ -526,13 +526,13 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
       {
         "@type": "WebSite", "@id": SITE + "/#website", name: "Michigan Phenology", url: SITE,
         description: "A real-time phenology dashboard for Saginaw Bay and northeastern Michigan, with interpreted river, hatch, bird, and growing degree day conditions.",
-        author: { "@id": SITE + "/#person" },
+        author: { "@id": "https://chrisizworski.com/#person" },
       },
       {
         "@type": "WebPage", "@id": SITE + "/#webpage", url: SITE + "/", isPartOf: { "@id": SITE + "/#website" },
         name: "Michigan Phenology by Chris Izworski: Saginaw Bay and the AuSable in Real Time",
         description: "An interpreted real-time read on the natural year across Saginaw Bay and northeastern Michigan: live river conditions, projected hatches, bird movement, and growing degree days, by Chris Izworski.",
-        author: { "@id": SITE + "/#person" }, primaryImageOfPage: SITE + "/og-card.png", inLanguage: "en-US",
+        author: { "@id": "https://chrisizworski.com/#person" }, primaryImageOfPage: SITE + "/og-card.png", inLanguage: "en-US",
         breadcrumb: { "@id": SITE + "/#breadcrumb" },
       },
       {
@@ -540,7 +540,7 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
         itemListElement: [{ "@type": "ListItem", position: 1, name: "Michigan Phenology", item: SITE + "/" }],
       },
       {
-        "@type": "Person", "@id": SITE + "/#person", name: "Chris Izworski", url: "https://chrisizworski.com",
+        "@type": "Person", "@id": "https://chrisizworski.com/#person", name: "Chris Izworski", url: "https://chrisizworski.com/chris-izworski/",
         sameAs: ["https://chrisizworski.com", "https://michigantroutreport.com/chris-izworski/", "https://michiganbirdingreport.com/chris-izworski", "https://greatlakeslevels.org", "https://github.com/izworskic", "https://www.youtube.com/@izworskic", "https://www.wikidata.org/wiki/Q138283432"],
       },
     ],
