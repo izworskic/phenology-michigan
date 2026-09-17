@@ -263,11 +263,11 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
     // season pace
     if (gddAnom != null) {
       const pace = Math.abs(daysApprox) <= 2 ? "essentially on schedule" : daysApprox > 2 ? `running about ${daysApprox} days early` : `running about ${Math.abs(daysApprox)} days late`;
-      parts.push(`Degree days stand at ${actualTotal} against a normal of ${gddNow}, so the season is ${pace}.`);
+      parts.push(`The local base-50°F heat calculation stands at ${actualTotal} degree days against this site's modeled reference of ${gddNow}, equivalent to ${pace} on that reference curve. This is a model comparison, not a measured date shift for every species.`);
     }
     // USA-NPN accumulated-heat anomaly: a year-round read on whether the season is ahead of or behind normal
     if (springIndex && springIndex.agddAnom != null && Math.abs(springIndex.agddAnom) >= 10 && doy >= 55 && doy <= 330) {
-      parts.push(`Against the long-term normal, accumulated heat is ${springIndex.agddAnom > 0 ? "running ahead" : "lagging"} by ${Math.abs(Math.round(springIndex.agddAnom))} growing degree days.`);
+      parts.push(`Separately, USA-NPN reports an accumulated-heat anomaly of ${springIndex.agddAnom > 0 ? "+" : "-"}${Math.abs(Math.round(springIndex.agddAnom))} degree days against its own normal. This source uses a separate reference and is not interchangeable with the local model comparison.`);
     }
     // Spring index leaf-out, shown only while it is still seasonally fresh (late winter into early summer)
     if (springIndex && springIndex.leafDoy != null && doy <= 165) {
