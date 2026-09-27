@@ -1,3 +1,4 @@
+import Script from "next/script";
 import Head from "next/head";
 
 export default function App({ Component, pageProps }) {
@@ -28,6 +29,7 @@ export default function App({ Component, pageProps }) {
         .pheno-pill[data-on="1"] { background: #5a8a4a; color: #fff; border-color: #5a8a4a; }
       `}</style>
       <Component {...pageProps} />
+      <Script id="ci-network-ads-v1" src="https://chrisizworski.com/assets/network-ads-v1.js" strategy="afterInteractive" />
     </>
   );
 }
