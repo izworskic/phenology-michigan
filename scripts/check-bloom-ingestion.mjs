@@ -8,6 +8,7 @@ import {
   parseDatedArticleObservation,
   selectBestObservation,
 } from '../lib/bloom/observation-ingestion.mjs';
+import { buildBloomObservationSnapshot } from '../lib/bloom/snapshot.mjs';
 
 const peonySource = getBloomSources('um-peony-garden')[0];
 const hollandSource = getBloomSources('holland-tulips')[0];
@@ -72,5 +73,30 @@ const picked = selectBestObservation('holland-tulips', [
   activeOverride,
 ], new Date('2026-05-06T12:00:00-04:00'));
 assert.equal(picked.source.authority, 100, 'authority should outrank a slightly fresher lower-authority candidate');
+
+const snapshotNow = new Date('2026-05-31T12:00:00-04:00');
+const snapshotOverride = {
+  destinationId: 'holland-tulips',
+  stage: 'PEAK',
+  observedAt: '2026-05-30T09:00:00-04:00',
+  validThrough: '2026-06-01T23:59:00-04:00',
+  source: { name: 'City of Holland verified camera review', url: 'https://www.cityofholland.com/1022/Tulip-Tracker', authority: 100 },
+};
+const mockFetch = async (url) => ({
+  ok: true,
+  text: async () => String(url).includes('mbgna.umich.edu')
+    ? peonyHtml
+    : '<html><body><p>This year many cherry trees may have leaves instead of blooms after historic cold.</p></body></html>',
+});
+const snapshot = await buildBloomObservationSnapshot({
+  overrides: { observations: [snapshotOverride] },
+  fetchImpl: mockFetch,
+  now: snapshotNow,
+});
+assert.equal(snapshot.counts.observed, 2);
+assert.equal(snapshot.counts.unknown, 3);
+assert.equal(snapshot.destinations.find((d) => d.id === 'um-peony-garden').observation.stage, 'PEAK');
+assert.equal(snapshot.destinations.find((d) => d.id === 'holland-tulips').status, 'OBSERVED');
+assert.equal(snapshot.destinations.find((d) => d.id === 'meijer-gardens-cherries').status, 'UNKNOWN', 'undated abnormal-season copy cannot become a current observation');
 
 console.log('Bloom observation-ingestion invariants: PASS');
