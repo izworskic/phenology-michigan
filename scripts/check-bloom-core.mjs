@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { BLOOM_DESTINATIONS, DISPLAY_TYPES, getBloomDestination } from '../lib/bloom/destinations.mjs';
 import { buildBloomDecision } from '../lib/bloom/engine.mjs';
+import { fetchBloomWeather } from '../lib/bloom/weather.mjs';
 import { CONFIDENCE, DECISIONS, DISPLAY_POTENTIAL, exactStageAllowed } from '../lib/bloom/contracts.mjs';
 
 assert.equal(BLOOM_DESTINATIONS.length, 5);
@@ -61,5 +62,20 @@ const stale = buildBloomDecision({
   now,
 });
 assert.equal(stale.decision, DECISIONS.UNKNOWN, 'stale observations must not issue a confident trip decision');
+
+const malformed = buildBloomDecision({
+  destination: meijer,
+  observation: freshPeak,
+  now,
+  forecastWindows: [{ horizonDays: 3, stageLow: 'PEAK', stageHigh: 'BANANA', confidence: CONFIDENCE.HIGH }],
+});
+assert.equal(malformed.forecast.length, 0, 'invalid model stages must not be coerced into a biological stage');
+assert.equal(malformed.forecastErrors.length, 1);
+
+const partialWeatherFetch = async () => ({
+  ok: true,
+  json: async () => ({ hourly: { time: ['2026-05-05T00:00'], temperature_2m: [15], precipitation: [0], wind_gusts_10m: [5] } }),
+});
+await assert.rejects(() => fetchBloomWeather(meijer, partialWeatherFetch), /usable hours/);
 
 console.log('Bloom production-core invariants: PASS');
