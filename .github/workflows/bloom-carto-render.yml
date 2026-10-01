@@ -1,0 +1,102 @@
+name: Bloom CARTO Render
+
+on:
+  push:
+    branches:
+      - enhance/bloom-carto-insight-map
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start preview server
+        run: |
+          VERCEL_ENV=preview npm start -- -p 3000 > /tmp/bloom-carto.log 2>&1 &
+          for i in {1..60}; do
+            if curl -fsS 'http://127.0.0.1:3000/bloom-tracker' >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/bloom-carto.log
+          exit 1
+      - name: Verify CARTO map and product hierarchy
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs/promises';
+
+          const browser = await chromium.launch({ headless: true });
+          const report = {};
+
+          async function verify({ name, url, active }) {
+            const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+            const consoleErrors = [];
+            page.on('console', (msg) => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
+            await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
+            await page.waitForSelector('.bloom-carto-map .leaflet-container, .bloom-carto-map', { timeout: 15000 });
+            await page.waitForFunction(() => document.querySelectorAll('.bloom-carto-map .leaflet-tile-loaded').length >= 4, null, { timeout: 20000 });
+            await page.waitForFunction(() => document.querySelectorAll('.bloom-map-marker').length === 5, null, { timeout: 15000 });
+
+            const visibleText = await page.locator('body').innerText();
+            if (/\bAPR\b/.test(visibleText) || /\bJUN\b/.test(visibleText)) throw new Error(`${name}: month shorthand still visible`);
+
+            const mapBox = await page.locator('.map-section').boundingBox();
+            const opportunitiesBox = await page.locator('.opportunity-section').boundingBox();
+            if (!mapBox || !opportunitiesBox || mapBox.y >= opportunitiesBox.y) throw new Error(`${name}: map is not promoted ahead of destination list`);
+
+            const tileCount = await page.locator('.bloom-carto-map .leaflet-tile-loaded').count();
+            const markerCount = await page.locator('.bloom-map-marker').count();
+            const attribution = await page.locator('.leaflet-control-attribution').innerText();
+            if (!attribution.includes('OpenStreetMap') || !attribution.includes('CARTO')) throw new Error(`${name}: required attribution missing: ${attribution}`);
+
+            const source = await page.locator('.map-source').innerText();
+            if (!source.includes('CARTO')) throw new Error(`${name}: map source copy not updated`);
+
+            const insight = await page.locator('.bloom-map-insight-copy').innerText();
+            if (active) {
+              if (!insight.includes('Strongest color now:')) throw new Error(`${name}: active map lacks current insight`);
+              const tripworthy = await page.locator('.bloom-map-marker.is-tripworthy').count();
+              if (tripworthy < 1) throw new Error(`${name}: active map has no trip-worthy glow`);
+            } else {
+              if (!insight.includes('relay, not one statewide peak')) throw new Error(`${name}: off-season map lacks sequence insight`);
+              if (!visibleText.includes('Early April') || !visibleText.includes('Late April into May')) throw new Error(`${name}: human timing labels missing`);
+            }
+
+            const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+            if (overflow > 2) throw new Error(`${name}: horizontal overflow ${overflow}px`);
+
+            await page.locator('.map-section').scrollIntoViewIfNeeded();
+            await page.waitForTimeout(500);
+            await page.screenshot({ path: `bloom-carto-${name}.png`, fullPage: true });
+            await page.locator('.map-section').screenshot({ path: `bloom-carto-${name}-map.png` });
+            report[name] = { tileCount, markerCount, attribution, insight, overflow, consoleErrors };
+            await page.close();
+          }
+
+          await verify({ name: 'offseason-mobile', url: 'http://127.0.0.1:3000/bloom-tracker', active: false });
+          await verify({ name: 'active-mobile', url: 'http://127.0.0.1:3000/bloom-tracker?fixture=strong', active: true });
+
+          await browser.close();
+          await fs.writeFile('bloom-carto-report.json', JSON.stringify(report, null, 2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bloom-carto-render
+          path: |
+            bloom-carto-*.png
+            bloom-carto-report.json
+            /tmp/bloom-carto.log
+          retention-days: 2
