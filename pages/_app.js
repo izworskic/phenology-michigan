@@ -1,6 +1,10 @@
 import Head from "next/head";
+import { useRouter } from "next/router";
 
 export default function App({ Component, pageProps }) {
+  const router = useRouter();
+  const isBloomTracker = router.pathname === "/bloom-tracker";
+
   return (
     <>
       <Head>
@@ -10,6 +14,7 @@ export default function App({ Component, pageProps }) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Newsreader:ital,opsz@0,6..72;1,6..72&display=swap" rel="stylesheet" />
+        {isBloomTracker && <link rel="stylesheet" href="/bloom-tracker-redesign.css" />}
       </Head>
       <style jsx global>{`
         * { box-sizing: border-box; }
