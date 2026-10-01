@@ -21,7 +21,9 @@ jobs:
           node-version: 22
           cache: npm
       - name: Apply persona hardening
-        run: python scripts/apply-bloom-persona-pass.py
+        run: |
+          python scripts/apply-bloom-persona-pass.py
+          python scripts/patch-bloom-persona-invariants.py
       - name: Install
         run: npm ci
       - name: Test
@@ -47,6 +49,6 @@ jobs:
         run: |
           git config user.name "Chris Izworski"
           git config user.email "46615230+izworskic@users.noreply.github.com"
-          git add public/bloom-map-v2.js public/bloom-map-v2.css pages/bloom-tracker.js scripts/check-bloom-map-v2.mjs
+          git add public/bloom-map-v2.js public/bloom-map-v2.css pages/bloom-tracker.js scripts/check-bloom-map-v2.mjs scripts/check-bloom-tracker-product.mjs
           git commit -m "Simplify Bloom Tracker around user decisions"
           git push origin HEAD:improve/bloom-persona-red-team
