@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import { BLOOM_DESTINATIONS } from '../lib/bloom/destinations.mjs';
 import { BLOOM_EXPERIENCES } from '../lib/bloom/experience-layer.mjs';
+import { BLOOM_PLANNING_WINDOWS, BLOOM_SEASON_STATES, buildBloomSeasonContext } from '../lib/bloom/seasonal-context.mjs';
 import { getBloomTrackerFixture } from '../lib/bloom/tracker-fixtures.mjs';
 import { decisionCounts, evidenceStrength, goBeforeWindow, humanDecisionLabel } from '../lib/bloom/tracker-product.mjs';
 
@@ -38,9 +39,11 @@ weak.destinations.filter((d) => d.decision.decision === 'UNKNOWN').forEach((entr
 
 for (const destination of BLOOM_DESTINATIONS) {
   const experience = BLOOM_EXPERIENCES[destination.id];
+  const planning = BLOOM_PLANNING_WINDOWS[destination.id];
   assert.ok(experience, `${destination.id} must retain destination experience context`);
   assert.ok(experience.headline && experience.whatYouWillSee && experience.bestExperience && experience.lookFor, `${destination.id} must explain the actual visitor experience`);
   assert.ok(experience.experienceSource?.url?.startsWith('https://'), `${destination.id} must cite a local visitor source`);
+  assert.ok(planning?.windowLabel && planning?.sourceUrl?.startsWith('https://'), `${destination.id} must have a sourced broad seasonal planning window`);
   assert.ok(experience.photos.length >= 1 && experience.photos.length <= 2, `${destination.id} must use a restrained one-or-two-photo set`);
   for (const photo of experience.photos) {
     assert.ok(['exact-bloom', 'flower-reference', 'location-setting'].includes(photo.kind), `${destination.id} photo must declare its fit`);
@@ -52,6 +55,20 @@ for (const destination of BLOOM_DESTINATIONS) {
   }
 }
 
+const october = buildBloomSeasonContext(strong.destinations, new Date('2026-10-01T12:00:00-04:00'));
+assert.equal(october.phase, BLOOM_SEASON_STATES.OFF_SEASON, 'a banked May snapshot must never masquerade as current bloom in October');
+assert.equal(october.map.mode, 'SEASONAL_SEQUENCE', 'off season must convert the map into a seasonal interpretation surface');
+assert.match(october.copy.title, /flowers are quiet/i, 'off-season copy must plainly say the bloom season is quiet');
+assert.deepEqual(
+  october.items.map((item) => item.destinationId),
+  ['meijer-gardens-cherries', 'holland-tulips', 'traverse-city-cherries', 'um-peony-garden', 'mackinac-lilacs'],
+  'off-season presentation must follow the typical spring sequence rather than stale live ranking'
+);
+
+const may = buildBloomSeasonContext(strong.destinations, new Date(strong.generatedAt));
+assert.equal(may.phase, BLOOM_SEASON_STATES.ACTIVE, 'fresh May GO evidence must put the statewide product in active bloom mode');
+assert.equal(may.map.mode, 'LIVE_BLOOM', 'active bloom must restore the live interpretive map');
+
 const page = await fs.readFile(new URL('../pages/bloom-tracker.js', import.meta.url), 'utf8');
 assert.ok(!page.includes('geomapsuite.com'), 'tracker must not depend on the broken hot-linked Michigan silhouette');
 assert.ok(!page.includes('selected-strip'), 'tracker must not reintroduce the redundant map-selection strip');
@@ -61,32 +78,41 @@ assert.ok(page.includes('/maps/great-lakes-context.geojson'), 'map must use comm
 assert.ok(page.includes('geometryPaths'), 'map must render real geographic polygons');
 assert.ok(page.includes('MapSelectedPanel'), 'one marker tap must surface useful in-map detail');
 assert.ok(page.includes('wavePath'), 'map must support geographic bloom progression when zone evidence exists');
-assert.ok(page.includes('What is worth the drive this weekend?'), 'first screen must remain decision-first');
+assert.ok(page.includes('What is worth the drive, and when?'), 'first screen must work in both live and off-season modes');
+assert.ok(page.includes('<SeasonBanner seasonContext={seasonContext} />'), 'the page must carry an explicit year-round season statement');
+assert.ok(page.includes('How spring moves across Michigan') || page.includes('seasonContext?.map?.title'), 'map title must be driven by seasonal interpretation');
+assert.ok(page.includes('map-season-label'), 'off-season map must put time labels directly on the geography');
+assert.ok(page.includes('Read the year across the map:'), 'off-season map must explain how to interpret April-to-June movement');
 
 assert.ok(page.includes('function OpportunityCard'), 'experience must be integrated into each ranked destination');
 assert.ok(page.includes('ExperienceThumbnail'), 'ranked destinations must carry visual context');
-assert.ok(page.includes('See the place + evidence'), 'richer experience and evidence must be optional expansion, not another page layer');
+assert.ok(page.includes('See the place + evidence'), 'richer active-season experience and evidence must be optional expansion');
+assert.ok(page.includes('Picture the place'), 'off-season expansion must focus on sense of place rather than stale evidence');
 assert.ok(page.includes('File photo — not live'), 'expanded photos must clearly state that they are not current evidence');
 assert.ok(page.includes('Photos help you picture the place. They are not used as current bloom evidence.'), 'photo truth rule must remain explicit');
-assert.ok(page.includes('featured-photo'), 'the top recommendation should gain visual context without creating a separate hero section');
+assert.ok(page.includes('editorialItemFor'), 'JEV/Haiku editorial must feed the destination surface when available');
 assert.ok(!page.includes('ExperienceSection'), 'do not reintroduce a separate duplicated experience section');
 assert.ok(!page.includes('experience-grid'), 'do not reintroduce the swipeable card wall');
 assert.ok(!page.includes('DestinationDetails'), 'do not repeat all destinations in a third destination-checker layer');
 assert.ok(!page.includes('details-section'), 'destination evidence must live with the ranked destination itself');
 
-const decisionIndex = page.indexOf('What is worth the drive this weekend?');
-const rankingIndex = page.indexOf('Where should I go?');
 const opportunityCardsIndex = page.indexOf('<OpportunityCard');
-const mapIndex = page.indexOf('<MichiganBloomMap destinations={destinations} generatedAt={generatedAt} />');
-assert.ok(decisionIndex >= 0 && rankingIndex > decisionIndex, 'rankings must follow the first-screen decision');
-assert.ok(opportunityCardsIndex > rankingIndex, 'integrated visual experience must live inside the ranked list');
-assert.ok(mapIndex > opportunityCardsIndex, 'map must follow the ranked decisions directly without an intervening duplicate product');
+const mapIndex = page.indexOf('<MichiganBloomMap');
+assert.ok(opportunityCardsIndex >= 0 && mapIndex > opportunityCardsIndex, 'map must follow the integrated destination surface directly');
+
+const editorial = await fs.readFile(new URL('../lib/bloom/editorial.mjs', import.meta.url), 'utf8');
+assert.ok(editorial.includes('claude-haiku-4-5-20251001'), 'Bloom editorial must use the established low-cost Haiku writer by default');
+assert.ok(editorial.includes('bloomJevDecide'), 'JEV must assign and review editorial jobs');
+assert.ok(editorial.includes('Typical planning windows are context only and do not prove current bloom.'), 'sealed editorial evidence must preserve the calendar-vs-observation truth rule');
+assert.ok(editorial.includes('evidenceHash'), 'unchanged evidence must be fingerprinted for editorial reuse');
+
+const pipeline = await fs.readFile(new URL('../lib/bloom/live-pipeline.mjs', import.meta.url), 'utf8');
+assert.ok(pipeline.includes('previousLatestResult'), 'live cycle must read the prior persisted editorial so unchanged evidence can be reused');
+assert.ok(pipeline.includes('buildBloomEditorial'), 'editorial enrichment must run after deterministic bloom decisions');
 
 const mapGeometry = JSON.parse(await fs.readFile(new URL('../public/maps/great-lakes-context.geojson', import.meta.url), 'utf8'));
 const stateNames = new Set((mapGeometry.features || []).map((feature) => feature?.properties?.name));
-for (const state of ['Michigan', 'Wisconsin', 'Indiana', 'Ohio']) {
-  assert.ok(stateNames.has(state), `map geography must include ${state}`);
-}
+for (const state of ['Michigan', 'Wisconsin', 'Indiana', 'Ohio']) assert.ok(stateNames.has(state), `map geography must include ${state}`);
 
 const mapCss = await fs.readFile(new URL('../public/bloom-tracker-redesign.css', import.meta.url), 'utf8');
 assert.ok(mapCss.includes("url('/maps/great-lakes-water.svg')"), 'state jurisdiction polygons must be visually clipped back to the Great Lakes shoreline');
