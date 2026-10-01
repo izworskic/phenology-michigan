@@ -1,0 +1,20 @@
+name: Bloom Tracker Refresh
+
+on:
+  schedule:
+    # Shoulder month: build early-season history once daily in March.
+    - cron: '15 12 * 3 *'
+    # Core Michigan bloom season: refresh four times daily April through June.
+    - cron: '15 11,15,19,23 * 4-6 *'
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Refresh persistent bloom state
+        run: |
+          curl -sS -X GET "https://phenology.chrisizworski.com/api/bloom-refresh" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            --fail --max-time 180 -w "\nHTTP %{http_code}\n"
