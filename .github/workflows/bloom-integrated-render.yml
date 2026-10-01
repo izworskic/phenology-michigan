@@ -1,0 +1,90 @@
+name: Bloom Integrated Render
+
+on:
+  push:
+    branches:
+      - redesign/bloom-tracker-integrated-experience-v2
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start fixture server
+        run: |
+          VERCEL_ENV=preview npm start -- -p 3000 > /tmp/bloom-integrated.log 2>&1 &
+          for i in {1..60}; do
+            if curl -fsS 'http://127.0.0.1:3000/bloom-tracker?fixture=strong' >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/bloom-integrated.log
+          exit 1
+      - name: Render and inspect
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs/promises';
+          const browser = await chromium.launch({headless:true});
+          const report = {};
+          for (const [name,width,height] of [['mobile',390,844],['desktop',1440,1100]]) {
+            const page = await browser.newPage({viewport:{width,height}});
+            const consoleErrors=[];
+            page.on('console', msg => { if(msg.type()==='error') consoleErrors.push(msg.text()); });
+            await page.goto('http://127.0.0.1:3000/bloom-tracker?fixture=strong',{waitUntil:'networkidle',timeout:60000});
+            const cards=page.locator('.opportunity-card');
+            if(await cards.count() !== 5) throw new Error(`Expected 5 ranked cards, found ${await cards.count()}`);
+            if(await page.locator('.experience-section').count()) throw new Error('Separate experience section returned');
+            if(await page.locator('.details-section').count()) throw new Error('Duplicate destination checker returned');
+            for(let i=0;i<await cards.count();i++){
+              await cards.nth(i).scrollIntoViewIfNeeded();
+              await page.waitForTimeout(250);
+            }
+            const thumbs=await page.locator('.opportunity-thumb img').evaluateAll(imgs=>imgs.map(img=>({src:img.currentSrc||img.src,loaded:img.complete&&img.naturalWidth>0,w:img.naturalWidth,h:img.naturalHeight})));
+            const failed=thumbs.filter(x=>!x.loaded);
+            if(failed.length) throw new Error(`Thumbnail load failures: ${JSON.stringify(failed)}`);
+            const listBox=await page.locator('.opportunity-list').boundingBox();
+            const mapBox=await page.locator('.map-section').boundingBox();
+            if(!listBox||!mapBox) throw new Error('Missing list/map geometry');
+            const gap=mapBox.y-(listBox.y+listBox.height);
+            if(gap>80) throw new Error(`Map pushed too far below ranking: ${gap}px`);
+            const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
+            if(overflow>2) throw new Error(`Horizontal overflow: ${overflow}px`);
+            const pageHeight=await page.evaluate(()=>document.body.scrollHeight);
+            await page.screenshot({path:`bloom-integrated-${name}.png`,fullPage:true});
+            report[name]={thumbs,gap,overflow,pageHeight,consoleErrors};
+            if(name==='mobile'){
+              await cards.nth(1).locator('summary').click();
+              await cards.nth(1).scrollIntoViewIfNeeded();
+              await page.waitForTimeout(1000);
+              const expandedPhotos=await cards.nth(1).locator('.trip-photo img').evaluateAll(imgs=>imgs.map(img=>({loaded:img.complete&&img.naturalWidth>0,w:img.naturalWidth,h:img.naturalHeight})));
+              if(!expandedPhotos.length||expandedPhotos.some(x=>!x.loaded)) throw new Error(`Expanded photo failure: ${JSON.stringify(expandedPhotos)}`);
+              await page.screenshot({path:'bloom-integrated-mobile-expanded.png',fullPage:true});
+              report.mobile.expandedPhotos=expandedPhotos;
+            }
+            await page.close();
+          }
+          await browser.close();
+          await fs.writeFile('bloom-integrated-report.json',JSON.stringify(report,null,2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bloom-integrated-render
+          path: |
+            bloom-integrated-mobile.png
+            bloom-integrated-mobile-expanded.png
+            bloom-integrated-desktop.png
+            bloom-integrated-report.json
+            /tmp/bloom-integrated.log
+          retention-days: 2
