@@ -77,6 +77,28 @@ const sourceFetch = async (url) => {
   if (href.includes('meijergardens.org')) {
     return { ok: true, status: 200, async text() { return '<h2>May 30, 2026</h2><p>Most Yoshino cherries are past peak and dropping their flowers.</p>'; } };
   }
+  if (href.includes('/fruit/news?')) {
+    const page = new URL(href).searchParams.get('page');
+    if (page === '1') {
+      return {
+        ok: true,
+        status: 200,
+        async text() {
+          return '<a href="/news/northwest-michigan-fruit-update-may-19-2026">Northwest Michigan fruit update May 19</a><a href="/news/northwest-michigan-fruit-update-may-12-2026">May 12</a>';
+        },
+      };
+    }
+    return { ok: true, status: 200, async text() { return '<p>No newer northwest update here.</p>'; } };
+  }
+  if (href.includes('/news/northwest-michigan-fruit-update-may-19-2026')) {
+    return {
+      ok: true,
+      status: 200,
+      async text() {
+        return '<h1>Northwest Michigan fruit update – May 19, 2026</h1><p>Last week Montmorency were at early white bud. On May 18 we were just past full bloom and today Montmorency are at full petal fall after rain and wind.</p>';
+      },
+    };
+  }
   if (href.includes('api.open-meteo.com')) {
     return { ok: true, status: 200, async json() { return weatherPayload(); } };
   }
@@ -110,13 +132,16 @@ const cycle = await runBloomLiveCycle({
 });
 assert.equal(cycle.ok, true);
 assert.equal(cycle.latest.counts.total, 5);
-assert.equal(cycle.latest.counts.observed, 4, 'U-M, Meijer, Holland, and Mackinac should be observed');
-assert.equal(cycle.latest.counts.unknown, 1, 'Traverse City must remain unknown without a dated MSU article/override');
+assert.equal(cycle.latest.counts.observed, 4, 'MSU May 19 observation is too old by May 30, while the other four are fresh');
+assert.equal(cycle.latest.counts.unknown, 1, 'Traverse City should be discovered but correctly rejected as stale');
 assert.equal(cycle.latest.provenance.overridesSource, 'deployment_bootstrap');
 const um = cycle.latest.destinations.find((d) => d.id === 'um-peony-garden');
 assert.equal(um.decision.decision, 'GO');
 assert.equal(um.decision.currentStage, 'PEAK');
 const traverse = cycle.latest.destinations.find((d) => d.id === 'traverse-city-cherries');
-assert.equal(traverse.decision.decision, 'UNKNOWN');
+assert.equal(traverse.observation.stage, 'FADING', 'MSU locator must parse the located Montmorency article');
+assert.match(traverse.observation.source.url, /northwest-michigan-fruit-update-may-19-2026/);
+assert.equal(traverse.decision.decision, 'UNKNOWN', 'stale article must not become a live trip recommendation');
+assert.equal(traverse.sourceStatus[0].diagnostic, 'ok');
 
 console.log('Bloom persistent-history pipeline invariants: PASS');
