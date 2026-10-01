@@ -42,48 +42,8 @@ jobs:
           "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --virtual-time-budget=6000 --window-size=768,1024 --screenshot=screenshots/strong-tablet.png 'http://127.0.0.1:3000/bloom-tracker?fixture=strong'
           "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --virtual-time-budget=6000 --window-size=1440,1200 --screenshot=screenshots/strong-desktop.png 'http://127.0.0.1:3000/bloom-tracker?fixture=strong'
           "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --virtual-time-budget=6000 --window-size=390,844 --screenshot=screenshots/weather-390.png 'http://127.0.0.1:3000/bloom-tracker?fixture=weather'
-          "$CHROME" --headless --no-sandbox --hide-scrollbars --virtual-time-budget=10000 --window-size=390,2600 --screenshot=screenshots/wave-map-390.png 'http://127.0.0.1:3000/bloom-tracker?fixture=wave'
+          "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --virtual-time-budget=10000 --window-size=390,2600 --screenshot=screenshots/wave-map-390.png 'http://127.0.0.1:3000/bloom-tracker?fixture=wave'
           "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --virtual-time-budget=6000 --window-size=390,844 --screenshot=screenshots/weak-390.png 'http://127.0.0.1:3000/bloom-tracker?fixture=weak'
-      - name: Export shoreline-clipped Great Lakes state geometry
-        run: |
-          curl --fail --silent --show-error \
-            'https://raw.githubusercontent.com/martynafford/natural-earth-geojson/master/50m/cultural/ne_50m_admin_1_states_provinces.json' \
-            --output /tmp/admin1.json
-          curl --fail --silent --show-error \
-            'https://raw.githubusercontent.com/martynafford/natural-earth-geojson/master/50m/physical/ne_50m_lakes.json' \
-            --output /tmp/lakes.json
-          python -m pip install --quiet shapely
-          python - <<'PY'
-          import json
-          from shapely.geometry import shape, mapping
-          from shapely.ops import unary_union
-
-          wanted = {'Michigan', 'Wisconsin', 'Indiana', 'Ohio'}
-          great_lakes = {'Lake Superior', 'Lake Michigan', 'Lake Huron', 'Lake Erie', 'Lake St. Clair'}
-          admin = json.load(open('/tmp/admin1.json'))
-          lakes = json.load(open('/tmp/lakes.json'))
-          lake_geoms = [shape(f['geometry']) for f in lakes['features'] if (f.get('properties') or {}).get('name') in great_lakes]
-          if len(lake_geoms) < 4:
-              raise SystemExit(f'Great Lakes geometry incomplete: {len(lake_geoms)}')
-          water = unary_union(lake_geoms)
-          features = []
-          for feature in admin['features']:
-              p = feature.get('properties') or {}
-              if p.get('adm0_a3') != 'USA' or p.get('name') not in wanted:
-                  continue
-              geom = shape(feature['geometry']).difference(water).simplify(0.008, preserve_topology=True)
-              features.append({
-                  'type': 'Feature',
-                  'properties': {'name': p['name'], 'postal': p.get('postal')},
-                  'geometry': mapping(geom),
-              })
-          if {f['properties']['name'] for f in features} != wanted:
-              raise SystemExit('missing expected states')
-          out = {'type': 'FeatureCollection', 'features': features}
-          with open('screenshots/great-lakes-state-land.geojson', 'w') as f:
-              json.dump(out, f, separators=(',', ':'))
-          print([(f['properties']['name'], f['geometry']['type']) for f in features])
-          PY
       - uses: actions/upload-artifact@v4
         with:
           name: bloom-tracker-redesign-screenshots
