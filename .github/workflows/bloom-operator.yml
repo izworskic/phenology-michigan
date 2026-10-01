@@ -1,0 +1,112 @@
+name: Bloom Verified Observation
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: What do you want to do?
+        required: true
+        default: set
+        type: choice
+        options:
+          - set
+          - expire
+      destination:
+        description: Bloom destination
+        required: true
+        type: choice
+        options:
+          - holland-tulips
+          - mackinac-lilacs
+          - traverse-city-cherries
+          - meijer-gardens-cherries
+          - um-peony-garden
+      stage:
+        description: Current bloom stage (ignored when expiring)
+        required: true
+        default: PEAK
+        type: choice
+        options:
+          - DORMANT
+          - EMERGING
+          - BUILDING
+          - NEAR_PEAK
+          - PEAK
+          - FADING
+          - DONE
+      display_potential:
+        description: Overall amount/quality of flowers this season
+        required: true
+        default: normal
+        type: choice
+        options:
+          - normal
+          - reduced
+          - severely_reduced
+          - unknown
+      valid_hours:
+        description: How long this verification remains eligible as current evidence
+        required: true
+        default: '48'
+        type: choice
+        options:
+          - '24'
+          - '48'
+          - '72'
+          - '96'
+          - '168'
+      evidence:
+        description: What did you verify? Example - Centennial Park camera shows most beds fully open.
+        required: false
+        type: string
+      zone:
+        description: Optional zone/location within the destination; leave blank for the whole destination
+        required: false
+        type: string
+      observed_at:
+        description: Optional ISO date/time; leave blank to use the workflow run time
+        required: false
+        type: string
+      notes:
+        description: Optional internal note
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bloom-verified-observation
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Save or expire verified observation
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BLOOM_ACTION: ${{ inputs.action }}
+          BLOOM_DESTINATION: ${{ inputs.destination }}
+          BLOOM_STAGE: ${{ inputs.stage }}
+          BLOOM_DISPLAY_POTENTIAL: ${{ inputs.display_potential }}
+          BLOOM_VALID_HOURS: ${{ inputs.valid_hours }}
+          BLOOM_EVIDENCE: ${{ inputs.evidence }}
+          BLOOM_ZONE: ${{ inputs.zone }}
+          BLOOM_OBSERVED_AT: ${{ inputs.observed_at }}
+          BLOOM_NOTES: ${{ inputs.notes }}
+        run: node scripts/set-bloom-override.mjs
+      - name: Rebuild live bloom snapshot immediately
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl -sS --fail --max-time 180 -X POST \
+            "https://phenology.chrisizworski.com/api/bloom-refresh" \
+            -H "Authorization: Bearer ${CRON_SECRET}"
