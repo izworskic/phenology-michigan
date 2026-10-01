@@ -49,6 +49,16 @@ const hollandAuto = await fetchAutomaticObservation('holland-tulips', hollandSou
 assert.equal(hollandAuto.observation, null);
 assert.equal(hollandAuto.diagnostic, 'source_requires_locator_or_verified_override');
 
+for (const id of ['milan-lavender', 'frankenmuth-sunflowers', 'gull-meadow-sunflowers', 'blakes-sunflowers']) {
+  const source = getBloomSources(id)[0];
+  assert.equal(source.mode, 'verified_override', `${id} must require a verified current observation`);
+  const automatic = await fetchAutomaticObservation(id, source, async () => {
+    throw new Error('summer planning source must never be parsed as autonomous current bloom evidence');
+  });
+  assert.equal(automatic.observation, null);
+  assert.equal(automatic.diagnostic, 'source_requires_locator_or_verified_override');
+}
+
 const activeOverride = normalizeVerifiedOverride({
   destinationId: 'holland-tulips',
   stage: 'PEAK',
@@ -94,9 +104,13 @@ const snapshot = await buildBloomObservationSnapshot({
   now: snapshotNow,
 });
 assert.equal(snapshot.counts.observed, 2);
-assert.equal(snapshot.counts.unknown, 3);
+assert.equal(snapshot.counts.unknown, 7, 'four new planning-only summer displays must remain UNKNOWN until verified current evidence arrives');
+assert.equal(snapshot.destinations.length, 9);
 assert.equal(snapshot.destinations.find((d) => d.id === 'um-peony-garden').observation.stage, 'PEAK');
 assert.equal(snapshot.destinations.find((d) => d.id === 'holland-tulips').status, 'OBSERVED');
 assert.equal(snapshot.destinations.find((d) => d.id === 'meijer-gardens-cherries').status, 'UNKNOWN', 'undated abnormal-season copy cannot become a current observation');
+for (const id of ['milan-lavender', 'frankenmuth-sunflowers', 'gull-meadow-sunflowers', 'blakes-sunflowers']) {
+  assert.equal(snapshot.destinations.find((d) => d.id === id).status, 'UNKNOWN', `${id} must not infer current bloom from its festival/planning page`);
+}
 
 console.log('Bloom observation-ingestion invariants: PASS');

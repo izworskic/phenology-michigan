@@ -4,7 +4,9 @@ import { buildBloomDecision } from '../lib/bloom/engine.mjs';
 import { DISPLAY_POTENTIAL } from '../lib/bloom/contracts.mjs';
 import {
   BLOOM_MODEL_CALIBRATION,
+  bloomForecastIsCalibrated,
   computeBloomRecentVelocity,
+  forecastBloomWindows,
   predictBloomWindowFromFeatures,
 } from '../lib/bloom/model.mjs';
 
@@ -13,6 +15,10 @@ const idx = (s) => ORDER.indexOf(s);
 
 assert.equal(BLOOM_MODEL_CALIBRATION.version, 'corrected-velocity-ridge-v1');
 assert.equal(BLOOM_MODEL_CALIBRATION.coefficients.length, 11);
+assert.equal(bloomForecastIsCalibrated('holland-tulips'), true);
+for (const id of ['milan-lavender', 'frankenmuth-sunflowers', 'gull-meadow-sunflowers', 'blakes-sunflowers']) {
+  assert.equal(bloomForecastIsCalibrated(id), false, `${id} must not inherit the spring forecast calibration without validation`);
+}
 
 const velocity = computeBloomRecentVelocity(
   [{ stage: 'EMERGING', observedAt: '2026-05-18T12:00:00-04:00' }],
@@ -75,6 +81,29 @@ const decision = buildBloomDecision({
 });
 assert.equal(decision.forecast[0].stageHigh, 'FADING', 'decision engine must not clamp an explicitly calibrated durability tail back to PEAK');
 assert.equal(decision.decision, 'WAIT');
+
+const summerWeather = {
+  windows: [
+    { horizonDays: 3, gdd5: 50, gdd10: 25, freezeHours: 0, precipMm: 5, maxGustKmh: 30, hotHours27: 8 },
+    { horizonDays: 5, gdd5: 80, gdd10: 45, freezeHours: 0, precipMm: 8, maxGustKmh: 35, hotHours27: 16 },
+    { horizonDays: 7, gdd5: 110, gdd10: 70, freezeHours: 0, precipMm: 10, maxGustKmh: 40, hotHours27: 24 },
+  ],
+};
+const summerObservation = { stage: 'BUILDING', observedAt: '2026-07-30T12:00:00-04:00' };
+for (const id of ['milan-lavender', 'frankenmuth-sunflowers', 'gull-meadow-sunflowers', 'blakes-sunflowers']) {
+  assert.deepEqual(
+    forecastBloomWindows({ destination: getBloomDestination(id), observation: summerObservation, weatherSnapshot: summerWeather }),
+    [],
+    `${id} must remain current-observation-only until its forecast family is validated`
+  );
+  assert.throws(() => predictBloomWindowFromFeatures({
+    destinationId: id,
+    issueStage: 'BUILDING',
+    horizonDays: 3,
+    recentVelocity: 0,
+    weather: summerWeather.windows[0],
+  }), /outside calibrated bloom model destination families/);
+}
 
 assert.throws(() => predictBloomWindowFromFeatures({
   destinationId: 'um-peony-garden', issueStage: 'BUILDING', horizonDays: 5, recentVelocity: 0,

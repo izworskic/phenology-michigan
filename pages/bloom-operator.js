@@ -27,6 +27,26 @@ const DESTINATIONS = {
     sourceLabel: 'University of Michigan Peony Garden / verified observation',
     ttlHours: 36,
   },
+  'milan-lavender': {
+    name: 'Milan Lavender Lane',
+    sourceLabel: 'Lavender Lane Farm / verified field or official update observation',
+    ttlHours: 48,
+  },
+  'frankenmuth-sunflowers': {
+    name: 'Frankenmuth Flower Festival Sunflowers',
+    sourceLabel: "Grandpa Tiny's Farm / verified official sunflower update",
+    ttlHours: 48,
+  },
+  'gull-meadow-sunflowers': {
+    name: 'Gull Meadow Sunflower Days',
+    sourceLabel: 'Gull Meadow Farms / verified field or official update observation',
+    ttlHours: 48,
+  },
+  'blakes-sunflowers': {
+    name: "Blake's Sunflower Festival",
+    sourceLabel: "Blake's Orchard & Cider Mill / verified field or official update observation",
+    ttlHours: 48,
+  },
 };
 
 const STAGES = ['DORMANT', 'EMERGING', 'BUILDING', 'NEAR_PEAK', 'PEAK', 'FADING', 'DONE'];
@@ -155,7 +175,7 @@ export default function BloomOperator() {
           <label>Valid through<input type="datetime-local" value={validThrough} onChange={(e) => setValidThrough(e.target.value)} /></label>
           <label>Display potential<select value={displayPotential} onChange={(e) => setDisplayPotential(e.target.value)}>{POTENTIALS.map((p) => <option key={p}>{p}</option>)}</select></label>
           <label>Zone / area<input value={zone} onChange={(e) => setZone(e.target.value)} placeholder={destination?.name === 'Holland Tulips' ? 'Centennial Park' : 'Optional'} /></label>
-          <label>What you observed<textarea required minLength={8} value={evidenceText} onChange={(e) => setEvidenceText(e.target.value)} rows={4} placeholder="Example: Centennial Park camera shows widespread full color; later beds still opening." /></label>
+          <label>What you observed<textarea required minLength={8} value={evidenceText} onChange={(e) => setEvidenceText(e.target.value)} rows={4} placeholder="Example: Main field shows widespread open color; later rows are still opening." /></label>
           <label>Notes<textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} /></label>
           <button type="submit" disabled={busy}>Save + refresh live tracker</button>
         </form>

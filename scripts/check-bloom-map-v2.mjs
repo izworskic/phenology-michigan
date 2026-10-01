@@ -22,6 +22,13 @@ assert.ok(!enhancer.includes("badge: 'Bloom energy'"), 'user-facing map language
 assert.ok(enhancer.includes("badge: 'Bloom intensity'"), 'current map must use human bloom-intensity language');
 assert.ok(enhancer.includes('relative strength around tracked displays and observed zones'), 'map must explicitly reject literal flower-coverage interpretation');
 
+for (const id of ['milan-lavender', 'frankenmuth-sunflowers', 'gull-meadow-sunflowers', 'blakes-sunflowers']) {
+  assert.ok(enhancer.includes(`'${id}'`), `${id} must participate in the CARTO map`);
+}
+assert.ok(enhancer.includes('Spring starts') && enhancer.includes('Late summer'), 'seasonal legend must communicate the expanded spring-to-late-summer arc');
+assert.ok(enhancer.includes('Late June–early August') && enhancer.includes('Late August–early September'), 'seasonal map read must expose the extended summer timing');
+assert.ok(enhancer.includes('rawRecords.length < 1'), 'map enhancer must remain compatible with smaller deterministic fixtures while production expands');
+
 assert.ok(enhancer.includes("PEAK: { color: '#ff2f8b'"), 'peak bloom must use a vivid floral map color');
 assert.ok(enhancer.includes('energyRadius: 70000, energy: 1'), 'peak must have the widest and strongest intensity surface');
 assert.ok(enhancer.includes('energyRadius: 44000, energy: 0.56'), 'building bloom must use a smaller intermediate intensity surface');
@@ -62,6 +69,10 @@ assert.ok(enhancer.includes('google.com/maps/dir/?api=1'), 'origin view must lin
 assert.ok(enhancer.includes('Official live tracker + cameras'), 'Holland popup must surface its authoritative live tracker/cameras');
 assert.ok(enhancer.includes('Official Peony Garden bloom update'), 'Peony popup must surface its authoritative current update');
 assert.ok(enhancer.includes('MSU Northwest Michigan fruit updates'), 'Traverse popup must surface authoritative MSU updates');
+assert.ok(enhancer.includes('Official Lavender Lane seasonal update'), 'Milan popup must surface its official source');
+assert.ok(enhancer.includes('Official Grandpa Tiny’s flower update'), 'Frankenmuth popup must surface its official source');
+assert.ok(enhancer.includes('Official Gull Meadow sunflower update'), 'Gull Meadow popup must surface its official source');
+assert.ok(enhancer.includes('Official Blake’s sunflower update'), 'Blake popup must surface its official source');
 assert.ok(enhancer.includes('officialSource(record)'), 'selected-map experience must prefer the live observation source when available');
 assert.ok(enhancer.includes('bloom-trust-line'), 'selected-map experience must expose confidence/freshness or forecast trust context');
 
@@ -86,7 +97,11 @@ assert.ok(!season.includes("shortLabel: 'LATE APR–MAY'"), 'user-facing timing 
 assert.ok(!season.includes("shortLabel: 'LATE MAY–JUN'"), 'user-facing timing must not use JUN shorthand');
 assert.ok(season.includes("shortLabel: 'Early April'"), 'earliest seasonal timing must be written in plain language');
 assert.ok(season.includes("shortLabel: 'Late April into May'"), 'cross-month timing must be written in plain language');
-assert.ok(season.includes('How Michigan’s bloom season unfolds'), 'off-season map must have an interpretive title');
+assert.ok(season.includes("shortLabel: 'Late June into early August'"), 'lavender timing must extend the season beyond spring');
+assert.ok(season.includes("shortLabel: 'Late August into Labor Day'"), 'Blake timing must carry the tracked season into September');
+assert.ok(season.includes("seasonEnd: utcDay(year, 9, 20)"), 'global truth gate must keep the season open through late-summer displays');
+assert.ok(season.includes('How Michigan’s flower season unfolds'), 'off-season map must have an interpretive title');
+assert.ok(season.includes('early spring into September'), 'off-season map must explain the expanded seasonal arc');
 assert.ok(season.includes('Where is the strongest bloom right now?'), 'active map must frame the geographic decision directly');
 
 console.log('Bloom CARTO decision-map checks passed.');

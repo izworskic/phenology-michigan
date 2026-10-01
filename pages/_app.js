@@ -38,6 +38,7 @@ export default function App({ Component, pageProps }) {
       <Component {...pageProps} />
       {isBloomTracker && <Script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" strategy="afterInteractive" />}
       {isBloomTracker && <Script src="/bloom-map-v2.js" strategy="afterInteractive" />}
+      {isBloomTracker && <Script src="/bloom-map-label-declutter.js" strategy="afterInteractive" />}
       <script defer src="https://chrisizworski.com/assets/network-ads-v1.js"></script>
     </>
   );
