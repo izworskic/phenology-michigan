@@ -2,6 +2,7 @@ import Head from 'next/head';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowUpRight, ChevronDown, Clock3, Flower2, LocateFixed, MapPin, RefreshCw, ShieldCheck, X } from 'lucide-react';
 import { BLOOM_DESTINATIONS } from '../lib/bloom/destinations.mjs';
+import { getBloomExperience, photoFitLabel } from '../lib/bloom/experience-layer.mjs';
 import { selectWeekendForecast, sortPublicDestinations, stageLabel, stageRangeLabel } from '../lib/bloom/public-presentation.mjs';
 import { decisionCounts, evidenceStrength, freshnessLabel, goBeforeWindow, humanDecisionLabel, shortDecisionLabel } from '../lib/bloom/tracker-product.mjs';
 
@@ -116,30 +117,123 @@ function EvidenceFreshness({ decision }) {
   return <span className={`freshness freshness-${strength}`}>{freshnessLabel(decision)}</span>;
 }
 
-function OpportunityRow({ entry, rank, generatedAt }) {
+function preferredPhoto(experience) {
+  const photos = experience?.photos || [];
+  return photos.find((photo) => photo.kind === 'exact-bloom')
+    || photos.find((photo) => photo.kind === 'location-setting')
+    || photos[0]
+    || null;
+}
+
+function ExperienceThumbnail({ photo, eager = false }) {
+  if (!photo) return null;
+  return (
+    <figure className="opportunity-thumb" title={`${photoFitLabel(photo.kind)} · file photo, not live`}>
+      <img src={photo.imageUrl} alt={photo.alt} loading={eager ? 'eager' : 'lazy'} decoding="async" referrerPolicy="no-referrer" />
+      <figcaption>File photo</figcaption>
+    </figure>
+  );
+}
+
+function ExperienceGallery({ experience }) {
+  const photos = experience?.photos || [];
+  if (!photos.length) return null;
+  return (
+    <div className={`trip-gallery trip-gallery-${photos.length}`}>
+      {photos.map((photo) => (
+        <figure className="trip-photo" key={photo.sourceUrl}>
+          <div className="trip-photo-frame">
+            <img src={photo.imageUrl} alt={photo.alt} loading="lazy" decoding="async" referrerPolicy="no-referrer" />
+            <span>{photoFitLabel(photo.kind)}</span>
+          </div>
+          <figcaption>
+            <strong>File photo — not live.</strong> {photo.caption}
+            <a href={photo.sourceUrl} target="_blank" rel="noreferrer">{photo.creator} · {photo.license} <ArrowUpRight size={11} /></a>
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  );
+}
+
+function OpportunityCard({ entry, rank, generatedAt }) {
   const decision = entry?.decision || {};
   const state = decision.decision || 'UNKNOWN';
+  const experience = getBloomExperience(entry.id);
+  const photo = preferredPhoto(experience);
+  const weekend = selectWeekendForecast(decision.forecast, generatedAt);
+  const source = decision.source || entry?.observation?.source || null;
+
   return (
-    <article className="opportunity-row">
-      <div className="rank" aria-hidden="true">{rank}</div>
-      <div className="opportunity-main">
-        <div className="opportunity-titleline">
-          <div>
-            <span className="region">{entry.region}</span>
-            <h3>{entry.name}</h3>
+    <article className="opportunity-card" data-state={state}>
+      <div className="opportunity-card-summary">
+        <div className="rank" aria-hidden="true">{rank}</div>
+        <div className="opportunity-main">
+          <div className="opportunity-titleline">
+            <div>
+              <span className="region">{entry.region}</span>
+              <h3>{entry.name}</h3>
+            </div>
+            <DecisionPill value={state} compact />
           </div>
-          <DecisionPill value={state} compact />
+          {experience?.headline && <p className="opportunity-experience">{experience.headline}</p>}
+          <p className="opportunity-reason">{decision.reason || 'A trustworthy current trip call is not available yet.'}</p>
+          <div className="opportunity-meta">
+            <strong>{stageLabel(decision.currentStage)} now</strong>
+            <span>·</span>
+            <span>{weekendCopy(decision, generatedAt)}</span>
+            <span>·</span>
+            <EvidenceFreshness decision={decision} />
+          </div>
         </div>
-        <p className="opportunity-reason">{decision.reason || 'A trustworthy current trip call is not available yet.'}</p>
-        <div className="opportunity-meta">
-          <strong>{stageLabel(decision.currentStage)} now</strong>
-          <span>·</span>
-          <span>{weekendCopy(decision, generatedAt)}</span>
-          <span>·</span>
-          <EvidenceFreshness decision={decision} />
-        </div>
+        <ExperienceThumbnail photo={photo} eager={rank <= 2} />
       </div>
-      <a className="detail-link" href={`#details-${entry.id}`}>Details <ChevronDown size={14} /></a>
+
+      <details className="opportunity-more" id={`details-${entry.id}`}>
+        <summary>
+          <span>See the place + evidence</span>
+          <ChevronDown className="opportunity-chevron" size={16} />
+        </summary>
+        <div className="opportunity-expanded">
+          {experience && (
+            <div className="trip-story">
+              <ExperienceGallery experience={experience} />
+              <div className="trip-copy">
+                <span className="eyebrow">What the trip feels like</span>
+                <p>{experience.whatYouWillSee}</p>
+                <p><strong>Best move:</strong> {experience.bestExperience}</p>
+                <p className="trip-look"><strong>Look for:</strong> {experience.lookFor}</p>
+              </div>
+            </div>
+          )}
+
+          <dl className="detail-grid">
+            <div><dt>Now</dt><dd>{stageLabel(decision.currentStage)}</dd></div>
+            <div><dt>This weekend</dt><dd>{weekend ? stageRangeLabel(weekend.stageLow, weekend.stageHigh) : 'No reliable forecast'}</dd></div>
+            <div><dt>Confidence</dt><dd>{friendlyConfidence(decision.confidence)}</dd></div>
+            <div><dt>Evidence</dt><dd><EvidenceFreshness decision={decision} /></dd></div>
+          </dl>
+
+          {decision.decision === 'GO_BEFORE' && <div className="weather-callout"><Clock3 size={16} /> {weekendCopy(decision, generatedAt)}</div>}
+
+          {Array.isArray(entry.zoneStatus) && (
+            <div className="zone-progress">
+              <span className="eyebrow">Geographic progression</span>
+              {entry.zoneStatus.map((zone) => (
+                <div className="zone-row" key={zone.name}><span>{zone.name}</span><strong>{stageLabel(zone.stage)}</strong></div>
+              ))}
+            </div>
+          )}
+
+          <div className="trip-links">
+            {experience?.experienceSource?.url && (
+              <a href={experience.experienceSource.url} target="_blank" rel="noreferrer">Visitor context: {experience.experienceSource.label} <ArrowUpRight size={13} /></a>
+            )}
+            {source?.url && <a href={source.url} target="_blank" rel="noreferrer">Live bloom evidence <ArrowUpRight size={13} /></a>}
+          </div>
+          <p className="photo-truth"><ShieldCheck size={13} /> Photos help you picture the place. They are not used as current bloom evidence.</p>
+        </div>
+      </details>
     </article>
   );
 }
@@ -307,51 +401,6 @@ function MichiganBloomMap({ destinations, generatedAt }) {
   );
 }
 
-function DestinationDetails({ entry, generatedAt }) {
-  const decision = entry.decision || {};
-  const source = decision.source || entry?.observation?.source || null;
-  const weekend = selectWeekendForecast(decision.forecast, generatedAt);
-  const state = decision.decision || 'UNKNOWN';
-  return (
-    <details className="destination-detail" id={`details-${entry.id}`}>
-      <summary>
-        <div>
-          <span className="region">{entry.region}</span>
-          <strong>{entry.name}</strong>
-        </div>
-        <DecisionPill value={state} compact />
-        <ChevronDown className="detail-chevron" size={18} />
-      </summary>
-      <div className="detail-body">
-        <div className="detail-answer">
-          <span className="eyebrow">Trip answer</span>
-          <h3>{humanDecisionLabel(state)}</h3>
-          <p>{decision.reason || 'A trustworthy current trip decision is not available yet.'}</p>
-        </div>
-        <dl className="detail-grid">
-          <div><dt>Now</dt><dd>{stageLabel(decision.currentStage)}</dd></div>
-          <div><dt>This weekend</dt><dd>{weekend ? stageRangeLabel(weekend.stageLow, weekend.stageHigh) : 'No reliable forecast'}</dd></div>
-          <div><dt>Confidence</dt><dd>{friendlyConfidence(decision.confidence)}</dd></div>
-          <div><dt>Evidence</dt><dd><EvidenceFreshness decision={decision} /></dd></div>
-        </dl>
-        {decision.decision === 'GO_BEFORE' && <div className="weather-callout"><Clock3 size={16} /> {weekendCopy(decision, generatedAt)}</div>}
-        {Array.isArray(entry.zoneStatus) && (
-          <div className="zone-progress">
-            <span className="eyebrow">Geographic progression</span>
-            {entry.zoneStatus.map((zone) => (
-              <div className="zone-row" key={zone.name}><span>{zone.name}</span><strong>{stageLabel(zone.stage)}</strong></div>
-            ))}
-          </div>
-        )}
-        <div className="detail-footer">
-          <span>The model does not manufacture bloom from weather alone.</span>
-          {source?.url && <a href={source.url} target="_blank" rel="noreferrer">View evidence <ArrowUpRight size={14} /></a>}
-        </div>
-      </div>
-    </details>
-  );
-}
-
 function EmptyState() {
   return (
     <div className="data-empty"><Flower2 size={22} /><div><strong>Bloom status is loading.</strong><p>The tracker will not substitute a calendar guess for missing live evidence.</p></div></div>
@@ -368,6 +417,8 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
   const useful = destinations.filter((entry) => ['GO', 'GO_BEFORE'].includes(entry?.decision?.decision));
   const featured = useful[0] || destinations.find((entry) => entry?.decision?.decision === 'WAIT') || destinations[0] || null;
   const allWeak = destinations.length > 0 && destinations.every((entry) => ['UNKNOWN', 'LIMITED'].includes(entry?.decision?.decision));
+  const featuredExperience = featured ? getBloomExperience(featured.id) : null;
+  const featuredPhoto = preferredPhoto(featuredExperience);
 
   async function refresh() {
     if (fixtureName) return;
@@ -398,17 +449,17 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
     url: PAGE_URL,
     applicationCategory: 'TravelApplication',
     operatingSystem: 'Any',
-    description: 'Live Michigan flower bloom conditions and weekend trip decisions using fresh observations, forecast progression, and display durability risk.',
+    description: 'Live Michigan flower bloom conditions and weekend trip decisions using fresh observations, forecast progression, display durability risk, and restrained destination photo context.',
   };
 
   return (
     <>
       <Head>
         <title>Michigan Bloom Tracker — Best Blooms This Weekend</title>
-        <meta name="description" content="See the best Michigan flower blooms right now and this weekend, including Traverse City cherries, Holland tulips, Mackinac lilacs, U-M peonies and Meijer Gardens." />
+        <meta name="description" content="See the best Michigan flower blooms right now and this weekend, including Traverse City cherries, Holland tulips, Mackinac lilacs, U-M peonies and Meijer Gardens, with photos and trip context built into each live decision." />
         <link rel="canonical" href={PAGE_URL} />
         <meta property="og:title" content="Michigan Bloom Tracker — Best Blooms This Weekend" />
-        <meta property="og:description" content="A decision-first Michigan bloom tracker: what is worth the drive, what should wait, and where the bloom is happening." />
+        <meta property="og:description" content="A decision-first Michigan bloom tracker: what is worth the drive, what the place is actually like, and where the bloom is happening." />
         <meta property="og:url" content={PAGE_URL} />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
@@ -440,12 +491,23 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
             ) : featured && (
               <section className="featured">
                 <div className="featured-topline"><span className="featured-label">Best this weekend</span><DecisionPill value={featured.decision?.decision || 'UNKNOWN'} /></div>
-                <div className="featured-place">{featured.name}</div>
-                <h2>{featured.decision?.reason || humanDecisionLabel(featured.decision?.decision || 'UNKNOWN')}</h2>
-                <div className="featured-bottom">
-                  <span><strong>{stageLabel(featured.decision?.currentStage)}</strong> now</span>
-                  <span>·</span><span>{weekendCopy(featured.decision, generatedAt)}</span>
-                  <span>·</span><EvidenceFreshness decision={featured.decision} />
+                <div className="featured-grid">
+                  <div className="featured-copy">
+                    <div className="featured-place">{featured.name}</div>
+                    <h2>{featured.decision?.reason || humanDecisionLabel(featured.decision?.decision || 'UNKNOWN')}</h2>
+                    {featuredExperience?.headline && <p className="featured-experience">{featuredExperience.headline}</p>}
+                    <div className="featured-bottom">
+                      <span><strong>{stageLabel(featured.decision?.currentStage)}</strong> now</span>
+                      <span>·</span><span>{weekendCopy(featured.decision, generatedAt)}</span>
+                      <span>·</span><EvidenceFreshness decision={featured.decision} />
+                    </div>
+                  </div>
+                  {featuredPhoto && (
+                    <figure className="featured-photo">
+                      <img src={featuredPhoto.imageUrl} alt={featuredPhoto.alt} loading="eager" decoding="async" referrerPolicy="no-referrer" />
+                      <figcaption>{photoFitLabel(featuredPhoto.kind)} · file photo</figcaption>
+                    </figure>
+                  )}
                 </div>
               </section>
             )}
@@ -459,18 +521,13 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
 
             <section className="opportunity-section" aria-labelledby="where-title">
               <div className="section-heading"><div><span className="eyebrow">Statewide opportunity desk</span><h2 id="where-title">Where should I go?</h2></div><span className="count">{destinations.length} tracked displays</span></div>
+              <p className="opportunity-intro">The live decision stays primary. Each place gets just enough visual context to show what you are driving toward; expand only the destinations you care about.</p>
               <div className="opportunity-list">
-                {destinations.map((entry, index) => <OpportunityRow key={entry.id} entry={entry} rank={index + 1} generatedAt={generatedAt} />)}
+                {destinations.map((entry, index) => <OpportunityCard key={entry.id} entry={entry} rank={index + 1} generatedAt={generatedAt} />)}
               </div>
             </section>
 
             <MichiganBloomMap destinations={destinations} generatedAt={generatedAt} />
-
-            <section className="details-section" aria-labelledby="details-title">
-              <div className="section-heading"><div><span className="eyebrow">Destination checker</span><h2 id="details-title">Check a specific bloom</h2></div></div>
-              <p className="section-intro">Already thinking about Holland, Traverse City, Mackinac, Ann Arbor, or Meijer Gardens? The answer is visible before you expand; open only the evidence you need.</p>
-              <div className="details-list">{destinations.map((entry) => <DestinationDetails key={entry.id} entry={entry} generatedAt={generatedAt} />)}</div>
-            </section>
 
             <section className="trust-block"><div className="trust-icon"><ShieldCheck size={21} /></div><div><h2>Why the tracker can say “not enough evidence”</h2><p>Observations anchor the forecast. Weather can change development or shorten a display, but it cannot create bloom that has not been observed. Stale observations lower confidence, abnormal-year evidence overrides normal timing, and long-range output stays a range rather than a fake peak date.</p></div></section>
           </>
@@ -489,13 +546,21 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
         .intro-block{padding:20px 2px 13px}.kicker{display:flex;align-items:center;gap:7px;color:#5a744f;font-size:11px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}.intro-block h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(30px,6.5vw,48px);line-height:1.01;letter-spacing:-.03em;margin:8px 0 8px;max-width:760px;color:#1f2e22}.intro-block p{font-size:14px;line-height:1.45;color:#626b61;margin:0;max-width:680px}.updated{margin-top:10px;display:flex;align-items:center;gap:7px;color:#777f76;font-size:11.5px}.live-dot{width:7px;height:7px;border-radius:50%;background:#4c8a5b;box-shadow:0 0 0 3px rgba(76,138,91,.12)}
         .featured{border:1px solid #abcaae;border-radius:15px;background:#f8fbf6;padding:15px 16px;margin:4px 0 10px}.featured-quiet{border-color:#d2ccbf;background:#faf8f2}.featured-topline{display:flex;align-items:center;justify-content:space-between;gap:10px}.featured-label,.eyebrow{display:block;font-size:10px;font-weight:850;letter-spacing:.09em;text-transform:uppercase;color:#7c8679;margin-bottom:4px}.featured-place{font-size:13px;font-weight:850;color:#3b5941;margin:7px 0 3px}.featured h2{font-family:Georgia,"Times New Roman",serif;font-size:20px;line-height:1.25;margin:0;color:#273229}.featured p{font-size:13px;color:#667066;margin:8px 0 0}.featured-bottom{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;color:#657064;font-size:12px}
         .status-strip{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #d5d2c7;border-radius:12px;background:#fbfaf5;margin-bottom:17px;overflow:hidden}.status-strip div{padding:9px 7px;text-align:center;border-right:1px solid #e2ded3}.status-strip div:last-child{border-right:0}.status-strip strong{display:block;font:700 19px Georgia,"Times New Roman",serif;color:#2e3b31}.status-strip span{display:block;font-size:9px;line-height:1.15;color:#777f76;margin-top:2px}
-        .section-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:7px}.section-heading h2{font-family:Georgia,"Times New Roman",serif;margin:0;font-size:23px;color:#263329}.count{font-size:11px;color:#778078;white-space:nowrap}.opportunity-section{margin:0 0 20px}.opportunity-list{border-top:1px solid #d7d2c5}
-        .details-section{margin:0 0 24px}.details-list{border-top:1px solid #d5d1c5}
+        .section-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:7px}.section-heading h2{font-family:Georgia,"Times New Roman",serif;margin:0;font-size:23px;color:#263329}.count{font-size:11px;color:#778078;white-space:nowrap}.opportunity-section{margin:0 0 22px}.opportunity-intro{font-size:12.5px;line-height:1.45;color:#697269;margin:0 0 10px;max-width:760px}.opportunity-list{display:grid;gap:9px}
         .trust-block{display:flex;gap:12px;margin:25px 0 10px;border-top:1px solid #d9d4c8;padding-top:20px}.trust-icon{width:38px;height:38px;border-radius:10px;background:#e8efe7;color:#476149;display:grid;place-items:center;flex:0 0 auto}.trust-block h2{font-family:Georgia,"Times New Roman",serif;font-size:18px;margin:0 0 5px}.trust-block p{margin:0;color:#667066;font-size:12.5px;line-height:1.5;max-width:760px}
         footer{margin-top:30px;padding-top:16px;border-top:1px solid #d9d4c8;display:flex;flex-direction:column;gap:7px;font-size:11.5px;color:#7c837a}footer a{color:#506552}
         @media(min-width:720px){.page-shell{padding-left:24px;padding-right:24px}.intro-block{padding-top:28px}.featured{padding:17px 19px}.featured h2{font-size:22px}}
         @media(max-width:430px){.topbar .brand-divider,.topbar .brand{display:none}.intro-block h1{font-size:31px}.status-strip span{font-size:8.5px}.fixture-badge{display:none}}
         @media(prefers-reduced-motion:reduce){:global(html){scroll-behavior:auto}.spin{animation:none}}
+      `}</style>
+
+      <style jsx global>{`
+        .featured-grid{display:grid;grid-template-columns:minmax(0,1fr) 104px;gap:12px;align-items:start}.featured-copy{min-width:0}.featured-experience{font:600 12.5px/1.38 Georgia,"Times New Roman",serif!important;color:#4b5a4d!important;margin-top:7px!important}.featured-photo{margin:7px 0 0;border:1px solid #d2d8cf;border-radius:10px;overflow:hidden;background:#eef1eb}.featured-photo img{display:block;width:100%;height:86px;object-fit:cover}.featured-photo figcaption{padding:5px 6px;color:#7b837b;font-size:8px;line-height:1.2;background:#fbfaf5}
+        .opportunity-card{border:1px solid #d7d3c7;border-radius:14px;background:#fbfaf5;overflow:hidden}.opportunity-card[data-state="GO"],.opportunity-card[data-state="GO_BEFORE"]{border-color:#b8cdbb;background:#fcfdf9}.opportunity-card-summary{display:grid;grid-template-columns:27px minmax(0,1fr) 92px;gap:9px;align-items:start;padding:11px}.opportunity-card .rank{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#e7ece4;color:#536052;font-size:11px;font-weight:850;margin-top:1px}.opportunity-card .region{display:block;font-size:9.5px;font-weight:850;text-transform:uppercase;letter-spacing:.075em;color:#858a82}.opportunity-card h3{font-family:Georgia,"Times New Roman",serif;font-size:17px;line-height:1.14;margin:2px 0 0;color:#29342b}.opportunity-titleline{display:flex;align-items:flex-start;gap:8px}.opportunity-titleline>div{min-width:0}.opportunity-titleline .decision-pill{margin-left:auto}.opportunity-experience{font:600 12.5px/1.35 Georgia,"Times New Roman",serif;color:#516052;margin:6px 0 4px}.opportunity-reason{font-size:12px;line-height:1.38;color:#4f5951;margin:0 0 5px}.opportunity-meta{display:flex;flex-wrap:wrap;gap:4px;color:#727b72;font-size:10px;line-height:1.35}.opportunity-meta strong{color:#4d5b4f}.opportunity-thumb{position:relative;margin:0;border-radius:9px;overflow:hidden;border:1px solid #d1d4cc;background:#e5e8e1;aspect-ratio:1/1}.opportunity-thumb img{display:block;width:100%;height:100%;object-fit:cover}.opportunity-thumb figcaption{position:absolute;left:5px;bottom:5px;background:rgba(33,43,35,.78);color:#fff;border-radius:999px;padding:3px 5px;font-size:7.5px;font-weight:800;line-height:1;backdrop-filter:blur(4px)}
+        .opportunity-more{border-top:1px solid #e0ddd3}.opportunity-more>summary{list-style:none;display:flex;align-items:center;justify-content:flex-end;gap:5px;padding:8px 11px;color:#526554;font-size:10.5px;font-weight:800;cursor:pointer}.opportunity-more>summary::-webkit-details-marker{display:none}.opportunity-chevron{transition:transform .16s ease}.opportunity-more[open] .opportunity-chevron{transform:rotate(180deg)}.opportunity-expanded{padding:2px 11px 13px}.trip-story{display:grid;gap:11px}.trip-gallery{display:grid;gap:5px}.trip-gallery-2{grid-template-columns:1fr 1fr}.trip-photo{margin:0;min-width:0;border:1px solid #dedbd1;border-radius:10px;overflow:hidden;background:#fffdf8}.trip-photo-frame{position:relative;aspect-ratio:4/3;overflow:hidden;background:#e8e7e0}.trip-photo-frame img{display:block;width:100%;height:100%;object-fit:cover}.trip-photo-frame>span{position:absolute;left:6px;top:6px;background:rgba(31,42,34,.82);color:#fff;border-radius:999px;padding:4px 6px;font-size:8px;font-weight:850;line-height:1.1}.trip-photo figcaption{padding:7px 8px;color:#717971;font-size:9px;line-height:1.35}.trip-photo figcaption strong{color:#566158}.trip-photo figcaption a{display:flex;align-items:center;gap:3px;margin-top:4px;width:max-content;max-width:100%;color:#536756;font-weight:750;text-decoration:none}.trip-copy{padding:2px 1px}.trip-copy .eyebrow{display:block;font-size:9px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;color:#7c8679;margin-bottom:4px}.trip-copy p{font-size:12px;line-height:1.48;color:#4d584f;margin:0 0 8px}.trip-copy strong{color:#35463a}.trip-look{padding-top:7px;border-top:1px dotted #d7d3c8}.trip-links{display:flex;flex-wrap:wrap;gap:7px 14px;margin-top:10px}.trip-links a{display:inline-flex;align-items:center;gap:4px;color:#4e6652;font-size:10.5px;font-weight:800;text-decoration:none}.photo-truth{display:flex;align-items:flex-start;gap:6px;color:#7c837b;font-size:9.5px;line-height:1.35;margin:9px 0 0}.photo-truth svg{flex:0 0 auto;margin-top:1px}
+        @media(min-width:720px){.featured-grid{grid-template-columns:minmax(0,1fr) 178px;gap:18px}.featured-photo img{height:118px}.opportunity-card-summary{grid-template-columns:32px minmax(0,1fr) 132px;gap:12px;padding:13px 14px}.opportunity-thumb{aspect-ratio:4/3}.opportunity-card h3{font-size:18px}.opportunity-experience{font-size:13px}.opportunity-reason{font-size:12.5px}.opportunity-more>summary{padding:8px 14px}.opportunity-expanded{padding:4px 14px 15px}.trip-story{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);align-items:start}.trip-copy{padding:2px 5px}.trip-copy p{font-size:12.5px}}
+        @media(max-width:430px){.featured-grid{grid-template-columns:minmax(0,1fr) 96px;gap:10px}.featured-photo img{height:82px}.featured-photo figcaption{font-size:7.5px}.opportunity-card-summary{grid-template-columns:24px minmax(0,1fr) 82px;gap:8px;padding:10px}.opportunity-titleline{display:block}.opportunity-titleline .decision-pill{margin-top:5px}.opportunity-card h3{font-size:16px}.opportunity-experience{font-size:12px}.opportunity-reason{font-size:11.5px}.opportunity-meta{font-size:9.5px}.trip-gallery-2{grid-template-columns:1fr 1fr}.trip-photo figcaption{font-size:8.5px}.trip-photo-frame>span{font-size:7px}.trip-copy p{font-size:11.5px}.opportunity-more>summary{justify-content:flex-start;padding-left:42px}}
+        @media(prefers-reduced-motion:reduce){.opportunity-chevron{transition:none}}
       `}</style>
     </>
   );

@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
+import { BLOOM_DESTINATIONS } from '../lib/bloom/destinations.mjs';
+import { BLOOM_EXPERIENCES } from '../lib/bloom/experience-layer.mjs';
 import { getBloomTrackerFixture } from '../lib/bloom/tracker-fixtures.mjs';
 import { decisionCounts, evidenceStrength, goBeforeWindow, humanDecisionLabel } from '../lib/bloom/tracker-product.mjs';
 
@@ -34,6 +36,22 @@ weak.destinations.filter((d) => d.decision.decision === 'UNKNOWN').forEach((entr
   assert.equal(evidenceStrength(entry.decision), 'weak', 'stale UNKNOWN evidence must look weak');
 });
 
+for (const destination of BLOOM_DESTINATIONS) {
+  const experience = BLOOM_EXPERIENCES[destination.id];
+  assert.ok(experience, `${destination.id} must retain destination experience context`);
+  assert.ok(experience.headline && experience.whatYouWillSee && experience.bestExperience && experience.lookFor, `${destination.id} must explain the actual visitor experience`);
+  assert.ok(experience.experienceSource?.url?.startsWith('https://'), `${destination.id} must cite a local visitor source`);
+  assert.ok(experience.photos.length >= 1 && experience.photos.length <= 2, `${destination.id} must use a restrained one-or-two-photo set`);
+  for (const photo of experience.photos) {
+    assert.ok(['exact-bloom', 'flower-reference', 'location-setting'].includes(photo.kind), `${destination.id} photo must declare its fit`);
+    assert.ok(photo.imageUrl.startsWith('https://commons.wikimedia.org/wiki/Special:Redirect/file/'), `${destination.id} photo must use the vetted Commons path`);
+    assert.ok(photo.sourceUrl.startsWith('https://commons.wikimedia.org/wiki/File:'), `${destination.id} photo must retain its source page`);
+    assert.ok(photo.creator && photo.license && photo.alt && photo.caption, `${destination.id} photos must retain attribution and accessible context`);
+    assert.match(photo.license, /^(CC0|Public Domain|CC BY(?:-SA)?)/, `${destination.id} photo license must allow reuse`);
+    assert.ok(!/\b(?:NC|ND)\b/.test(photo.license), `${destination.id} photo must not use NC or ND licensing`);
+  }
+}
+
 const page = await fs.readFile(new URL('../pages/bloom-tracker.js', import.meta.url), 'utf8');
 assert.ok(!page.includes('geomapsuite.com'), 'tracker must not depend on the broken hot-linked Michigan silhouette');
 assert.ok(!page.includes('selected-strip'), 'tracker must not reintroduce the redundant map-selection strip');
@@ -44,6 +62,25 @@ assert.ok(page.includes('geometryPaths'), 'map must render real geographic polyg
 assert.ok(page.includes('MapSelectedPanel'), 'one marker tap must surface useful in-map detail');
 assert.ok(page.includes('wavePath'), 'map must support geographic bloom progression when zone evidence exists');
 assert.ok(page.includes('What is worth the drive this weekend?'), 'first screen must remain decision-first');
+
+assert.ok(page.includes('function OpportunityCard'), 'experience must be integrated into each ranked destination');
+assert.ok(page.includes('ExperienceThumbnail'), 'ranked destinations must carry visual context');
+assert.ok(page.includes('See the place + evidence'), 'richer experience and evidence must be optional expansion, not another page layer');
+assert.ok(page.includes('File photo — not live'), 'expanded photos must clearly state that they are not current evidence');
+assert.ok(page.includes('Photos help you picture the place. They are not used as current bloom evidence.'), 'photo truth rule must remain explicit');
+assert.ok(page.includes('featured-photo'), 'the top recommendation should gain visual context without creating a separate hero section');
+assert.ok(!page.includes('ExperienceSection'), 'do not reintroduce a separate duplicated experience section');
+assert.ok(!page.includes('experience-grid'), 'do not reintroduce the swipeable card wall');
+assert.ok(!page.includes('DestinationDetails'), 'do not repeat all destinations in a third destination-checker layer');
+assert.ok(!page.includes('details-section'), 'destination evidence must live with the ranked destination itself');
+
+const decisionIndex = page.indexOf('What is worth the drive this weekend?');
+const rankingIndex = page.indexOf('Where should I go?');
+const opportunityCardsIndex = page.indexOf('<OpportunityCard');
+const mapIndex = page.indexOf('<MichiganBloomMap destinations={destinations} generatedAt={generatedAt} />');
+assert.ok(decisionIndex >= 0 && rankingIndex > decisionIndex, 'rankings must follow the first-screen decision');
+assert.ok(opportunityCardsIndex > rankingIndex, 'integrated visual experience must live inside the ranked list');
+assert.ok(mapIndex > opportunityCardsIndex, 'map must follow the ranked decisions directly without an intervening duplicate product');
 
 const mapGeometry = JSON.parse(await fs.readFile(new URL('../public/maps/great-lakes-context.geojson', import.meta.url), 'utf8'));
 const stateNames = new Set((mapGeometry.features || []).map((feature) => feature?.properties?.name));
