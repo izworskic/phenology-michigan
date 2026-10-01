@@ -5,9 +5,13 @@ All insights are computed from live sources (USGS, NWS, NOAA, eBird, Open-Meteo,
 
 ## Key sections
 - [Dashboard](https://phenology.chrisizworski.com/): the moment, the read, and the season wheel
+- [Michigan Bloom Tracker](https://phenology.chrisizworski.com/bloom-tracker): live destination decisions for Michigan flower displays using dated observations, forecast progression, bloom durability, confidence, and provenance
 - Water: Au Sable and Rifle river conditions, Saginaw Bay buoy, bay hatches
 - Land: growing degree days, garden windows, frost outlook
 - Sky: daylight, aurora Kp, moon
+
+## Product distinction
+Michigan Phenology answers what the natural year is doing. Michigan Bloom Tracker answers where a visitor should go to see the best flower display now or this weekend. The Bloom Tracker does not substitute calendar dates for missing current observations.
 
 ## Author
 Chris Izworski (https://chrisizworski.com), Michigan outdoor writer and trout angler. Related sites: Michigan Trout Report (https://michigantroutreport.com), Michigan Trout Daily (https://daily.michigantroutreport.com), Michigan Birding Report (https://michiganbirdingreport.com), Great Lakes Levels (https://greatlakeslevels.org).
