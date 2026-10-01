@@ -30,7 +30,7 @@ assert.ok(!season.includes("shortLabel: 'LATE APR–MAY'"), 'user-facing timing 
 assert.ok(!season.includes("shortLabel: 'LATE MAY–JUN'"), 'user-facing timing must not use JUN shorthand');
 assert.ok(season.includes("shortLabel: 'Early April'"), 'earliest seasonal timing must be written in plain language');
 assert.ok(season.includes("shortLabel: 'Late April into May'"), 'cross-month timing must be written in plain language');
-assert.ok(season.includes("title: 'How Michigan’s bloom season unfolds'"), 'off-season map must have an interpretive title');
-assert.ok(season.includes("title: 'Where is the strongest bloom right now?'"), 'active map must frame the geographic decision directly');
+assert.ok(season.includes('How Michigan’s bloom season unfolds'), 'off-season map must have an interpretive title');
+assert.ok(season.includes('Where is the strongest bloom right now?'), 'active map must frame the geographic decision directly');
 
 console.log('Bloom CARTO insight map checks passed.');
