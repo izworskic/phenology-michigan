@@ -48,10 +48,9 @@ jobs:
             await page.locator('.map-section').scrollIntoViewIfNeeded();
             await page.waitForTimeout(400);
             const result = await page.evaluate(() => {
-              const pane = document.querySelector('.leaflet-bloomEnergyPane');
+              const pane = document.querySelector('.bloom-carto-map .leaflet-pane[style*="mix-blend-mode"]');
               const rings = [...document.querySelectorAll('.bloom-energy-ring')];
               const opacities = rings.map((ring) => Number(getComputedStyle(ring).fillOpacity || ring.getAttribute('fill-opacity') || 0));
-              const paneTransform = pane?.closest('.leaflet-map-pane')?.style.transform || '';
               const insight = document.querySelector('.bloom-map-insight-copy')?.textContent || '';
               const tile = document.querySelector('.bloom-carto-map .leaflet-tile-loaded')?.getBoundingClientRect();
               return {
@@ -59,7 +58,7 @@ jobs:
                 opacitySum: opacities.reduce((sum, value) => sum + value, 0),
                 maxOpacity: Math.max(0, ...opacities),
                 paneExists: Boolean(pane),
-                paneTransform,
+                paneBlend: pane ? getComputedStyle(pane).mixBlendMode : '',
                 insight,
                 tileSize: tile ? [tile.width, tile.height] : null,
               };
@@ -70,7 +69,7 @@ jobs:
 
           const strong = await inspect('strong', '/tmp/bloom-energy-strong.png');
           const weak = await inspect('weak', '/tmp/bloom-energy-weak.png');
-          if (!strong.paneExists || !weak.paneExists) throw new Error('dedicated bloom energy pane missing');
+          if (!strong.paneExists || !weak.paneExists || strong.paneBlend !== 'multiply') throw new Error(`dedicated bloom energy pane missing: ${JSON.stringify({strong,weak})}`);
           if (strong.ringCount < 12) throw new Error(`strong fixture lacks energy surface: ${JSON.stringify(strong)}`);
           if (strong.opacitySum <= weak.opacitySum) throw new Error(`strong bloom should carry more total energy than weak: ${JSON.stringify({strong,weak})}`);
           if (strong.maxOpacity < 0.2) throw new Error(`peak core is not vivid enough: ${JSON.stringify(strong)}`);
