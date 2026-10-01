@@ -44,9 +44,10 @@ jobs:
           await page.waitForFunction(() => document.querySelectorAll('.bloom-map-marker').length === 9, null, { timeout: 15000 });
           await page.waitForFunction(() => document.querySelectorAll('.bloom-carto-map .leaflet-tile-loaded').length >= 4, null, { timeout: 15000 });
           await page.locator('.map-section').scrollIntoViewIfNeeded();
-          await page.waitForTimeout(500);
+          await page.waitForTimeout(700);
           const report = await page.evaluate(() => {
-            const tooltips = [...document.querySelectorAll('.bloom-map-tooltip')].map((node) => {
+            const allTooltips = [...document.querySelectorAll('.bloom-map-tooltip')];
+            const tooltips = allTooltips.filter((node) => getComputedStyle(node).visibility !== 'hidden').map((node) => {
               const r = node.getBoundingClientRect();
               return { text: node.textContent.trim(), left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height };
             });
@@ -59,7 +60,8 @@ jobs:
             return {
               markerCount: document.querySelectorAll('.bloom-map-marker').length,
               cardCount: document.querySelectorAll('.opportunity-card').length,
-              tooltipCount: tooltips.length,
+              tooltipCount: allTooltips.length,
+              visibleTooltipCount: tooltips.length,
               overlaps,
               overflow: Math.max(0, body.width - innerWidth, document.documentElement.scrollWidth - innerWidth),
               insight: document.querySelector('.bloom-map-insight-copy')?.textContent?.trim() || '',
@@ -67,6 +69,8 @@ jobs:
             };
           });
           if (report.markerCount !== 9 || report.cardCount !== 9) throw new Error(`Expected nine markers/cards: ${JSON.stringify(report)}`);
+          if (report.overlaps.length) throw new Error(`Visible map labels collide: ${JSON.stringify(report.overlaps)}`);
+          if (report.visibleTooltipCount < 4) throw new Error(`Declutter hid too much context: ${JSON.stringify(report)}`);
           if (report.overflow > 2) throw new Error(`Mobile overflow: ${report.overflow}`);
           if (errors.length) throw new Error(`Console errors: ${errors.join(' | ')}`);
           await page.screenshot({ path: '/tmp/bloom-summer-mobile.png', fullPage: true });
