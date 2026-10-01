@@ -44,17 +44,36 @@ jobs:
           "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --virtual-time-budget=6000 --window-size=390,844 --screenshot=screenshots/weather-390.png 'http://127.0.0.1:3000/bloom-tracker?fixture=weather'
           "$CHROME" --headless --no-sandbox --use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader --hide-scrollbars --virtual-time-budget=10000 --window-size=390,2600 --screenshot=screenshots/wave-map-390.png 'http://127.0.0.1:3000/bloom-tracker?fixture=wave'
           "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --virtual-time-budget=6000 --window-size=390,844 --screenshot=screenshots/weak-390.png 'http://127.0.0.1:3000/bloom-tracker?fixture=weak'
-      - name: Fetch current Census landmass geometry
+      - name: Export Natural Earth Great Lakes state land geometry
         run: |
-          curl --fail --silent --show-error --get \
-            'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/USLandmass/MapServer/0/query' \
-            --data-urlencode "where=GEOID in ('26','55','18','39')" \
-            --data-urlencode 'outFields=GEOID,BASENAME' \
-            --data-urlencode 'returnGeometry=true' \
-            --data-urlencode 'outSR=4326' \
-            --data-urlencode 'f=geojson' \
-            --output screenshots/census-mi-neighbors.geojson
-          node -e "const f=require('fs');const j=JSON.parse(f.readFileSync('screenshots/census-mi-neighbors.geojson'));if(!j.features||j.features.length!==4)process.exit(1);console.log(j.features.map(x=>x.properties.BASENAME).join(', '))"
+          curl --fail --silent --show-error \
+            'https://raw.githubusercontent.com/martynafford/natural-earth-geojson/master/50m/cultural/ne_50m_admin_1_states_provinces.json' \
+            --output /tmp/admin1.json
+          python -m pip install --quiet shapely
+          python - <<'PY'
+          import json
+          from shapely.geometry import shape, mapping
+          wanted = {'Michigan', 'Wisconsin', 'Indiana', 'Ohio'}
+          with open('/tmp/admin1.json') as f:
+              src = json.load(f)
+          features = []
+          for feature in src['features']:
+              p = feature.get('properties') or {}
+              if p.get('adm0_a3') != 'USA' or p.get('name') not in wanted:
+                  continue
+              geom = shape(feature['geometry']).simplify(0.01, preserve_topology=True)
+              features.append({
+                  'type': 'Feature',
+                  'properties': {'name': p['name'], 'postal': p.get('postal')},
+                  'geometry': mapping(geom),
+              })
+          if {f['properties']['name'] for f in features} != wanted:
+              raise SystemExit('missing expected states')
+          out = {'type': 'FeatureCollection', 'features': features}
+          with open('screenshots/great-lakes-state-land.geojson', 'w') as f:
+              json.dump(out, f, separators=(',', ':'))
+          print([(f['properties']['name'], f['geometry']['type']) for f in features])
+          PY
       - uses: actions/upload-artifact@v4
         with:
           name: bloom-tracker-redesign-screenshots
