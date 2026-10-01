@@ -111,12 +111,19 @@
         energy: 0,
       };
     }
+    // The deterministic decision is the truth gate. A stale PEAK observation must not keep the map glowing.
+    if (record.state === 'UNKNOWN') return STAGE_STYLE.UNKNOWN;
+    if (record.state === 'DONE') return STAGE_STYLE.DONE;
     return STAGE_STYLE[record.stage] || STAGE_STYLE[DECISION_STAGE[record.state]] || STAGE_STYLE.UNKNOWN;
   }
 
   function tripWorthy(record, seasonal) {
     if (seasonal) return false;
-    return ['GO', 'GO_BEFORE'].includes(record.state) || ['PEAK', 'NEAR_PEAK'].includes(record.stage);
+    return ['GO', 'GO_BEFORE'].includes(record.state);
+  }
+
+  function hasBloomEnergy(record) {
+    return stageStyle(record, false).energy > 0;
   }
 
   function signature(records, seasonal) {
@@ -134,7 +141,7 @@
     }
 
     const worth = records.find((record) => ['GO', 'GO_BEFORE'].includes(record.state));
-    const next = records.find((record) => (!worth || record.id !== worth.id) && (['BUILDING', 'EMERGING'].includes(record.stage) || record.state === 'WAIT'));
+    const next = records.find((record) => (!worth || record.id !== worth.id) && record.state === 'WAIT' && hasBloomEnergy(record));
     if (worth) {
       const worthStyle = stageStyle(worth, false);
       const nextText = next ? ` ${DESTINATIONS[next.id].name} is ${stageStyle(next, false).label.toLowerCase()} and is the next place to watch.` : '';
@@ -145,7 +152,7 @@
       };
     }
 
-    const building = records.find((record) => ['BUILDING', 'EMERGING'].includes(record.stage) || record.state === 'WAIT');
+    const building = records.find((record) => record.state === 'WAIT' && hasBloomEnergy(record));
     if (building) {
       return {
         badge: 'Bloom energy',
@@ -240,6 +247,8 @@
   }
 
   function addTraverseEnergyWave(record) {
+    // Zone detail cannot bypass the destination truth gate. If the destination evidence is stale, stay quiet.
+    if (!hasBloomEnergy(record)) return;
     const points = traverseZonePoints(record);
     if (points.length < 2) {
       addDestinationEnergy(record);
@@ -351,7 +360,6 @@
       records.forEach((record) => {
         const destination = DESTINATIONS[record.id];
         const style = stageStyle(record, seasonal);
-        const worthy = tripWorthy(record, seasonal);
 
         if (seasonal) {
           window.L.circle([destination.lat, destination.lon], {
