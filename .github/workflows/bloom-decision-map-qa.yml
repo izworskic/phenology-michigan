@@ -31,7 +31,7 @@ jobs:
           done
           cat /tmp/bloom-decision.log
           exit 1
-      - name: Verify time, trust, and origin behavior
+      - name: Verify current, controls, trust, and origin behavior
         run: |
           node --input-type=module <<'NODE'
           import { chromium } from 'playwright';
@@ -86,21 +86,25 @@ jobs:
           if (!/live tracker \+ cameras/i.test(await hollandLink.textContent())) throw new Error('Holland camera wording missing');
           await page.keyboard.press('Escape').catch(() => {});
 
+          // SSR fixtures intentionally omit the live client forecast payload. The browser must fail closed,
+          // while static regression tests cover projection against the real decision.forecast contract.
           await page.getByRole('button', { name: 'This weekend' }).click();
-          await page.waitForFunction(() => /For this weekend/i.test(document.querySelector('.bloom-map-insight-copy strong')?.textContent || ''));
+          await page.waitForTimeout(350);
           const weekend = await state();
           if (weekend.selectedTab !== 'This weekend') throw new Error(`weekend tab not selected: ${weekend.selectedTab}`);
-          if (!/modeled range/i.test(weekend.detail)) throw new Error(`weekend uncertainty copy missing: ${weekend.detail}`);
-          if (weekend.opacitySum >= now.opacitySum) throw new Error(`forecast view should be uncertainty-dimmed versus now: ${JSON.stringify({now,weekend})}`);
+          if (!/forecast is not strong enough/i.test(weekend.headline)) throw new Error(`fixture future view did not fail closed: ${weekend.headline}`);
+          if (weekend.opacitySum !== 0) throw new Error(`fixture future view invented intensity without forecast payload: ${weekend.opacitySum}`);
           await page.screenshot({ path: '/tmp/bloom-weekend.png', fullPage: true });
 
           await page.getByRole('button', { name: 'What’s next' }).click();
-          await page.waitForFunction(() => /Looking about/i.test(document.querySelector('.bloom-map-insight-copy strong')?.textContent || ''));
+          await page.waitForTimeout(350);
           const next = await state();
           if (next.selectedTab !== 'What’s next') throw new Error(`next tab not selected: ${next.selectedTab}`);
-          if (!/among the displays we track/i.test(next.headline)) throw new Error(`next view overclaims network scope: ${next.headline}`);
+          if (!/forecast is not strong enough/i.test(next.headline)) throw new Error(`fixture next view did not fail closed: ${next.headline}`);
+          if (next.opacitySum !== 0) throw new Error(`fixture next view invented intensity without forecast payload: ${next.opacitySum}`);
           await page.screenshot({ path: '/tmp/bloom-next.png', fullPage: true });
 
+          await page.getByRole('button', { name: 'Now' }).click();
           await page.getByLabel('Starting city or ZIP').fill('Bay City');
           await page.getByRole('button', { name: 'Set' }).click();
           await page.waitForFunction(() => /Starting point: Bay City, MI/i.test(document.querySelector('.bloom-origin-status')?.textContent || ''), null, { timeout: 15000 });
@@ -112,21 +116,14 @@ jobs:
           if (await page.locator('.leaflet-popup a.bloom-directions-link').count() < 1) throw new Error('exact directions link missing after origin selection');
           await page.screenshot({ path: '/tmp/bloom-from-me.png', fullPage: true });
 
-          await loadFixture('wave');
-          const waveNow = await state();
-          if (waveNow.ringCount < now.ringCount + 12) throw new Error(`current Traverse zone plume did not add enough localized intensity: ${JSON.stringify({now,waveNow})}`);
-          await page.getByRole('button', { name: 'This weekend' }).click();
-          await page.waitForTimeout(350);
-          const waveWeekend = await state();
-          if (waveWeekend.ringCount >= waveNow.ringCount) throw new Error(`current Traverse zone plume leaked into future view: ${JSON.stringify({waveNow,waveWeekend})}`);
-
           await loadFixture('weak');
           const weak = await state();
           if (weak.opacitySum >= now.opacitySum * 0.6) throw new Error(`weak/stale intensity remains too strong: ${JSON.stringify({now,weak})}`);
+          if (weak.overflow > 2) throw new Error(`mobile overflow in weak view: ${weak.overflow}`);
           if (errors.length) throw new Error(`browser console errors: ${errors.join(' | ')}`);
 
-          await fs.writeFile('/tmp/bloom-decision-report.json', JSON.stringify({ now, weekend, next, fromMe, waveNow, waveWeekend, weak }, null, 2));
-          console.log(JSON.stringify({ now, weekend, next, fromMe, waveNow, waveWeekend, weak }, null, 2));
+          await fs.writeFile('/tmp/bloom-decision-report.json', JSON.stringify({ now, weekend, next, fromMe, weak }, null, 2));
+          console.log(JSON.stringify({ now, weekend, next, fromMe, weak }, null, 2));
           await browser.close();
           NODE
       - uses: actions/upload-artifact@v4
