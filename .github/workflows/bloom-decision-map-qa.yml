@@ -21,7 +21,7 @@ jobs:
       - name: Install Chromium
         run: |
           npm install --no-save playwright@1.55.0
-          npx playwright install --with-deps chromium
+          npx playwright install chromium
       - name: Start preview server
         run: |
           VERCEL_ENV=preview npm start -- -p 3000 > /tmp/bloom-decision.log 2>&1 &
