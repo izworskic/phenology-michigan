@@ -37,8 +37,18 @@ weak.destinations.filter((d) => d.decision.decision === 'UNKNOWN').forEach((entr
 const page = await fs.readFile(new URL('../pages/bloom-tracker.js', import.meta.url), 'utf8');
 assert.ok(!page.includes('geomapsuite.com'), 'tracker must not depend on the broken hot-linked Michigan silhouette');
 assert.ok(!page.includes('selected-strip'), 'tracker must not reintroduce the redundant map-selection strip');
-assert.ok(page.includes('tile.openstreetmap.org'), 'map must use real geographic tiles');
+assert.ok(!page.includes('tile.openstreetmap.org'), 'tracker map must not depend on external raster tiles');
+assert.ok(!page.includes('MAPLIBRE_JS'), 'tracker map must not depend on an external mapping runtime');
+assert.ok(page.includes('/maps/great-lakes-context.geojson'), 'map must use committed geographic geometry');
+assert.ok(page.includes('geometryPaths'), 'map must render real geographic polygons');
 assert.ok(page.includes('MapSelectedPanel'), 'one marker tap must surface useful in-map detail');
+assert.ok(page.includes('wavePath'), 'map must support geographic bloom progression when zone evidence exists');
 assert.ok(page.includes('What is worth the drive this weekend?'), 'first screen must remain decision-first');
+
+const mapGeometry = JSON.parse(await fs.readFile(new URL('../public/maps/great-lakes-context.geojson', import.meta.url), 'utf8'));
+const stateNames = new Set((mapGeometry.features || []).map((feature) => feature?.properties?.name));
+for (const state of ['Michigan', 'Wisconsin', 'Indiana', 'Ohio']) {
+  assert.ok(stateNames.has(state), `map geography must include ${state}`);
+}
 
 console.log('Bloom tracker product checks passed.');
