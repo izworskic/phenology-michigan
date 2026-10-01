@@ -6,13 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "node scripts/check-creator-entity.mjs && node scripts/check-bloom-core.mjs && node scripts/check-bloom-ingestion.mjs && node scripts/check-bloom-model.mjs && node scripts/check-bloom-history.mjs && node scripts/check-bloom-source-operator.mjs && node scripts/check-bloom-verified-provenance.mjs && node scripts/check-bloom-public-presentation.mjs && node scripts/check-bloom-tracker-product.mjs"
+    "test": "node scripts/check-creator-entity.mjs && node scripts/check-bloom-core.mjs && node scripts/check-bloom-ingestion.mjs && node scripts/check-bloom-model.mjs && node scripts/check-bloom-history.mjs && node scripts/check-bloom-source-operator.mjs && node scripts/check-bloom-verified-provenance.mjs && node scripts/check-bloom-public-presentation.mjs && node scripts/check-bloom-tracker-product.mjs && node scripts/check-bloom-jev-auth.mjs"
   },
   "dependencies": {
+    "@vercel/oidc": "3.8.8",
+    "lucide-react": "^0.383.0",
     "next": "14.2.29",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "recharts": "^2.12.7",
-    "lucide-react": "^0.383.0"
+    "recharts": "^2.12.7"
   }
 }
