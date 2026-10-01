@@ -44,6 +44,17 @@ jobs:
           "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --virtual-time-budget=6000 --window-size=390,844 --screenshot=screenshots/weather-390.png 'http://127.0.0.1:3000/bloom-tracker?fixture=weather'
           "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --virtual-time-budget=8000 --window-size=390,2600 --screenshot=screenshots/wave-map-390.png 'http://127.0.0.1:3000/bloom-tracker?fixture=wave'
           "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --virtual-time-budget=6000 --window-size=390,844 --screenshot=screenshots/weak-390.png 'http://127.0.0.1:3000/bloom-tracker?fixture=weak'
+      - name: Fetch current Census state geometry
+        run: |
+          curl --fail --silent --show-error --get \
+            'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/15/query' \
+            --data-urlencode "where=GEOID in ('26','55','18','39')" \
+            --data-urlencode 'outFields=GEOID,BASENAME' \
+            --data-urlencode 'returnGeometry=true' \
+            --data-urlencode 'outSR=4326' \
+            --data-urlencode 'f=geojson' \
+            --output screenshots/census-mi-neighbors.geojson
+          node -e "const f=require('fs');const j=JSON.parse(f.readFileSync('screenshots/census-mi-neighbors.geojson'));if(!j.features||j.features.length!==4)process.exit(1);console.log(j.features.map(x=>x.properties.BASENAME).join(', '))"
       - uses: actions/upload-artifact@v4
         with:
           name: bloom-tracker-redesign-screenshots
