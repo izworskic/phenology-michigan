@@ -69,7 +69,7 @@ assert.ok(originApi.includes('https://api.zippopotam.us'), 'origin API must use 
 assert.ok(originApi.includes("Cache-Control', 'public, s-maxage=86400"), 'origin lookups must be cached');
 assert.ok(originApi.includes("if (/^\\d{5}$/.test(value))"), 'origin API must accept US ZIP codes');
 assert.ok(originApi.includes("return { type: 'city', city, state }"), 'origin API must accept city/state queries');
-assert.ok(originApi.includes("return 'MI'"), 'city lookup must default to Michigan for this Michigan product');
+assert.ok(originApi.includes("return /^[A-Z]{2}$/.test(state) ? state : 'MI';"), 'city lookup must default to Michigan for this Michigan product');
 
 assert.ok(css.includes('.page-shell>.season-route{display:none!important}'), 'redundant seasonal strip must not sit between the season statement and the map');
 assert.ok(css.includes('.page-shell>.map-section{order:3}'), 'map must sit directly after the season statement and ahead of ranked destination content');
