@@ -1,0 +1,126 @@
+name: Bloom CARTO Pan QA
+
+on:
+  push:
+    branches:
+      - enhance/bloom-carto-insight-map
+
+jobs:
+  pan-sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start preview server
+        run: |
+          VERCEL_ENV=preview npm start -- -p 3000 > /tmp/bloom-pan.log 2>&1 &
+          for i in {1..60}; do
+            if curl -fsS 'http://127.0.0.1:3000/bloom-tracker?fixture=strong' >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/bloom-pan.log
+          exit 1
+      - name: Verify all geographic layers pan together
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs/promises';
+
+          const browser = await chromium.launch({ headless: true });
+          const page = await browser.newPage({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+          const errors = [];
+          page.on('console', (msg) => { if (msg.type() === 'error') errors.push(msg.text()); });
+          await page.goto('http://127.0.0.1:3000/bloom-tracker?fixture=strong', { waitUntil: 'networkidle', timeout: 60000 });
+          await page.waitForFunction(() => document.querySelectorAll('.bloom-carto-map .leaflet-tile-loaded').length >= 4, null, { timeout: 20000 });
+          await page.waitForFunction(() => document.querySelectorAll('.bloom-map-marker').length === 5, null, { timeout: 15000 });
+
+          const legacy = await page.evaluate(() => {
+            const frame = document.querySelector('.map-frame');
+            const svg = frame?.querySelector('.census-map');
+            const loading = frame?.querySelector('.map-loading');
+            const selected = frame?.querySelector('.map-selected-panel');
+            const visible = (node) => node && getComputedStyle(node).display !== 'none' && getComputedStyle(node).visibility !== 'hidden';
+            return {
+              svgDisplay: svg ? getComputedStyle(svg).display : 'missing',
+              loadingDisplay: loading ? getComputedStyle(loading).display : 'missing',
+              selectedDisplay: selected ? getComputedStyle(selected).display : 'missing',
+              visibleLegacyCount: [svg, loading, selected].filter(visible).length,
+              frameChildren: [...(frame?.children || [])].map((node) => ({ cls: node.className?.baseVal || node.className || node.tagName, display: getComputedStyle(node).display })),
+            };
+          });
+          if (legacy.visibleLegacyCount !== 0) throw new Error(`legacy map layer still visible: ${JSON.stringify(legacy)}`);
+
+          const map = page.locator('.bloom-carto-map');
+          await map.scrollIntoViewIfNeeded();
+          await page.waitForTimeout(300);
+          await map.screenshot({ path: 'bloom-pan-before.png' });
+
+          const before = await page.evaluate(() => {
+            const tilePane = document.querySelector('.bloom-carto-map .leaflet-tile-pane');
+            const marker = document.querySelector('.bloom-map-marker')?.closest('.leaflet-marker-icon');
+            const tile = document.querySelector('.bloom-carto-map .leaflet-tile-loaded');
+            const rect = marker?.getBoundingClientRect();
+            const tileRect = tile?.getBoundingClientRect();
+            return {
+              tilePaneTransform: tilePane ? getComputedStyle(tilePane).transform : null,
+              marker: rect ? { x: rect.x, y: rect.y } : null,
+              tile: tileRect ? { x: tileRect.x, y: tileRect.y, width: tileRect.width, height: tileRect.height } : null,
+            };
+          });
+
+          const box = await map.boundingBox();
+          if (!box) throw new Error('map has no bounding box');
+          const startX = box.x + box.width * 0.62;
+          const startY = box.y + box.height * 0.48;
+          await page.mouse.move(startX, startY);
+          await page.mouse.down();
+          await page.mouse.move(startX - 110, startY + 28, { steps: 12 });
+          await page.mouse.up();
+          await page.waitForTimeout(700);
+
+          const after = await page.evaluate(() => {
+            const tilePane = document.querySelector('.bloom-carto-map .leaflet-tile-pane');
+            const marker = document.querySelector('.bloom-map-marker')?.closest('.leaflet-marker-icon');
+            const tile = document.querySelector('.bloom-carto-map .leaflet-tile-loaded');
+            const rect = marker?.getBoundingClientRect();
+            const tileRect = tile?.getBoundingClientRect();
+            return {
+              tilePaneTransform: tilePane ? getComputedStyle(tilePane).transform : null,
+              marker: rect ? { x: rect.x, y: rect.y } : null,
+              tile: tileRect ? { x: tileRect.x, y: tileRect.y, width: tileRect.width, height: tileRect.height } : null,
+            };
+          });
+
+          if (!before.marker || !after.marker) throw new Error('marker geometry unavailable');
+          const markerDx = Math.abs(after.marker.x - before.marker.x);
+          const markerDy = Math.abs(after.marker.y - before.marker.y);
+          if (markerDx < 20 && markerDy < 20) throw new Error(`marker did not pan: ${JSON.stringify({before, after})}`);
+          if (!before.tile || !after.tile) throw new Error('tile geometry unavailable');
+          if (Math.abs(after.tile.width - 256) > 1 || Math.abs(after.tile.height - 256) > 1) throw new Error(`tile dimensions distorted after pan: ${JSON.stringify(after.tile)}`);
+
+          await map.screenshot({ path: 'bloom-pan-after.png' });
+          const report = { legacy, before, after, markerDx, markerDy, errors };
+          await fs.writeFile('bloom-pan-report.json', JSON.stringify(report, null, 2));
+          await browser.close();
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bloom-carto-pan-qa
+          path: |
+            bloom-pan-before.png
+            bloom-pan-after.png
+            bloom-pan-report.json
+            /tmp/bloom-pan.log
+          retention-days: 2
