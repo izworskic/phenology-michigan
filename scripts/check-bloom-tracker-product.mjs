@@ -53,8 +53,10 @@ for (const state of ['Michigan', 'Wisconsin', 'Indiana', 'Ohio']) {
 
 const mapCss = await fs.readFile(new URL('../public/bloom-tracker-redesign.css', import.meta.url), 'utf8');
 assert.ok(mapCss.includes("url('/maps/great-lakes-water.svg')"), 'state jurisdiction polygons must be visually clipped back to the Great Lakes shoreline');
+assert.ok(mapCss.includes('Great Lakes shoreline: Natural Earth, public domain.'), 'map must visibly identify the shoreline geometry source');
 const shorelineSvg = await fs.readFile(new URL('../public/maps/great-lakes-water.svg', import.meta.url), 'utf8');
 assert.ok(shorelineSvg.includes('<svg') && shorelineSvg.includes('<path'), 'shoreline overlay must be a committed self-contained SVG');
+assert.ok(shorelineSvg.includes('Natural Earth 1:50m lakes, public domain'), 'shoreline asset must document its source');
 assert.ok(shorelineSvg.length > 3000, 'shoreline overlay must contain meaningful Great Lakes geometry');
 
 console.log('Bloom tracker product checks passed.');
