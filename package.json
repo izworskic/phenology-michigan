@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "node scripts/check-creator-entity.mjs && node scripts/check-bloom-core.mjs && node scripts/check-bloom-ingestion.mjs && node scripts/check-bloom-model.mjs"
+    "test": "node scripts/check-creator-entity.mjs && node scripts/check-bloom-core.mjs && node scripts/check-bloom-ingestion.mjs && node scripts/check-bloom-model.mjs && node scripts/check-bloom-history.mjs"
   },
   "dependencies": {
     "next": "14.2.29",
