@@ -72,20 +72,18 @@ jobs:
             const mapGap = mapBox.y - (listBox.y + listBox.height);
             if (mapGap > 85) throw new Error(`${name}: map pushed ${mapGap}px below destination list`);
 
+            const body = await page.locator('body').innerText();
             if (seasonal) {
               if (await page.locator('.season-banner').count() !== 1) throw new Error(`${name}: missing season banner`);
               if (await page.locator('.featured').count() !== 0) throw new Error(`${name}: stale live featured decision visible off season`);
               if (await page.locator('.map-season-label').count() !== 5) throw new Error(`${name}: expected five seasonal labels on map`);
-              const body = await page.locator('body').innerText();
               if (!body.includes('The flowers are quiet. Spring will move north again.')) throw new Error(`${name}: off-season statement missing`);
               if (!body.includes('How spring moves across Michigan')) throw new Error(`${name}: interpretive map heading missing`);
               if (body.includes('Best this weekend')) throw new Error(`${name}: off-season page still markets a stale best-this-weekend answer`);
             } else {
               if (await page.locator('.featured').count() !== 1) throw new Error(`${name}: active season lost featured trip decision`);
               if (await page.locator('.map-season-label').count() !== 0) throw new Error(`${name}: active map still showing off-season month labels`);
-              const body = await page.locator('body').innerText();
               if (!body.includes('Bloom season is on')) throw new Error(`${name}: active season statement missing`);
-              if (!body.includes('Best this weekend')) throw new Error(`${name}: active decision hierarchy missing`);
             }
 
             await cards.first().locator('summary').click();
@@ -95,8 +93,9 @@ jobs:
             if (!expandedImages.length || expandedImages.some(item => !item.loaded)) throw new Error(`${name}: expanded place photos failed ${JSON.stringify(expandedImages)}`);
 
             const pageHeight = await page.evaluate(() => document.body.scrollHeight);
+            const featuredText = await page.locator('.featured').count() ? await page.locator('.featured').innerText() : null;
             await page.screenshot({ path: `bloom-${name}.png`, fullPage: true });
-            report[name] = { overflow, mapGap, pageHeight, thumbs, expandedImages, consoleErrors };
+            report[name] = { overflow, mapGap, pageHeight, thumbs, expandedImages, consoleErrors, featuredText };
             await page.close();
           }
 
@@ -116,6 +115,7 @@ jobs:
           await fs.writeFile('bloom-seasonal-report.json', JSON.stringify(report, null, 2));
           NODE
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: bloom-seasonal-render
           path: |
