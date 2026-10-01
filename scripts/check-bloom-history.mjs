@@ -109,14 +109,18 @@ const cycle = await runBloomLiveCycle({
   persist: false,
 });
 assert.equal(cycle.ok, true);
-assert.equal(cycle.latest.counts.total, 5);
+assert.equal(cycle.latest.counts.total, 9);
 assert.equal(cycle.latest.counts.observed, 4, 'U-M, Meijer, Holland, and Mackinac should be observed');
-assert.equal(cycle.latest.counts.unknown, 1, 'Traverse City must remain unknown without a dated MSU article/override');
+assert.equal(cycle.latest.counts.unknown, 5, 'Traverse plus the four summer additions must remain unknown without fresh verified evidence');
 assert.equal(cycle.latest.provenance.overridesSource, 'deployment_bootstrap');
 const um = cycle.latest.destinations.find((d) => d.id === 'um-peony-garden');
 assert.equal(um.decision.decision, 'GO');
 assert.equal(um.decision.currentStage, 'PEAK');
 const traverse = cycle.latest.destinations.find((d) => d.id === 'traverse-city-cherries');
 assert.equal(traverse.decision.decision, 'UNKNOWN');
+for (const id of ['milan-lavender', 'frankenmuth-sunflowers', 'gull-meadow-sunflowers', 'blakes-sunflowers']) {
+  const entry = cycle.latest.destinations.find((d) => d.id === id);
+  assert.equal(entry.decision.decision, 'UNKNOWN', `${id} must stay unknown without verified current evidence`);
+}
 
 console.log('Bloom persistent-history pipeline invariants: PASS');
