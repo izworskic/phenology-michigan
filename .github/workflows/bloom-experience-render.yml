@@ -1,0 +1,73 @@
+name: Bloom Experience Render
+
+on:
+  push:
+    branches:
+      - enhance/bloom-tracker-experience-layer
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Install browser harness
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start fixture server
+        run: |
+          VERCEL_ENV=preview npm start -- -p 3000 > /tmp/bloom-experience.log 2>&1 &
+          echo $! > /tmp/bloom-experience.pid
+          for i in {1..60}; do
+            if curl -fsS 'http://127.0.0.1:3000/bloom-tracker?fixture=strong' >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/bloom-experience.log
+          exit 1
+      - name: Render and verify photos
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs/promises';
+          const browser = await chromium.launch({headless:true});
+          const report = {};
+          for (const [name, width, height] of [['mobile',390,844],['desktop',1440,1200]]) {
+            const page = await browser.newPage({ viewport: { width, height } });
+            const errors = [];
+            page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
+            await page.goto('http://127.0.0.1:3000/bloom-tracker?fixture=strong', { waitUntil: 'networkidle', timeout: 60000 });
+            await page.locator('#experience-title').scrollIntoViewIfNeeded();
+            await page.waitForTimeout(2500);
+            const photos = await page.locator('.experience-image-wrap img').evaluateAll((imgs) => imgs.map((img) => ({src:img.currentSrc || img.src, loaded:img.complete && img.naturalWidth > 0, naturalWidth:img.naturalWidth, naturalHeight:img.naturalHeight, alt:img.alt})));
+            if (photos.length < 5) throw new Error(`Expected at least 5 experience photos, found ${photos.length}`);
+            const failed = photos.filter((photo) => !photo.loaded);
+            if (failed.length) throw new Error(`Failed experience photos: ${JSON.stringify(failed)}`);
+            const firstH1 = await page.locator('h1').first().innerText();
+            if (!firstH1.includes('worth the drive')) throw new Error(`Decision-first H1 changed: ${firstH1}`);
+            const experienceTop = await page.locator('.experience-section').boundingBox();
+            const rankingTop = await page.locator('.opportunity-section').boundingBox();
+            if (!experienceTop || !rankingTop || experienceTop.y <= rankingTop.y) throw new Error('Experience layer displaced ranking hierarchy');
+            await page.screenshot({ path: `bloom-experience-${name}.png`, fullPage: true });
+            report[name] = { photos, errors, h1:firstH1, experienceY:experienceTop.y, rankingY:rankingTop.y };
+            await page.close();
+          }
+          await browser.close();
+          await fs.writeFile('bloom-experience-report.json', JSON.stringify(report, null, 2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bloom-experience-render
+          path: |
+            bloom-experience-mobile.png
+            bloom-experience-desktop.png
+            bloom-experience-report.json
+            /tmp/bloom-experience.log
+          retention-days: 2
