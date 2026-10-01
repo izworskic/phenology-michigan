@@ -21,9 +21,11 @@ assert.ok(enhancer.includes("PEAK: { color: '#ff2f8b'"), 'peak bloom must use a 
 assert.ok(enhancer.includes("BUILDING: { color: '#ff8a34'"), 'building bloom must be visually distinct from peak');
 assert.ok(enhancer.includes('is-tripworthy'), 'trip-worthy destinations must receive the active map treatment');
 
-assert.ok(css.includes('.page-shell>.map-section{order:4}'), 'map must be visually promoted ahead of featured/ranked destination content');
+assert.ok(css.includes('.page-shell>.season-route{display:none!important}'), 'redundant seasonal strip must not sit between the season statement and the map');
+assert.ok(css.includes('.page-shell>.map-section{order:3}'), 'map must sit directly after the season statement and ahead of ranked destination content');
 assert.ok(css.includes('@keyframes bloomPulse'), 'trip-worthy bloom must visibly pulse');
 assert.ok(css.includes('.bloom-map-enhanced .map-frame'), 'enhanced map must have a dedicated responsive presentation surface');
+assert.ok(css.includes('.bloom-map-tooltip span{display:none}'), 'mobile map labels must avoid timing-line clutter');
 
 assert.ok(!season.includes("shortLabel: 'APR'"), 'user-facing timing must not use APR shorthand');
 assert.ok(!season.includes("shortLabel: 'LATE APR–MAY'"), 'user-facing timing must not use compressed month shorthand');
