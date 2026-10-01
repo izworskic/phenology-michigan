@@ -1,0 +1,83 @@
+name: Verify Bloom Tracker Redesign
+
+on:
+  push:
+    branches:
+      - redesign/bloom-tracker-human-decisions
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Start preview fixture server
+        run: |
+          VERCEL_ENV=preview npm start -- -p 3000 > /tmp/bloom-next.log 2>&1 &
+          echo $! > /tmp/bloom-next.pid
+          for i in {1..30}; do
+            if curl -fsS 'http://127.0.0.1:3000/bloom-tracker?fixture=strong' >/tmp/strong.html; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/bloom-next.log
+          exit 1
+      - name: Capture responsive product fixtures
+        run: |
+          CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
+          test -n "$CHROME"
+          mkdir -p screenshots
+          "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --virtual-time-budget=6000 --window-size=390,844 --screenshot=screenshots/strong-390.png 'http://127.0.0.1:3000/bloom-tracker?fixture=strong'
+          "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --virtual-time-budget=6000 --window-size=430,932 --screenshot=screenshots/strong-430.png 'http://127.0.0.1:3000/bloom-tracker?fixture=strong'
+          "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --virtual-time-budget=6000 --window-size=768,1024 --screenshot=screenshots/strong-tablet.png 'http://127.0.0.1:3000/bloom-tracker?fixture=strong'
+          "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --virtual-time-budget=6000 --window-size=1440,1200 --screenshot=screenshots/strong-desktop.png 'http://127.0.0.1:3000/bloom-tracker?fixture=strong'
+          "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --virtual-time-budget=6000 --window-size=390,844 --screenshot=screenshots/weather-390.png 'http://127.0.0.1:3000/bloom-tracker?fixture=weather'
+          "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --virtual-time-budget=10000 --window-size=390,2600 --screenshot=screenshots/wave-map-390.png 'http://127.0.0.1:3000/bloom-tracker?fixture=wave'
+          "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --virtual-time-budget=6000 --window-size=390,844 --screenshot=screenshots/weak-390.png 'http://127.0.0.1:3000/bloom-tracker?fixture=weak'
+      - name: Export Great Lakes water geometry
+        run: |
+          curl --fail --silent --show-error \
+            'https://raw.githubusercontent.com/martynafford/natural-earth-geojson/master/50m/physical/ne_50m_lakes.json' \
+            --output /tmp/lakes.json
+          python -m pip install --quiet shapely
+          python - <<'PY'
+          import json
+          from shapely.geometry import shape, mapping, box
+          region = box(-93.5, 41.0, -76.0, 50.0)
+          src = json.load(open('/tmp/lakes.json'))
+          features = []
+          for feature in src['features']:
+              geom = shape(feature['geometry'])
+              if not geom.intersects(region):
+                  continue
+              clipped = geom.intersection(region).simplify(0.006, preserve_topology=True)
+              if clipped.is_empty:
+                  continue
+              p = feature.get('properties') or {}
+              features.append({
+                  'type': 'Feature',
+                  'properties': {'name': p.get('name') or ''},
+                  'geometry': mapping(clipped),
+              })
+          if len(features) < 3:
+              raise SystemExit('Great Lakes water extraction failed')
+          out = {'type': 'FeatureCollection', 'source': 'Natural Earth 1:50m lakes, public domain', 'features': features}
+          with open('screenshots/great-lakes-water.geojson', 'w') as f:
+              json.dump(out, f, separators=(',', ':'))
+          print('water features', len(features), [f['properties']['name'] for f in features])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bloom-tracker-redesign-screenshots
+          path: screenshots
+          retention-days: 3
