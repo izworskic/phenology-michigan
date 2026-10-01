@@ -2,7 +2,6 @@ import Head from 'next/head';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowUpRight, ChevronDown, Clock3, Flower2, LocateFixed, MapPin, RefreshCw, ShieldCheck, X } from 'lucide-react';
 import { BLOOM_DESTINATIONS } from '../lib/bloom/destinations.mjs';
-import { getBloomExperience, photoFitLabel } from '../lib/bloom/experience-layer.mjs';
 import { selectWeekendForecast, sortPublicDestinations, stageLabel, stageRangeLabel } from '../lib/bloom/public-presentation.mjs';
 import { decisionCounts, evidenceStrength, freshnessLabel, goBeforeWindow, humanDecisionLabel, shortDecisionLabel } from '../lib/bloom/tracker-product.mjs';
 
@@ -142,76 +141,6 @@ function OpportunityRow({ entry, rank, generatedAt }) {
       </div>
       <a className="detail-link" href={`#details-${entry.id}`}>Details <ChevronDown size={14} /></a>
     </article>
-  );
-}
-
-function ExperiencePhoto({ photo }) {
-  return (
-    <figure className={`experience-photo experience-photo-${photo.kind}`}>
-      <div className="experience-image-wrap">
-        <img src={photo.imageUrl} alt={photo.alt} loading="lazy" decoding="async" referrerPolicy="no-referrer" />
-        <span className="experience-photo-fit">{photoFitLabel(photo.kind)}</span>
-      </div>
-      <figcaption>
-        <span className="experience-file-label">File photo — not live</span>
-        <span>{photo.caption}</span>
-        <a href={photo.sourceUrl} target="_blank" rel="noreferrer">{photo.creator} · {photo.license} <ArrowUpRight size={11} /></a>
-      </figcaption>
-    </figure>
-  );
-}
-
-function ExperienceCard({ entry }) {
-  const experience = getBloomExperience(entry.id);
-  if (!experience) return null;
-  const state = entry?.decision?.decision || 'UNKNOWN';
-  return (
-    <article className="experience-card">
-      <div className="experience-card-head">
-        <div>
-          <span className="region">{entry.region}</span>
-          <h3>{entry.name}</h3>
-        </div>
-        <DecisionPill value={state} compact />
-      </div>
-      <p className="experience-headline">{experience.headline}</p>
-      <div className={`experience-media experience-media-${experience.photos.length}`}>
-        {experience.photos.map((photo) => <ExperiencePhoto key={`${entry.id}-${photo.sourceUrl}`} photo={photo} />)}
-      </div>
-      <div className="experience-copy">
-        <div>
-          <span className="eyebrow">What you’ll actually experience</span>
-          <p>{experience.whatYouWillSee}</p>
-        </div>
-        <div>
-          <span className="eyebrow">Best way to see it</span>
-          <p>{experience.bestExperience}</p>
-        </div>
-        <div className="experience-look-for"><strong>Look for:</strong> {experience.lookFor}</div>
-      </div>
-      <a className="experience-source-link" href={experience.experienceSource.url} target="_blank" rel="noreferrer">
-        Local experience source: {experience.experienceSource.label} <ArrowUpRight size={13} />
-      </a>
-    </article>
-  );
-}
-
-function ExperienceSection({ destinations }) {
-  return (
-    <section className="experience-section" aria-labelledby="experience-title">
-      <div className="section-heading">
-        <div>
-          <span className="eyebrow">Experience layer</span>
-          <h2 id="experience-title">What will the trip actually feel like?</h2>
-        </div>
-        <span className="count">Swipe destinations →</span>
-      </div>
-      <p className="section-intro">The ranking above answers whether to go. This layer makes that decision tangible: what the flowers look like, how the place feels, and where to spend your time once you arrive.</p>
-      <div className="experience-trust"><ShieldCheck size={15} /><span><strong>Decision first.</strong> These are reference/file photos, not current-condition evidence. The live bloom call above is still the source of truth for whether to make the drive.</span></div>
-      <div className="experience-grid">
-        {destinations.map((entry) => <ExperienceCard key={entry.id} entry={entry} />)}
-      </div>
-    </section>
   );
 }
 
@@ -469,17 +398,17 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
     url: PAGE_URL,
     applicationCategory: 'TravelApplication',
     operatingSystem: 'Any',
-    description: 'Live Michigan flower bloom conditions and weekend trip decisions using fresh observations, forecast progression, display durability risk, and destination experience context.',
+    description: 'Live Michigan flower bloom conditions and weekend trip decisions using fresh observations, forecast progression, and display durability risk.',
   };
 
   return (
     <>
       <Head>
         <title>Michigan Bloom Tracker — Best Blooms This Weekend</title>
-        <meta name="description" content="See the best Michigan flower blooms right now and this weekend, including Traverse City cherries, Holland tulips, Mackinac lilacs, U-M peonies and Meijer Gardens — with destination photos and what the trip actually feels like." />
+        <meta name="description" content="See the best Michigan flower blooms right now and this weekend, including Traverse City cherries, Holland tulips, Mackinac lilacs, U-M peonies and Meijer Gardens." />
         <link rel="canonical" href={PAGE_URL} />
         <meta property="og:title" content="Michigan Bloom Tracker — Best Blooms This Weekend" />
-        <meta property="og:description" content="A decision-first Michigan bloom tracker: what is worth the drive, what you will actually see, and where the bloom is happening." />
+        <meta property="og:description" content="A decision-first Michigan bloom tracker: what is worth the drive, what should wait, and where the bloom is happening." />
         <meta property="og:url" content={PAGE_URL} />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
@@ -534,8 +463,6 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
                 {destinations.map((entry, index) => <OpportunityRow key={entry.id} entry={entry} rank={index + 1} generatedAt={generatedAt} />)}
               </div>
             </section>
-
-            <ExperienceSection destinations={destinations} />
 
             <MichiganBloomMap destinations={destinations} generatedAt={generatedAt} />
 
