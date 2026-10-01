@@ -448,15 +448,6 @@
     return `<strong>${destination.name}</strong><span>${seasonal ? destination.timing : style.label}</span>`;
   }
 
-  function addSeasonSequence(records) {
-    const sequence = [...records].sort((a, b) => DESTINATIONS[a.id].order - DESTINATIONS[b.id].order);
-    for (let index = 0; index < sequence.length - 1; index += 1) {
-      const a = DESTINATIONS[sequence[index].id];
-      const b = DESTINATIONS[sequence[index + 1].id];
-      window.L.polyline([[a.lat, a.lon], [b.lat, b.lon]], { color: b.seasonColor, weight: 4, opacity: 0.55, dashArray: '7 8', interactive: false }).addTo(map);
-    }
-  }
-
   function addEnergyPoint(latlng, style, radiusScale = 1) {
     if (!style?.energyRadius || !style?.energy) return;
     ENERGY_RINGS.forEach((ring, index) => {
@@ -493,7 +484,6 @@
       addDestinationEnergy(record);
       return;
     }
-    window.L.polyline(points.map((point) => point.latlng), { pane: 'bloomEnergyPane', color: '#755c68', weight: 2, opacity: 0.24, dashArray: '4 7', interactive: false }).addTo(map);
     points.forEach(({ zone, latlng, stage }) => {
       const zoneBase = STAGE_STYLE[stage] || STAGE_STYLE.UNKNOWN;
       const factor = currentEvidenceFactor(record);
@@ -517,11 +507,6 @@
       title: `Starting point: ${origin.label}`,
     }).bindTooltip(`Leaving from ${origin.label}`, { direction: 'top' }).addTo(map);
 
-    const closest = closestWorthGoing(records);
-    if (closest) {
-      const destination = DESTINATIONS[closest.id];
-      window.L.polyline([[origin.lat, origin.lon], [destination.lat, destination.lon]], { color: '#233bff', weight: 2, opacity: 0.52, dashArray: '6 7', interactive: false }).addTo(map);
-    }
   }
 
   function addLegend(host, seasonal) {
@@ -529,7 +514,7 @@
     const legend = document.createElement('div');
     legend.className = 'bloom-map-v2-legend';
     if (seasonal) {
-      legend.innerHTML = '<span><i style="background:#ff7aa8"></i>Spring starts</span><span>→</span><span><i style="background:#e6a52d"></i>Late summer</span>';
+      legend.innerHTML = '<span><i style="background:#ff7aa8"></i>April</span><span>→</span><span><i style="background:#e6a52d"></i>September</span>';
     } else {
       legend.innerHTML = '<span><i style="background:#ff2f8b"></i>Peak</span><span><i style="background:#ff8a34"></i>Building</span><span><i style="background:#ffd23f"></i>Emerging</span><span><i style="background:#9b5de5"></i>Fading</span><span><i style="background:#92999b"></i>Quiet / uncertain</span>';
     }
@@ -573,6 +558,7 @@
 
   function upsertControls(section, seasonal) {
     section.querySelector('.bloom-map-decision-controls')?.remove();
+    if (seasonal) return;
     const controls = document.createElement('div');
     controls.className = 'bloom-map-decision-controls';
     if (!seasonal) {
@@ -675,7 +661,7 @@
 
       mapHost = document.createElement('div');
       mapHost.className = 'bloom-carto-map';
-      mapHost.setAttribute('aria-label', seasonal ? 'Interactive CARTO map showing the typical tracked Michigan bloom sequence' : `Interactive CARTO map showing Michigan tracked bloom intensity: ${activeView}`);
+      mapHost.setAttribute('aria-label', seasonal ? 'Interactive CARTO map showing typical Michigan flower-season timing from April into September' : `Interactive CARTO map showing Michigan tracked bloom intensity: ${activeView}`);
       frame.prepend(mapHost);
 
       map = window.L.map(mapHost, { zoomControl: true, scrollWheelZoom: false, attributionControl: true, minZoom: 5, maxZoom: 14 });
@@ -685,8 +671,7 @@
       map.getPane('bloomEnergyPane').style.mixBlendMode = 'multiply';
       window.L.tileLayer(TILE_URL, { attribution: ATTRIBUTION, maxZoom: 20, subdomains: 'abcd' }).addTo(map);
 
-      if (seasonal) addSeasonSequence(records);
-      else addBloomIntensitySurface(records);
+      if (!seasonal) addBloomIntensitySurface(records);
 
       records.forEach((record) => {
         const destination = DESTINATIONS[record.id];
@@ -699,7 +684,7 @@
           keyboard: true,
           title: `${destination.fullName}: ${seasonal ? destination.timing : style.label}`,
         });
-        marker.bindTooltip(tooltipHtml(record, seasonal), { permanent: true, direction: 'top', offset: [0, -13], className: 'bloom-map-tooltip', opacity: 0.95 });
+        marker.bindTooltip(tooltipHtml(record, seasonal), { permanent: window.innerWidth > 600, direction: 'top', offset: [0, -13], className: 'bloom-map-tooltip', opacity: 0.95 });
         marker.bindPopup(popupHtml(record, seasonal), { closeButton: true, maxWidth: 280 });
         marker.addTo(map);
       });

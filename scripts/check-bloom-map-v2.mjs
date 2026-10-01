@@ -6,6 +6,7 @@ const enhancer = await fs.readFile(new URL('../public/bloom-map-v2.js', import.m
 const css = await fs.readFile(new URL('../public/bloom-map-v2.css', import.meta.url), 'utf8');
 const season = await fs.readFile(new URL('../lib/bloom/seasonal-context.mjs', import.meta.url), 'utf8');
 const originApi = await fs.readFile(new URL('../pages/api/bloom-origin.js', import.meta.url), 'utf8');
+const page = await fs.readFile(new URL('../pages/bloom-tracker.js', import.meta.url), 'utf8');
 
 assert.ok(app.includes('leaflet@1.9.4'), 'Bloom Tracker must load Leaflet for the CARTO raster basemap');
 assert.ok(app.includes('/bloom-map-v2.js'), 'Bloom Tracker must load the interpretive map enhancer');
@@ -25,7 +26,7 @@ assert.ok(enhancer.includes('relative strength around tracked displays and obser
 for (const id of ['milan-lavender', 'frankenmuth-sunflowers', 'gull-meadow-sunflowers', 'blakes-sunflowers']) {
   assert.ok(enhancer.includes(`'${id}'`), `${id} must participate in the CARTO map`);
 }
-assert.ok(enhancer.includes('Spring starts') && enhancer.includes('Late summer'), 'seasonal legend must communicate the expanded spring-to-late-summer arc');
+assert.ok(enhancer.includes('>April</span>') && enhancer.includes('>September</span>'), 'seasonal legend must communicate the April-to-September arc');
 assert.ok(enhancer.includes('Late June–early August') && enhancer.includes('Late August–early September'), 'seasonal map read must expose the extended summer timing');
 assert.ok(enhancer.includes('rawRecords.length < 1'), 'map enhancer must remain compatible with smaller deterministic fixtures while production expands');
 
@@ -49,6 +50,10 @@ assert.ok(enhancer.includes("map.createPane('bloomEnergyPane')"), 'bloom intensi
 assert.ok(enhancer.includes("mixBlendMode = 'multiply'"), 'bloom intensity must visually tint the CARTO basemap instead of replacing it');
 assert.ok(enhancer.includes("window.setInterval(loadLatest, 5 * 60 * 1000)"), 'map must refresh live evidence while a visitor keeps the page open');
 assert.ok(enhancer.includes('HAS_FIXTURE'), 'preview fixtures must remain deterministic and not be overwritten by production live data');
+assert.ok(!enhancer.includes('addSeasonSequence'), 'seasonal destinations must not be connected by route-like lines');
+assert.ok(!enhancer.includes('dashArray:'), 'map renderer must not create dotted route/progression lines');
+assert.ok(enhancer.includes('permanent: window.innerWidth > 600'), 'mobile map must not render nine permanent destination labels');
+assert.ok(enhancer.includes('if (seasonal) return;'), 'off-season map must not expose non-causal origin controls');
 
 assert.ok(enhancer.includes("NOW: 'now'"), 'map must support a Now time view');
 assert.ok(enhancer.includes("WEEKEND: 'weekend'"), 'map must support a This weekend view');
@@ -91,6 +96,12 @@ assert.ok(css.includes('.bloom-map-enhanced .map-frame:after{content:none!import
 assert.ok(css.includes('.bloom-map-enhanced .map-frame>:not(.bloom-carto-map):not(.bloom-map-v2-legend){display:none!important}'), 'enhanced CARTO map must suppress every legacy frame child layer');
 assert.ok(css.includes('.bloom-carto-map img,.bloom-carto-map .leaflet-tile{max-width:none!important;max-height:none!important}'), 'Leaflet tiles must be isolated from global responsive-image sizing');
 assert.ok(css.includes('.bloom-carto-map .leaflet-tile{width:256px!important;height:256px!important}'), 'CARTO raster tiles must retain native Leaflet dimensions during pan and zoom');
+assert.ok(!css.includes('stroke-dasharray'), 'CSS must not rely on hiding dotted lines after they are rendered');
+assert.ok(!page.includes('strokeDasharray'), 'static fallback must not draw route-like dotted lines');
+assert.ok(page.includes('April-to-September sequence'), 'trust copy must describe the full tracked season');
+assert.ok(page.includes('summer lavender and sunflower fields into September'), 'intro must explain the extended flower season');
+assert.ok(page.includes('Michigan Bloom Tracker — What’s Blooming & When to Go'), 'metadata must describe the decision product instead of spring-only timing');
+assert.ok(!page.includes('Track Michigan spring blooms from April through June'), 'spring-only metadata must not survive the summer expansion');
 
 assert.ok(!season.includes("shortLabel: 'APR'"), 'user-facing timing must not use APR shorthand');
 assert.ok(!season.includes("shortLabel: 'LATE APR–MAY'"), 'user-facing timing must not use compressed month shorthand');

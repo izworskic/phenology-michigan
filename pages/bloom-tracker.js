@@ -208,8 +208,8 @@ function SeasonRouteStrip({ seasonContext }) {
   const items = seasonContext?.items || [];
   if (!items.length) return null;
   return (
-    <section className="season-route" aria-label="Typical Michigan spring bloom sequence">
-      <div className="season-route-label">Typical spring sequence <span>planning context, not live bloom</span></div>
+    <section className="season-route" aria-label="Typical Michigan flower-season sequence">
+      <div className="season-route-label">Typical flower-season sequence <span>planning context, not live bloom</span></div>
       <div className="season-route-track">
         {items.map((item, index) => (
           <div className="season-route-stop" key={item.destinationId}>
@@ -369,14 +369,6 @@ function MichiganBloomMap({ destinations, generatedAt, seasonContext, editorial,
     return () => { cancelled = true; };
   }, []);
 
-  const wavePath = useMemo(() => {
-    if (!waveEntry) return '';
-    return waveEntry.zoneStatus.map((zone, index) => {
-      const [x, y] = projectCoordinate(zone.coordinates.lon, zone.coordinates.lat);
-      return `${index === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`;
-    }).join(' ');
-  }, [waveEntry]);
-
   const mapTitle = seasonContext?.map?.title || 'Where is the bloom happening?';
   const mapIntro = seasonContext?.map?.intro || 'Use geography to compare current bloom opportunities.';
 
@@ -391,7 +383,7 @@ function MichiganBloomMap({ destinations, generatedAt, seasonContext, editorial,
         {mapState === 'loading' && <div className="map-loading">Loading Michigan geography…</div>}
         {mapState === 'error' && <div className="map-fallback"><MapPin size={22} /><strong>Map unavailable.</strong><span>The trip and seasonal reads above remain usable.</span></div>}
         {mapState === 'ready' && geography && (
-          <svg className="census-map" viewBox={`0 0 ${MAP.width} ${MAP.height}`} role="img" aria-label={seasonalMode ? 'Michigan bloom destinations labeled by typical spring timing' : 'Michigan and neighboring states with current bloom destinations'}>
+          <svg className="census-map" viewBox={`0 0 ${MAP.width} ${MAP.height}`} role="img" aria-label={seasonalMode ? 'Michigan flower destinations labeled by typical April-to-September timing' : 'Michigan and neighboring states with current bloom destinations'}>
             <rect width={MAP.width} height={MAP.height} fill="#dbe8e5" />
             <g aria-hidden="true">
               {geography.features?.flatMap((feature) => geometryPaths(feature.geometry).map((path, index) => (
@@ -403,7 +395,6 @@ function MichiganBloomMap({ destinations, generatedAt, seasonContext, editorial,
 
             {waveEntry && (
               <g aria-label="Traverse City regional bloom progression">
-                <path d={wavePath} fill="none" stroke="#53695a" strokeWidth="4" strokeDasharray="9 8" opacity="0.65" vectorEffect="non-scaling-stroke" />
                 {waveEntry.zoneStatus.map((zone) => {
                   const [x, y] = projectCoordinate(zone.coordinates.lon, zone.coordinates.lat);
                   return <g key={zone.name} transform={`translate(${x} ${y})`}><circle r="12" fill="#fffdf8" stroke="#ffffff" strokeWidth="4" /><circle r="8" fill={STAGE_TONE[zone.stage] || '#777d78'} /><title>{zone.name}: {stageLabel(zone.stage)}</title></g>;
@@ -445,6 +436,9 @@ function MichiganBloomMap({ destinations, generatedAt, seasonContext, editorial,
           <span><b>May</b> Traverse orchard bloom</span>
           <span><b>Late May–June</b> peonies</span>
           <span><b>June</b> Mackinac lilacs</span>
+          <span><b>Late June–August</b> Milan lavender</span>
+          <span><b>Late July–August</b> Frankenmuth + Gull Meadow sunflowers</span>
+          <span><b>Late August–September</b> Blake’s sunflowers</span>
         </div>
       ) : (
         <div className="map-legend" aria-label="Map decision legend">
@@ -537,11 +531,11 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
   return (
     <>
       <Head>
-        <title>Michigan Bloom Tracker — Blooms Now & Spring Timing</title>
-        <meta name="description" content="Track Michigan spring blooms from April through June: Holland tulips, Traverse City cherry blossoms, U-M peonies, Meijer Gardens cherries and Mackinac lilacs, with live trip calls in season and clear off-season timing." />
+        <title>Michigan Bloom Tracker — What’s Blooming & When to Go</title>
+        <meta name="description" content="Track Michigan flower season from April into September: cherries, tulips, peonies, lilacs, lavender and major sunflower fields, with live trip calls, weekend outlooks and clear seasonal timing." />
         <link rel="canonical" href={PAGE_URL} />
-        <meta property="og:title" content="Michigan Bloom Tracker — Blooms Now & Spring Timing" />
-        <meta property="og:description" content="See where Michigan spring is in the bloom season, what is worth the drive when flowers are active, and how the season moves from April into June." />
+        <meta property="og:title" content="Michigan Bloom Tracker — What’s Blooming & When to Go" />
+        <meta property="og:description" content="See which tracked Michigan flower display is strongest now, what is worth the drive, and how the season moves from April cherries and tulips into September sunflowers." />
         <meta property="og:url" content={PAGE_URL} /><meta property="og:type" content="website" /><meta name="twitter:card" content="summary_large_image" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       </Head>
@@ -556,7 +550,7 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
         <section className="intro-block">
           <div className="kicker"><Flower2 size={15} /> Michigan Bloom Tracker</div>
           <h1>What is worth the drive, and when?</h1>
-          <p>Follow Michigan spring from the first garden color through orchard bloom, peonies and island lilacs. In season, fresh evidence turns that progression into a trip decision.</p>
+          <p>Follow Michigan’s flower season from April cherries and tulips through summer lavender and sunflower fields into September. Fresh evidence turns that progression into a trip decision.</p>
           <div className="updated"><span className="live-dot" />{seasonalMode ? 'Season planning view · no current bloom is being inferred from the calendar' : ` Updated ${formatUpdated(snapshot?.generatedAt)} · ${snapshot?.delivery === 'persisted' ? 'banked live snapshot' : fixtureName ? 'product test fixture' : snapshot ? 'live check' : 'checking live sources'}`}</div>
         </section>
 
@@ -589,14 +583,14 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
             )}
 
             <section className="opportunity-section" aria-labelledby="where-title">
-              <div className="section-heading"><div><span className="eyebrow">{seasonalMode ? 'Michigan spring, place by place' : 'Statewide opportunity desk'}</span><h2 id="where-title">{seasonalMode ? 'What does each stop feel like?' : 'Where should I go?'}</h2></div><span className="count">{destinations.length} tracked displays</span></div>
-              <p className="opportunity-intro">{seasonalMode ? 'The season has a geography as well as a calendar. These are the places the tracker will wake up in, in roughly the order spring tends to reach their main display.' : 'The live decision stays primary. Each place gets just enough visual context to show what you are driving toward; expand only the destinations you care about.'}</p>
+              <div className="section-heading"><div><span className="eyebrow">{seasonalMode ? 'Michigan flower season, place by place' : 'Statewide opportunity desk'}</span><h2 id="where-title">{seasonalMode ? 'What does each stop feel like?' : 'Where should I go?'}</h2></div><span className="count">{destinations.length} tracked displays</span></div>
+              <p className="opportunity-intro">{seasonalMode ? 'The season has a geography as well as a calendar. These are the places the tracker wakes up in from April into September, ordered by their broad planning windows.' : 'The live decision stays primary. Each place gets just enough visual context to show what you are driving toward; expand only the destinations you care about.'}</p>
               <div className="opportunity-list">{destinations.map((entry, index) => <OpportunityCard key={entry.id} entry={entry} rank={index + 1} generatedAt={generatedAt} seasonContext={seasonContext} editorial={editorial} seasonalMode={seasonalMode} />)}</div>
             </section>
 
             <MichiganBloomMap destinations={destinations} generatedAt={generatedAt} seasonContext={seasonContext} editorial={editorial} seasonalMode={seasonalMode} />
 
-            <section className="trust-block"><div className="trust-icon"><ShieldCheck size={21} /></div><div><h2>{seasonalMode ? 'Why the calendar never becomes a bloom claim' : 'Why the tracker can say “not enough evidence”'}</h2><p>{seasonalMode ? 'The April-to-June sequence is a planning frame built from destination guidance and normal seasonal order. It helps explain where spring goes next, but only fresh observations can switch a destination into GO, WAIT, GO_BEFORE or LIMITED. File photos are never treated as current evidence.' : 'Observations anchor the forecast. Weather can change development or shorten a display, but it cannot create bloom that has not been observed. Stale observations lower confidence, abnormal-year evidence overrides normal timing, and long-range output stays a range rather than a fake peak date.'}</p></div></section>
+            <section className="trust-block"><div className="trust-icon"><ShieldCheck size={21} /></div><div><h2>{seasonalMode ? 'Why the calendar never becomes a bloom claim' : 'Why the tracker can say “not enough evidence”'}</h2><p>{seasonalMode ? 'The April-to-September sequence is a planning frame built from destination guidance and broad seasonal order. It helps explain what tends to come next, but only fresh observations can switch a destination into GO, WAIT, GO_BEFORE or LIMITED. File photos are never treated as current evidence.' : 'Observations anchor the forecast. Weather can change development or shorten a display, but it cannot create bloom that has not been observed. Stale observations lower confidence, abnormal-year evidence overrides normal timing, and long-range output stays a range rather than a fake peak date.'}</p></div></section>
           </>
         )}
 
