@@ -111,12 +111,10 @@ jobs:
           await page.waitForFunction(() => /Starting point: Bay City, MI/i.test(document.querySelector('.bloom-origin-status')?.textContent || ''), null, { timeout: 15000 });
           await page.waitForFunction(() => /from Bay City, MI/i.test(document.querySelector('.bloom-map-insight-copy strong')?.textContent || ''), null, { timeout: 10000 });
           const fromMe = await state();
-          if (!document.querySelector) {}
           const originMarkerCount = await page.locator('.bloom-origin-marker').count();
           if (originMarkerCount !== 1) throw new Error(`origin marker missing: ${originMarkerCount}`);
           if (!/Road distance will be longer/i.test(fromMe.detail)) throw new Error(`distance honesty missing: ${fromMe.detail}`);
-          const targetMarker = page.locator('.leaflet-marker-icon[title]').filter({ hasNot: page.locator('.bloom-origin-marker') }).first();
-          await targetMarker.click().catch(() => {});
+          await page.locator('.leaflet-marker-icon[title^="Holland Tulips"]').first().click();
           const directionLinks = await page.locator('.leaflet-popup a.bloom-directions-link').count();
           if (directionLinks < 1) throw new Error('exact directions link missing after origin selection');
           await page.screenshot({ path: '/tmp/bloom-from-me.png', fullPage: true });
