@@ -33,6 +33,26 @@
       officialUrl: 'https://www.mackinacisland.org/mackinac-island-lilac-festival/', officialLabel: 'Official Mackinac lilac visitor update',
       travelNote: 'Mackinac Island requires ferry travel beyond the mainland drive.',
     },
+    'milan-lavender': {
+      name: 'Milan lavender', fullName: 'Milan Lavender Lane', lat: 42.083747, lon: -83.670218,
+      timing: 'Late June into early August', order: 6, seasonColor: '#8b5cf6',
+      officialUrl: 'https://lavenderlanemi.com/local/', officialLabel: 'Official Lavender Lane seasonal update',
+    },
+    'frankenmuth-sunflowers': {
+      name: 'Frankenmuth sunflowers', fullName: 'Frankenmuth Flower Festival Sunflowers', lat: 43.340413, lon: -83.741230,
+      timing: 'Late July into early August', order: 7, seasonColor: '#f2b43f',
+      officialUrl: 'https://www.grandpatinys.com/frankenmuth-flower-festival', officialLabel: 'Official Grandpa Tiny’s flower update',
+    },
+    'gull-meadow-sunflowers': {
+      name: 'Gull Meadow sunflowers', fullName: 'Gull Meadow Sunflower Days', lat: 42.36758, lon: -85.46417,
+      timing: 'Late July into mid-August', order: 8, seasonColor: '#f5c542',
+      officialUrl: 'https://gullmeadowfarms.com/pages/sunflower-days', officialLabel: 'Official Gull Meadow sunflower update',
+    },
+    'blakes-sunflowers': {
+      name: 'Blake’s sunflowers', fullName: "Blake's Sunflower Festival", lat: 42.849784, lon: -82.951413,
+      timing: 'Late August into early September', order: 9, seasonColor: '#e6a52d',
+      officialUrl: 'https://blakefarms.com/sunflower-festival/', officialLabel: 'Official Blake’s sunflower update',
+    },
   };
 
   const STAGE_ORDER = ['DORMANT', 'EMERGING', 'BUILDING', 'NEAR_PEAK', 'PEAK', 'FADING', 'DONE'];
@@ -308,7 +328,7 @@
       return {
         badge: 'How to read it',
         headline: 'Michigan’s tracked flower season unfolds in stages, not one statewide peak.',
-        detail: 'Grand Rapids and Holland usually lead these tracked displays, Traverse cherries follow, then peonies and Mackinac lilacs. Live intensity returns only when fresh observations support it.',
+        detail: 'Cherries and tulips lead the tracked season, followed by Traverse cherries, peonies and Mackinac lilacs. Milan lavender then hands the season to major sunflower fields in Frankenmuth, Richland and Armada. Live intensity returns only when fresh observations support it.',
       };
     }
 
@@ -509,7 +529,7 @@
     const legend = document.createElement('div');
     legend.className = 'bloom-map-v2-legend';
     if (seasonal) {
-      legend.innerHTML = '<span><i style="background:#ff7aa8"></i>Earlier in spring</span><span>→</span><span><i style="background:#7b4dff"></i>Later into June</span>';
+      legend.innerHTML = '<span><i style="background:#ff7aa8"></i>Spring starts</span><span>→</span><span><i style="background:#e6a52d"></i>Late summer</span>';
     } else {
       legend.innerHTML = '<span><i style="background:#ff2f8b"></i>Peak</span><span><i style="background:#ff8a34"></i>Building</span><span><i style="background:#ffd23f"></i>Emerging</span><span><i style="background:#9b5de5"></i>Fading</span><span><i style="background:#92999b"></i>Quiet / uncertain</span>';
     }
@@ -521,7 +541,7 @@
     if (source) source.textContent = `Basemap © OpenStreetMap contributors, © CARTO. ${seasonal ? 'Timing colors show the usual sequence, not current bloom.' : 'Bloom intensity shows relative strength around tracked displays and observed zones. It is not literal geographic flower coverage; confidence, freshness and forecast uncertainty can dim the color.'}`;
     const seasonalRead = section.querySelector('.map-season-read');
     if (seasonalRead) {
-      seasonalRead.innerHTML = '<strong>Read the tracked season across the map:</strong><span><b>April into early May</b> Meijer Gardens cherries</span><span><b>Late April into May</b> Holland tulips</span><span><b>May</b> Traverse cherries</span><span><b>Late May into June</b> U-M peonies</span><span><b>June</b> Mackinac lilacs</span>';
+      seasonalRead.innerHTML = '<strong>Read the tracked season across the map:</strong><span><b>April into early May</b> Meijer Gardens cherries</span><span><b>Late April into May</b> Holland tulips</span><span><b>May</b> Traverse cherries</span><span><b>Late May into June</b> U-M peonies</span><span><b>June</b> Mackinac lilacs</span><span><b>Late June–early August</b> Milan lavender</span><span><b>Late July–early August</b> Frankenmuth sunflowers</span><span><b>Late July–mid August</b> Gull Meadow sunflowers</span><span><b>Late August–early September</b> Blake’s sunflowers</span>';
     }
   }
 
@@ -634,7 +654,7 @@
     const section = document.querySelector('.map-section');
     const frame = section?.querySelector('.map-frame');
     const rawRecords = readCards();
-    if (!section || !frame || rawRecords.length !== Object.keys(DESTINATIONS).length) return;
+    if (!section || !frame || rawRecords.length < 1) return;
 
     const seasonal = isSeasonalMode();
     const records = projectRecords(rawRecords, seasonal);
@@ -686,7 +706,10 @@
 
       addOriginLayer(records);
       addLegend(frame, seasonal);
-      const boundsPoints = Object.values(DESTINATIONS).map((destination) => [destination.lat, destination.lon]);
+      const boundsPoints = records.map((record) => {
+        const destination = DESTINATIONS[record.id];
+        return [destination.lat, destination.lon];
+      });
       if (origin && activeView === VIEW.FROM_ME) boundsPoints.push([origin.lat, origin.lon]);
       const bounds = window.L.latLngBounds(boundsPoints);
       map.fitBounds(bounds.pad(0.20), { padding: [18, 18], maxZoom: 7 });
