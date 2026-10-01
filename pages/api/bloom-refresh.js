@@ -12,11 +12,16 @@ export default async function handler(req, res) {
   }
 
   try {
+    const editorialAuthToken = req.headers['x-vercel-oidc-token']
+      || process.env.VERCEL_OIDC_TOKEN
+      || process.env.HARNESS_ACCESS_KEY
+      || null;
     const result = await runBloomLiveCycle({
       now: new Date(),
       fetchImpl: fetch,
       bootstrapOverrides,
       persist: true,
+      editorialAuthToken,
     });
     return res.status(result.ok ? 200 : 500).json(result);
   } catch (error) {
