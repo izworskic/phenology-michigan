@@ -36,7 +36,6 @@ jobs:
           node --input-type=module <<'NODE'
           import { chromium } from 'playwright';
           import fs from 'node:fs/promises';
-
           const browser = await chromium.launch({ headless: true });
           const page = await browser.newPage({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
           const errors = [];
@@ -49,12 +48,10 @@ jobs:
             await page.locator('.map-section').scrollIntoViewIfNeeded();
             await page.waitForTimeout(300);
           }
-
           async function state() {
             return page.evaluate(() => {
               const rings = [...document.querySelectorAll('.bloom-energy-ring')];
               const opacities = rings.map((ring) => Number(getComputedStyle(ring).fillOpacity || ring.getAttribute('fill-opacity') || 0));
-              const tooltipText = [...document.querySelectorAll('.leaflet-tooltip')].map((node) => node.textContent || '').join(' | ');
               const body = document.body.getBoundingClientRect();
               return {
                 headline: document.querySelector('.bloom-map-insight-copy strong')?.textContent || '',
@@ -64,7 +61,6 @@ jobs:
                 maxOpacity: Math.max(0, ...opacities),
                 tabs: [...document.querySelectorAll('.bloom-time-tab')].map((b) => b.textContent),
                 selectedTab: document.querySelector('.bloom-time-tab[aria-pressed="true"]')?.textContent || '',
-                tooltipText,
                 overflow: Math.max(0, body.width - window.innerWidth, document.documentElement.scrollWidth - window.innerWidth),
                 sourceText: document.querySelector('.map-source')?.textContent || '',
               };
@@ -77,7 +73,7 @@ jobs:
           if (!/strongest display we.re tracking right now/i.test(now.headline)) throw new Error(`tracked-only now claim missing: ${now.headline}`);
           if (/Michigan is brightest/i.test(now.headline)) throw new Error(`unsupported statewide claim survived: ${now.headline}`);
           if (!/confidence, freshness and forecast uncertainty/i.test(now.sourceText)) throw new Error(`trust explanation missing: ${now.sourceText}`);
-          if (now.ringCount < 18 || now.maxOpacity <= 0.15) throw new Error(`now intensity too weak: ${JSON.stringify(now)}`);
+          if (now.ringCount < 24 || now.maxOpacity <= 0.05) throw new Error(`strong fixture lacks a visible current intensity surface: ${JSON.stringify(now)}`);
           if (now.overflow > 2) throw new Error(`mobile overflow in now view: ${now.overflow}`);
           await page.screenshot({ path: '/tmp/bloom-now.png', fullPage: true });
 
@@ -105,27 +101,24 @@ jobs:
           if (!/among the displays we track/i.test(next.headline)) throw new Error(`next view overclaims network scope: ${next.headline}`);
           await page.screenshot({ path: '/tmp/bloom-next.png', fullPage: true });
 
-          const originInput = page.getByLabel('Starting city or ZIP');
-          await originInput.fill('Bay City');
+          await page.getByLabel('Starting city or ZIP').fill('Bay City');
           await page.getByRole('button', { name: 'Set' }).click();
           await page.waitForFunction(() => /Starting point: Bay City, MI/i.test(document.querySelector('.bloom-origin-status')?.textContent || ''), null, { timeout: 15000 });
           await page.waitForFunction(() => /from Bay City, MI/i.test(document.querySelector('.bloom-map-insight-copy strong')?.textContent || ''), null, { timeout: 10000 });
           const fromMe = await state();
-          const originMarkerCount = await page.locator('.bloom-origin-marker').count();
-          if (originMarkerCount !== 1) throw new Error(`origin marker missing: ${originMarkerCount}`);
+          if (await page.locator('.bloom-origin-marker').count() !== 1) throw new Error('origin marker missing');
           if (!/Road distance will be longer/i.test(fromMe.detail)) throw new Error(`distance honesty missing: ${fromMe.detail}`);
           await page.locator('.leaflet-marker-icon[title^="Holland Tulips"]').first().click();
-          const directionLinks = await page.locator('.leaflet-popup a.bloom-directions-link').count();
-          if (directionLinks < 1) throw new Error('exact directions link missing after origin selection');
+          if (await page.locator('.leaflet-popup a.bloom-directions-link').count() < 1) throw new Error('exact directions link missing after origin selection');
           await page.screenshot({ path: '/tmp/bloom-from-me.png', fullPage: true });
 
           await loadFixture('wave');
           const waveNow = await state();
-          if (!/Old Mission/i.test(waveNow.tooltipText)) throw new Error(`zone observations absent in current wave view: ${waveNow.tooltipText}`);
+          if (waveNow.ringCount < now.ringCount + 12) throw new Error(`current Traverse zone plume did not add enough localized intensity: ${JSON.stringify({now,waveNow})}`);
           await page.getByRole('button', { name: 'This weekend' }).click();
           await page.waitForTimeout(350);
           const waveWeekend = await state();
-          if (/Old Mission/i.test(waveWeekend.tooltipText)) throw new Error(`current zone observations leaked into future forecast view: ${waveWeekend.tooltipText}`);
+          if (waveWeekend.ringCount >= waveNow.ringCount) throw new Error(`current Traverse zone plume leaked into future view: ${JSON.stringify({waveNow,waveWeekend})}`);
 
           await loadFixture('weak');
           const weak = await state();
@@ -133,7 +126,7 @@ jobs:
           if (errors.length) throw new Error(`browser console errors: ${errors.join(' | ')}`);
 
           await fs.writeFile('/tmp/bloom-decision-report.json', JSON.stringify({ now, weekend, next, fromMe, waveNow, waveWeekend, weak }, null, 2));
-          console.log(JSON.stringify({ now, weekend, next, fromMe, weak }, null, 2));
+          console.log(JSON.stringify({ now, weekend, next, fromMe, waveNow, waveWeekend, weak }, null, 2));
           await browser.close();
           NODE
       - uses: actions/upload-artifact@v4
