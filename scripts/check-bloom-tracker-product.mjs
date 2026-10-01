@@ -77,12 +77,12 @@ assert.ok(!page.includes('MAPLIBRE_JS'), 'tracker map must not depend on an exte
 assert.ok(page.includes('/maps/great-lakes-context.geojson'), 'map must use committed geographic geometry');
 assert.ok(page.includes('geometryPaths'), 'map must render real geographic polygons');
 assert.ok(page.includes('MapSelectedPanel'), 'one marker tap must surface useful in-map detail');
-assert.ok(page.includes('wavePath'), 'map must support geographic bloom progression when zone evidence exists');
+assert.ok(page.includes('waveEntry.zoneStatus.map'), 'map must support geographic bloom progression with geolocated zone points when evidence exists');
 assert.ok(page.includes('What is worth the drive, and when?'), 'first screen must work in both live and off-season modes');
 assert.ok(page.includes('<SeasonBanner seasonContext={seasonContext} />'), 'the page must carry an explicit year-round season statement');
 assert.ok(page.includes('How spring moves across Michigan') || page.includes('seasonContext?.map?.title'), 'map title must be driven by seasonal interpretation');
 assert.ok(page.includes('map-season-label'), 'off-season map must put time labels directly on the geography');
-assert.ok(page.includes('Read the year across the map:'), 'off-season map must explain how to interpret April-to-June movement');
+assert.ok(page.includes('Read the year across the map:'), 'off-season map must explain how to interpret the April-to-September flower season');
 
 assert.ok(page.includes('function OpportunityCard'), 'experience must be integrated into each ranked destination');
 assert.ok(page.includes('ExperienceThumbnail'), 'ranked destinations must carry visual context');
