@@ -1,0 +1,129 @@
+name: Bloom Seasonal Render
+
+on:
+  push:
+    branches:
+      - enhance/bloom-seasonal-editorial-map
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start fixture server
+        run: |
+          VERCEL_ENV=preview npm start -- -p 3000 > /tmp/bloom-seasonal.log 2>&1 &
+          for i in {1..60}; do
+            if curl -fsS 'http://127.0.0.1:3000/bloom-tracker' >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/bloom-seasonal.log
+          exit 1
+      - name: Render and inspect modes
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs/promises';
+
+          const browser = await chromium.launch({ headless: true });
+          const report = {};
+
+          async function inspectPage({ name, url, width, height, seasonal }) {
+            const page = await browser.newPage({ viewport: { width, height } });
+            const consoleErrors = [];
+            page.on('console', msg => { if (msg.type() === 'error') consoleErrors.push(msg.text()); });
+            await page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
+
+            const cards = page.locator('.opportunity-card');
+            if (await cards.count() !== 5) throw new Error(`${name}: expected 5 destination cards, found ${await cards.count()}`);
+
+            for (let i = 0; i < await cards.count(); i += 1) {
+              await cards.nth(i).scrollIntoViewIfNeeded();
+              await page.waitForTimeout(150);
+            }
+
+            const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+            if (overflow > 2) throw new Error(`${name}: horizontal overflow ${overflow}px`);
+
+            const thumbs = await page.locator('.opportunity-thumb img').evaluateAll(imgs => imgs.map(img => ({
+              loaded: img.complete && img.naturalWidth > 0,
+              width: img.naturalWidth,
+              height: img.naturalHeight,
+              src: img.currentSrc || img.src,
+            })));
+            const failedThumbs = thumbs.filter(item => !item.loaded);
+            if (failedThumbs.length) throw new Error(`${name}: thumbnail failures ${JSON.stringify(failedThumbs)}`);
+
+            const listBox = await page.locator('.opportunity-list').boundingBox();
+            const mapBox = await page.locator('.map-section').boundingBox();
+            if (!listBox || !mapBox) throw new Error(`${name}: missing list or map geometry`);
+            const mapGap = mapBox.y - (listBox.y + listBox.height);
+            if (mapGap > 85) throw new Error(`${name}: map pushed ${mapGap}px below destination list`);
+
+            if (seasonal) {
+              if (await page.locator('.season-banner').count() !== 1) throw new Error(`${name}: missing season banner`);
+              if (await page.locator('.featured').count() !== 0) throw new Error(`${name}: stale live featured decision visible off season`);
+              if (await page.locator('.map-season-label').count() !== 5) throw new Error(`${name}: expected five seasonal labels on map`);
+              const body = await page.locator('body').innerText();
+              if (!body.includes('The flowers are quiet. Spring will move north again.')) throw new Error(`${name}: off-season statement missing`);
+              if (!body.includes('How spring moves across Michigan')) throw new Error(`${name}: interpretive map heading missing`);
+              if (body.includes('Best this weekend')) throw new Error(`${name}: off-season page still markets a stale best-this-weekend answer`);
+            } else {
+              if (await page.locator('.featured').count() !== 1) throw new Error(`${name}: active season lost featured trip decision`);
+              if (await page.locator('.map-season-label').count() !== 0) throw new Error(`${name}: active map still showing off-season month labels`);
+              const body = await page.locator('body').innerText();
+              if (!body.includes('Bloom season is on')) throw new Error(`${name}: active season statement missing`);
+              if (!body.includes('Best this weekend')) throw new Error(`${name}: active decision hierarchy missing`);
+            }
+
+            await cards.first().locator('summary').click();
+            await cards.first().scrollIntoViewIfNeeded();
+            await page.waitForTimeout(500);
+            const expandedImages = await cards.first().locator('.trip-photo img').evaluateAll(imgs => imgs.map(img => ({ loaded: img.complete && img.naturalWidth > 0, width: img.naturalWidth, height: img.naturalHeight })));
+            if (!expandedImages.length || expandedImages.some(item => !item.loaded)) throw new Error(`${name}: expanded place photos failed ${JSON.stringify(expandedImages)}`);
+
+            const pageHeight = await page.evaluate(() => document.body.scrollHeight);
+            await page.screenshot({ path: `bloom-${name}.png`, fullPage: true });
+            report[name] = { overflow, mapGap, pageHeight, thumbs, expandedImages, consoleErrors };
+            await page.close();
+          }
+
+          await inspectPage({ name: 'offseason-mobile', url: 'http://127.0.0.1:3000/bloom-tracker', width: 390, height: 844, seasonal: true });
+          await inspectPage({ name: 'offseason-desktop', url: 'http://127.0.0.1:3000/bloom-tracker', width: 1440, height: 1100, seasonal: true });
+          await inspectPage({ name: 'active-mobile', url: 'http://127.0.0.1:3000/bloom-tracker?fixture=strong', width: 390, height: 844, seasonal: false });
+          await inspectPage({ name: 'active-desktop', url: 'http://127.0.0.1:3000/bloom-tracker?fixture=strong', width: 1440, height: 1100, seasonal: false });
+
+          const wavePage = await browser.newPage({ viewport: { width: 390, height: 844 } });
+          await wavePage.goto('http://127.0.0.1:3000/bloom-tracker?fixture=wave', { waitUntil: 'networkidle', timeout: 60000 });
+          await wavePage.locator('.map-section').scrollIntoViewIfNeeded();
+          await wavePage.waitForTimeout(400);
+          await wavePage.screenshot({ path: 'bloom-active-wave-mobile.png', fullPage: true });
+          await wavePage.close();
+
+          await browser.close();
+          await fs.writeFile('bloom-seasonal-report.json', JSON.stringify(report, null, 2));
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bloom-seasonal-render
+          path: |
+            bloom-offseason-mobile.png
+            bloom-offseason-desktop.png
+            bloom-active-mobile.png
+            bloom-active-desktop.png
+            bloom-active-wave-mobile.png
+            bloom-seasonal-report.json
+            /tmp/bloom-seasonal.log
+          retention-days: 2
