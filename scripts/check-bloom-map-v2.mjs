@@ -23,6 +23,9 @@ assert.ok(enhancer.includes('energyRadius: 70000, energy: 1'), 'peak must have t
 assert.ok(enhancer.includes('energyRadius: 44000, energy: 0.56'), 'building bloom must use a smaller intermediate energy surface');
 assert.ok(enhancer.includes('energyRadius: 24000, energy: 0.22'), 'fading bloom must visibly contract and weaken');
 assert.ok(enhancer.includes('DONE: {') && enhancer.includes('energyRadius: 0, energy: 0'), 'done bloom must return the basemap toward normal rather than retain a false glow');
+assert.ok(enhancer.includes("if (record.state === 'UNKNOWN') return STAGE_STYLE.UNKNOWN"), 'stale/UNKNOWN decisions must suppress old observed-stage energy');
+assert.ok(enhancer.includes("return ['GO', 'GO_BEFORE'].includes(record.state)"), 'only deterministic trip-worthy decisions may pulse as trip-worthy');
+assert.ok(enhancer.includes('if (!hasBloomEnergy(record)) return;'), 'Traverse zone detail must not bypass a stale destination truth gate');
 assert.ok(enhancer.includes('const ENERGY_RINGS'), 'energy must use layered rings rather than one hard-edged destination circle');
 assert.ok(enhancer.includes('addBloomEnergySurface'), 'live map must render the bloom-energy surface');
 assert.ok(enhancer.includes('addEnergyPoint'), 'energy renderer must support independently scaled observation points');
