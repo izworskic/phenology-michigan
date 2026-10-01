@@ -37,7 +37,7 @@ function mapPosition(destination) {
 
 function formatUpdated(dateLike) {
   const date = new Date(dateLike);
-  if (!Number.isFinite(date.getTime())) return 'Update time unavailable';
+  if (!Number.isFinite(date.getTime())) return 'waiting for first live snapshot';
   return new Intl.DateTimeFormat('en-US', {
     timeZone: 'America/Detroit',
     month: 'short',
@@ -193,7 +193,7 @@ function EmptyState() {
     <div className="data-empty">
       <Flower2 size={22} />
       <div>
-        <strong>Bloom status is temporarily unavailable.</strong>
+        <strong>Bloom status is loading.</strong>
         <p>The tracker will not substitute a calendar guess for missing live evidence.</p>
       </div>
     </div>
@@ -204,8 +204,9 @@ export default function BloomTracker({ initialSnapshot = null }) {
   const [snapshot, setSnapshot] = useState(initialSnapshot);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedId, setSelectedId] = useState(initialSnapshot?.destinations?.[0]?.id || null);
+  const [pageLoadedAt] = useState(() => new Date().toISOString());
 
-  const generatedAt = snapshot?.generatedAt || new Date().toISOString();
+  const generatedAt = snapshot?.generatedAt || pageLoadedAt;
   const destinations = useMemo(
     () => sortPublicDestinations(snapshot?.destinations || [], generatedAt),
     [snapshot, generatedAt]
@@ -234,9 +235,12 @@ export default function BloomTracker({ initialSnapshot = null }) {
   }
 
   useEffect(() => {
+    if (!initialSnapshot) refresh();
     const timer = setInterval(refresh, 5 * 60 * 1000);
     return () => clearInterval(timer);
-  });
+    // This effect is intentionally mounted once; refresh always preserves the last trustworthy snapshot.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function selectOnMap(id) {
     setSelectedId(id);
@@ -284,7 +288,7 @@ export default function BloomTracker({ initialSnapshot = null }) {
           <div className="kicker"><Flower2 size={15} /> Michigan Bloom Tracker</div>
           <h1>Where is the best bloom in Michigan right now?</h1>
           <p>Fresh observations + forecast progression + weather durability. No calendar-only peak guesses.</p>
-          <div className="updated"><span className="live-dot" /> Updated {formatUpdated(snapshot?.generatedAt)} · {snapshot?.delivery === 'persisted' ? 'banked live snapshot' : 'live check'}</div>
+          <div className="updated"><span className="live-dot" /> Updated {formatUpdated(snapshot?.generatedAt)} · {snapshot?.delivery === 'persisted' ? 'banked live snapshot' : snapshot ? 'live check' : 'checking live sources'}</div>
         </section>
 
         {!snapshot?.destinations?.length ? <EmptyState /> : (
@@ -400,23 +404,13 @@ export default function BloomTracker({ initialSnapshot = null }) {
 
 export async function getServerSideProps() {
   try {
-    const [{ readBloomLatest }, { runBloomLiveCycle }] = await Promise.all([
-      import('../lib/bloom/history-store.mjs'),
-      import('../lib/bloom/live-pipeline.mjs'),
-    ]);
-    const bootstrapOverrides = (await import('../data/bloom-observation-overrides.json')).default;
+    const { readBloomLatest } = await import('../lib/bloom/history-store.mjs');
     const stored = await readBloomLatest({ fetchImpl: fetch });
     if (stored.ok && stored.value) {
       return { props: { initialSnapshot: { ...stored.value, delivery: 'persisted' } } };
     }
-    const live = await runBloomLiveCycle({
-      now: new Date(),
-      fetchImpl: fetch,
-      bootstrapOverrides,
-      persist: false,
-    });
-    return { props: { initialSnapshot: { ...live.latest, delivery: 'live_fallback' } } };
   } catch {
-    return { props: { initialSnapshot: null } };
+    // SSR should never block the public product on live source acquisition.
   }
+  return { props: { initialSnapshot: null } };
 }
