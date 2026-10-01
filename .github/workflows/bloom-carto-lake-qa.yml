@@ -1,0 +1,76 @@
+name: Bloom CARTO Lake QA
+
+on:
+  push:
+    branches:
+      - fix/bloom-carto-lake-pseudo
+
+jobs:
+  verify-lake-sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start preview server
+        run: |
+          VERCEL_ENV=preview npm start -- -p 3000 > /tmp/bloom-lake.log 2>&1 &
+          for i in {1..60}; do
+            if curl -fsS 'http://127.0.0.1:3000/bloom-tracker?fixture=strong' >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/bloom-lake.log
+          exit 1
+      - name: Verify static lake overlay is gone and CARTO pans as one surface
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from 'playwright';
+          const browser = await chromium.launch({ headless: true });
+          const page = await browser.newPage({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+          const errors = [];
+          page.on('console', (msg) => { if (msg.type() === 'error') errors.push(msg.text()); });
+          await page.goto('http://127.0.0.1:3000/bloom-tracker?fixture=strong', { waitUntil: 'networkidle', timeout: 60000 });
+          await page.waitForFunction(() => document.querySelectorAll('.bloom-carto-map .leaflet-tile-loaded').length >= 4, null, { timeout: 20000 });
+          await page.waitForFunction(() => document.querySelectorAll('.bloom-map-marker').length === 5, null, { timeout: 15000 });
+          const pseudo = await page.evaluate(() => {
+            const frame = document.querySelector('.bloom-map-enhanced .map-frame');
+            const style = getComputedStyle(frame, '::after');
+            return { content: style.content, display: style.display, backgroundImage: style.backgroundImage };
+          });
+          if (!['none','normal',''].includes(String(pseudo.content).replaceAll('"',''))) throw new Error(`legacy ::after still has content: ${JSON.stringify(pseudo)}`);
+          if (pseudo.backgroundImage && pseudo.backgroundImage !== 'none') throw new Error(`legacy lake background still active: ${JSON.stringify(pseudo)}`);
+
+          const map = page.locator('.bloom-carto-map');
+          await map.scrollIntoViewIfNeeded();
+          const before = await page.evaluate(() => {
+            const tile = document.querySelector('.bloom-carto-map .leaflet-tile-loaded')?.getBoundingClientRect();
+            const marker = document.querySelector('.bloom-map-marker')?.closest('.leaflet-marker-icon')?.getBoundingClientRect();
+            return { tile: tile && {x:tile.x,y:tile.y,w:tile.width,h:tile.height}, marker: marker && {x:marker.x,y:marker.y} };
+          });
+          const box = await map.boundingBox();
+          const sx = box.x + box.width * .62, sy = box.y + box.height * .48;
+          await page.mouse.move(sx, sy); await page.mouse.down();
+          await page.mouse.move(sx - 110, sy + 28, {steps:12}); await page.mouse.up();
+          await page.waitForTimeout(700);
+          const after = await page.evaluate(() => {
+            const tile = document.querySelector('.bloom-carto-map .leaflet-tile-loaded')?.getBoundingClientRect();
+            const marker = document.querySelector('.bloom-map-marker')?.closest('.leaflet-marker-icon')?.getBoundingClientRect();
+            return { tile: tile && {x:tile.x,y:tile.y,w:tile.width,h:tile.height}, marker: marker && {x:marker.x,y:marker.y} };
+          });
+          if (!before.tile || !after.tile || !before.marker || !after.marker) throw new Error('map geometry missing');
+          if (Math.abs(after.tile.w-256)>1 || Math.abs(after.tile.h-256)>1) throw new Error(`tile distorted: ${JSON.stringify(after.tile)}`);
+          if (Math.abs(after.marker.x-before.marker.x)<20 && Math.abs(after.marker.y-before.marker.y)<20) throw new Error('marker did not pan');
+          if (errors.length) throw new Error(`console errors: ${errors.join(' | ')}`);
+          console.log(JSON.stringify({pseudo,before,after},null,2));
+          await browser.close();
+          NODE
