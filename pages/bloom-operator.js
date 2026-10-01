@@ -4,32 +4,27 @@ import { useMemo, useState } from 'react';
 const DESTINATIONS = {
   'holland-tulips': {
     name: 'Holland Tulips',
-    sourceName: 'City of Holland Tulip Tracker / verified camera review',
-    sourceUrl: 'https://www.cityofholland.com/1022/Tulip-Tracker',
+    sourceLabel: 'City of Holland Tulip Tracker / verified camera review',
     ttlHours: 48,
   },
   'mackinac-lilacs': {
     name: 'Mackinac Island Lilacs',
-    sourceName: 'Mackinac Island Tourism Bureau / verified island observation',
-    sourceUrl: 'https://www.mackinacisland.org/mackinac-island-lilac-festival/',
+    sourceLabel: 'Mackinac Island Tourism Bureau / verified island observation',
     ttlHours: 72,
   },
   'traverse-city-cherries': {
     name: 'Traverse City Cherry Blossoms',
-    sourceName: 'Verified local observation',
-    sourceUrl: 'https://www.traversecity.com/things-to-do/tours/cherry-blossom-tours/',
+    sourceLabel: 'Verified local cherry-blossom observation',
     ttlHours: 36,
   },
   'meijer-gardens-cherries': {
     name: 'Meijer Gardens Cherry Blossoms',
-    sourceName: 'Frederik Meijer Gardens & Sculpture Park',
-    sourceUrl: 'https://www.meijergardens.org/blossoms/',
+    sourceLabel: 'Frederik Meijer Gardens / verified blossom observation',
     ttlHours: 36,
   },
   'um-peony-garden': {
     name: 'U-M Peony Garden',
-    sourceName: 'University of Michigan Peony Garden — What’s in Bloom',
-    sourceUrl: 'https://mbgna.umich.edu/whats-bloom-peony-garden',
+    sourceLabel: 'University of Michigan Peony Garden / verified observation',
     ttlHours: 36,
   },
 };
@@ -57,8 +52,6 @@ export default function BloomOperator() {
   const [zone, setZone] = useState('');
   const [evidenceText, setEvidenceText] = useState('');
   const [notes, setNotes] = useState('');
-  const [sourceName, setSourceName] = useState(DESTINATIONS['holland-tulips'].sourceName);
-  const [sourceUrl, setSourceUrl] = useState(DESTINATIONS['holland-tulips'].sourceUrl);
   const [status, setStatus] = useState('');
   const [current, setCurrent] = useState([]);
   const [busy, setBusy] = useState(false);
@@ -66,10 +59,7 @@ export default function BloomOperator() {
   const destination = useMemo(() => DESTINATIONS[destinationId], [destinationId]);
 
   function changeDestination(next) {
-    const d = DESTINATIONS[next];
     setDestinationId(next);
-    setSourceName(d.sourceName);
-    setSourceUrl(d.sourceUrl);
     const observed = new Date(observedAt || Date.now());
     setValidThrough(defaultValidThrough(next, Number.isFinite(observed.getTime()) ? observed : new Date()));
   }
@@ -116,7 +106,6 @@ export default function BloomOperator() {
         observedAt: new Date(observedAt).toISOString(),
         validThrough: new Date(validThrough).toISOString(),
         displayPotential,
-        source: { name: sourceName, url: sourceUrl, authority: 100 },
         evidenceText,
         notes,
       });
@@ -160,21 +149,20 @@ export default function BloomOperator() {
         <form onSubmit={saveObservation}>
           <h2>Verified observation</h2>
           <label>Destination<select value={destinationId} onChange={(e) => changeDestination(e.target.value)}>{Object.entries(DESTINATIONS).map(([id, d]) => <option key={id} value={id}>{d.name}</option>)}</select></label>
+          <div className="provenance"><strong>Verified against</strong><div>{destination.sourceLabel}</div><small>Source identity and authority are attached automatically and cannot be edited here.</small></div>
           <label>Stage<select value={stage} onChange={(e) => setStage(e.target.value)}>{STAGES.map((s) => <option key={s}>{s}</option>)}</select></label>
           <label>Observed at<input type="datetime-local" value={observedAt} onChange={(e) => setObservedAt(e.target.value)} /></label>
           <label>Valid through<input type="datetime-local" value={validThrough} onChange={(e) => setValidThrough(e.target.value)} /></label>
           <label>Display potential<select value={displayPotential} onChange={(e) => setDisplayPotential(e.target.value)}>{POTENTIALS.map((p) => <option key={p}>{p}</option>)}</select></label>
           <label>Zone / area<input value={zone} onChange={(e) => setZone(e.target.value)} placeholder={destination?.name === 'Holland Tulips' ? 'Centennial Park' : 'Optional'} /></label>
-          <label>Source name<input value={sourceName} onChange={(e) => setSourceName(e.target.value)} /></label>
-          <label>Source URL<input type="url" value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} /></label>
-          <label>What you observed<textarea value={evidenceText} onChange={(e) => setEvidenceText(e.target.value)} rows={4} placeholder="Example: Centennial Park camera shows widespread full color; later beds still opening." /></label>
+          <label>What you observed<textarea required minLength={8} value={evidenceText} onChange={(e) => setEvidenceText(e.target.value)} rows={4} placeholder="Example: Centennial Park camera shows widespread full color; later beds still opening." /></label>
           <label>Notes<textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} /></label>
           <button type="submit" disabled={busy}>Save + refresh live tracker</button>
         </form>
 
         {status && <div className="status">{status}</div>}
 
-        {current.length > 0 && <section><h2>Active verified observations</h2>{current.map((item) => <article key={`${item.destinationId}|${item.zone || ''}`} className="card"><strong>{DESTINATIONS[item.destinationId]?.name || item.destinationId}</strong><div>{item.stage} · expires {new Date(item.validThrough).toLocaleString()}</div><div className="muted">{item.evidenceText || 'No evidence note'}</div><button type="button" className="danger" disabled={busy} onClick={() => removeObservation(item)}>Remove</button></article>)}</section>}
+        {current.length > 0 && <section><h2>Active verified observations</h2>{current.map((item) => <article key={`${item.destinationId}|${item.zone || ''}`} className="card"><strong>{DESTINATIONS[item.destinationId]?.name || item.destinationId}</strong><div>{item.stage} · expires {new Date(item.validThrough).toLocaleString()}</div><div className="muted">{item.source?.name || 'Approved source'} · {item.evidenceText || 'No evidence note'}</div><button type="button" className="danger" disabled={busy} onClick={() => removeObservation(item)}>Remove</button></article>)}</section>}
       </main>
       <style jsx>{`
         :global(body){margin:0;background:#f5f4ef;color:#1d2a20;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -183,6 +171,7 @@ export default function BloomOperator() {
         form{margin-top:22px;padding-top:8px;border-top:1px solid #d8ddd7}label{display:block;font-weight:650;margin:14px 0 6px}
         input,select,textarea{box-sizing:border-box;width:100%;margin-top:6px;border:1px solid #b8c2b9;border-radius:9px;background:white;padding:12px;font:inherit;color:#172119}
         textarea{resize:vertical}button{margin-top:12px;border:0;border-radius:9px;background:#244d32;color:white;padding:12px 15px;font:inherit;font-weight:700;cursor:pointer}button:disabled{opacity:.55;cursor:default}
+        .provenance{margin:14px 0;padding:12px;border:1px solid #d7ddd7;border-radius:9px;background:#eef1ec;line-height:1.45}.provenance small{display:block;color:#647067;margin-top:4px}
         .status{margin-top:20px;padding:12px;border-radius:9px;background:#e7ece7}.card{margin:12px 0;padding:14px;background:white;border:1px solid #d7ddd7;border-radius:10px}.muted{color:#647067;margin-top:5px;line-height:1.4}.danger{background:#6b2f2b;padding:8px 11px}
       `}</style>
     </>
