@@ -42,7 +42,7 @@ jobs:
           "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --virtual-time-budget=6000 --window-size=768,1024 --screenshot=screenshots/strong-tablet.png 'http://127.0.0.1:3000/bloom-tracker?fixture=strong'
           "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --virtual-time-budget=6000 --window-size=1440,1200 --screenshot=screenshots/strong-desktop.png 'http://127.0.0.1:3000/bloom-tracker?fixture=strong'
           "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --virtual-time-budget=6000 --window-size=390,844 --screenshot=screenshots/weather-390.png 'http://127.0.0.1:3000/bloom-tracker?fixture=weather'
-          "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --virtual-time-budget=8000 --window-size=390,2600 --screenshot=screenshots/wave-map-390.png 'http://127.0.0.1:3000/bloom-tracker?fixture=wave'
+          "$CHROME" --headless --no-sandbox --use-gl=swiftshader --enable-unsafe-swiftshader --hide-scrollbars --virtual-time-budget=10000 --window-size=390,2600 --screenshot=screenshots/wave-map-390.png 'http://127.0.0.1:3000/bloom-tracker?fixture=wave'
           "$CHROME" --headless --no-sandbox --disable-gpu --hide-scrollbars --virtual-time-budget=6000 --window-size=390,844 --screenshot=screenshots/weak-390.png 'http://127.0.0.1:3000/bloom-tracker?fixture=weak'
       - name: Fetch current Census state geometry
         run: |
