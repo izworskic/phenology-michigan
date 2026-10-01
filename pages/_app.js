@@ -1,4 +1,5 @@
 import Head from "next/head";
+import Script from "next/script";
 import { useRouter } from "next/router";
 
 export default function App({ Component, pageProps }) {
@@ -15,6 +16,8 @@ export default function App({ Component, pageProps }) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Newsreader:ital,opsz@0,6..72;1,6..72&display=swap" rel="stylesheet" />
         {isBloomTracker && <link rel="stylesheet" href="/bloom-tracker-redesign.css" />}
+        {isBloomTracker && <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />}
+        {isBloomTracker && <link rel="stylesheet" href="/bloom-map-v2.css" />}
       </Head>
       <style jsx global>{`
         * { box-sizing: border-box; }
@@ -33,6 +36,8 @@ export default function App({ Component, pageProps }) {
         .pheno-pill[data-on="1"] { background: #5a8a4a; color: #fff; border-color: #5a8a4a; }
       `}</style>
       <Component {...pageProps} />
+      {isBloomTracker && <Script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" strategy="afterInteractive" />}
+      {isBloomTracker && <Script src="/bloom-map-v2.js" strategy="afterInteractive" />}
       <script defer src="https://chrisizworski.com/assets/network-ads-v1.js"></script>
     </>
   );
