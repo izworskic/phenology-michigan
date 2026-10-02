@@ -7,7 +7,6 @@ const BLOOM_IMAGE = "https://phenology.chrisizworski.com/bloom-tracker-social.pn
 const BLOOM_TITLE = "Michigan Bloom Tracker — What’s Blooming & When to Go";
 const BLOOM_DESCRIPTION = "Track Michigan flower season from April into September: cherries, tulips, peonies, lilacs, lavender and major sunflower fields, with live trip calls, weekend outlooks and clear seasonal timing.";
 const CHRIS_PERSON = "https://chrisizworski.com/#person";
-const CHRIS_PROFILE = "https://chrisizworski.com/chris-izworski/";
 
 const bloomStructuredData = {
   "@context": "https://schema.org",
@@ -90,7 +89,7 @@ export default function App({ Component, pageProps }) {
       <Head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="author" href={CHRIS_PROFILE} />
+        <link rel="author" href="https://chrisizworski.com/chris-izworski/" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Newsreader:ital,opsz@0,6..72;1,6..72&display=swap" rel="stylesheet" />
