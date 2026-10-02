@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "node scripts/check-creator-entity.mjs && node scripts/check-bloom-core.mjs && node scripts/check-bloom-ingestion.mjs && node scripts/check-bloom-model.mjs && node scripts/check-bloom-history.mjs && node scripts/check-bloom-source-operator.mjs && node scripts/check-bloom-verified-provenance.mjs && node scripts/check-bloom-public-presentation.mjs && node scripts/check-bloom-tracker-product.mjs && node scripts/check-bloom-jev-auth.mjs && node scripts/check-bloom-map-v2.mjs"
+    "test": "node scripts/check-creator-entity.mjs && node scripts/check-bloom-core.mjs && node scripts/check-bloom-ingestion.mjs && node scripts/check-bloom-model.mjs && node scripts/check-bloom-history.mjs && node scripts/check-bloom-source-operator.mjs && node scripts/check-bloom-verified-provenance.mjs && node scripts/check-bloom-public-presentation.mjs && node scripts/check-bloom-tracker-product.mjs && node scripts/check-bloom-jev-auth.mjs && node scripts/check-bloom-map-v2.mjs && node scripts/check-bloom-social-card.mjs"
   },
   "dependencies": {
     "@vercel/oidc": "3.8.8",
