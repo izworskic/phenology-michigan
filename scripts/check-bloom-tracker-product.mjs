@@ -96,6 +96,29 @@ assert.ok(!page.includes('experience-grid'), 'do not reintroduce the swipeable c
 assert.ok(!page.includes('DestinationDetails'), 'do not repeat all destinations in a third destination-checker layer');
 assert.ok(!page.includes('details-section'), 'destination evidence must live with the ranked destination itself');
 
+// Search, social and entity guardrails. These are intentionally explicit so a UI rewrite cannot
+// silently remove the signals that make the recurring spring URL easy to understand and share.
+assert.ok(page.includes('<title>Michigan Bloom Tracker — What’s Blooming & When to Go</title>'), 'Bloom Tracker must keep a query-aligned evergreen search title');
+assert.ok(page.includes('Track Michigan flower season from April into September:'), 'Bloom Tracker must keep a descriptive search snippet, not a keyword list');
+assert.ok(page.includes('<link rel="canonical" href={PAGE_URL} />'), 'Bloom Tracker must retain its self canonical');
+
+const app = await fs.readFile(new URL('../pages/_app.js', import.meta.url), 'utf8');
+assert.ok(app.includes('index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1'), 'Bloom Tracker must allow large image previews and normal indexing');
+assert.ok(app.includes('https://phenology.chrisizworski.com/bloom-tracker-social.png'), 'Bloom Tracker must expose a dedicated preferred-image URL');
+assert.ok(app.includes('property="og:site_name" content="Michigan Phenology"'), 'Open Graph must identify the site');
+assert.ok(app.includes('property="og:image:width" content="1200"') && app.includes('property="og:image:height" content="630"'), 'Open Graph image dimensions must remain 1200x630');
+assert.ok(app.includes('name="twitter:title"') && app.includes('name="twitter:description"') && app.includes('name="twitter:image"') && app.includes('name="twitter:image:alt"'), 'X/Twitter large-card metadata must stay complete');
+assert.ok(app.includes('"@type": "WebApplication"') && app.includes('"@type": "WebPage"') && app.includes('"@type": "ImageObject"'), 'structured data must connect the app, page and preferred image');
+assert.ok(app.includes('"@type": "BreadcrumbList"'), 'Bloom Tracker must expose breadcrumb structured data');
+assert.ok(app.includes('https://chrisizworski.com/#person') && app.includes('https://chrisizworski.com/chris-izworski/'), 'Bloom Tracker must connect to the canonical Chris Izworski Person and profile');
+assert.ok(app.includes('href="/bloom-tracker">Michigan Bloom Tracker — what’s blooming and when to go</a>'), 'Phenology home must provide a crawlable internal link to Bloom Tracker');
+
+const socialImage = await fs.stat(new URL('../public/bloom-tracker-social.png', import.meta.url));
+assert.ok(socialImage.size > 10_000, 'preferred social image must be a real nontrivial image asset');
+const sitemap = await fs.readFile(new URL('../pages/sitemap.xml.js', import.meta.url), 'utf8');
+assert.ok(sitemap.includes('xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"'), 'sitemap must declare the image namespace');
+assert.ok(sitemap.includes('<image:loc>${SITE}/bloom-tracker-social.png</image:loc>'), 'Bloom Tracker sitemap entry must expose the preferred image');
+
 const opportunityCardsIndex = page.indexOf('<OpportunityCard');
 const mapIndex = page.indexOf('<MichiganBloomMap');
 assert.ok(opportunityCardsIndex >= 0 && mapIndex > opportunityCardsIndex, 'map must follow the integrated destination surface directly');
