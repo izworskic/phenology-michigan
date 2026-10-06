@@ -18,6 +18,7 @@ const bloomStructuredData = {
       url: "https://phenology.chrisizworski.com/",
       author: { "@id": CHRIS_PERSON },
       creator: { "@id": CHRIS_PERSON },
+      publisher: { "@id": CHRIS_PERSON },
       inLanguage: "en-US",
     },
     {
@@ -52,6 +53,7 @@ const bloomStructuredData = {
       image: { "@id": `${BLOOM_URL}#primaryimage` },
       author: { "@id": CHRIS_PERSON },
       creator: { "@id": CHRIS_PERSON },
+      publisher: { "@id": CHRIS_PERSON },
       isPartOf: { "@id": "https://phenology.chrisizworski.com/#website" },
       inLanguage: "en-US",
       featureList: [
@@ -74,7 +76,23 @@ const bloomStructuredData = {
       breadcrumb: { "@id": `${BLOOM_URL}#breadcrumb` },
       author: { "@id": CHRIS_PERSON },
       creator: { "@id": CHRIS_PERSON },
+      publisher: { "@id": CHRIS_PERSON },
       inLanguage: "en-US",
+    },
+    {
+      "@type": "Person",
+      "@id": CHRIS_PERSON,
+      name: "Chris Izworski",
+      url: "https://chrisizworski.com/",
+      sameAs: [
+        "https://chrisizworski.com",
+        "https://michigantroutreport.com/chris-izworski/",
+        "https://michiganbirdingreport.com/chris-izworski",
+        "https://greatlakeslevels.org",
+        "https://github.com/izworskic",
+        "https://www.youtube.com/@izworskic",
+        "https://www.wikidata.org/wiki/Q138283432",
+      ],
     },
   ],
 };

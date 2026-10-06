@@ -594,7 +594,7 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
           </>
         )}
 
-        <footer><span>Michigan Bloom Tracker</span><a href="/">Explore the natural year in Michigan Phenology</a></footer>
+        <footer><span>Michigan Bloom Tracker</span><a href="/">Explore the natural year in Michigan Phenology</a><span>Built by <a href="https://chrisizworski.com/chris-izworski/">Chris Izworski</a></span></footer>
       </main>
 
       <style jsx>{`
