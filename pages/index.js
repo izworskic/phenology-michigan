@@ -526,13 +526,13 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
       {
         "@type": "WebSite", "@id": SITE + "/#website", name: "Michigan Phenology", url: SITE,
         description: "A real-time phenology dashboard for Saginaw Bay and northeastern Michigan, with interpreted river, hatch, bird, and growing degree day conditions.",
-        author: { "@id": "https://chrisizworski.com/#person" },
+        author: { "@id": "https://chrisizworski.com/#person" }, publisher: { "@id": "https://chrisizworski.com/#person" },
       },
       {
         "@type": "WebPage", "@id": SITE + "/#webpage", url: SITE + "/", isPartOf: { "@id": SITE + "/#website" },
         name: "Michigan Phenology by Chris Izworski: Saginaw Bay and the AuSable in Real Time",
         description: "An interpreted real-time read on the natural year across Saginaw Bay and northeastern Michigan: live river conditions, projected hatches, bird movement, and growing degree days, by Chris Izworski.",
-        author: { "@id": "https://chrisizworski.com/#person" }, primaryImageOfPage: SITE + "/og-card.png", inLanguage: "en-US",
+        author: { "@id": "https://chrisizworski.com/#person" }, publisher: { "@id": "https://chrisizworski.com/#person" }, primaryImageOfPage: SITE + "/og-card.png", inLanguage: "en-US",
         breadcrumb: { "@id": SITE + "/#breadcrumb" },
       },
       {
@@ -540,7 +540,7 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
         itemListElement: [{ "@type": "ListItem", position: 1, name: "Michigan Phenology", item: SITE + "/" }],
       },
       {
-        "@type": "Person", "@id": "https://chrisizworski.com/#person", name: "Chris Izworski", url: "https://chrisizworski.com/chris-izworski/",
+        "@type": "Person", "@id": "https://chrisizworski.com/#person", name: "Chris Izworski", url: "https://chrisizworski.com/",
         sameAs: ["https://chrisizworski.com", "https://michigantroutreport.com/chris-izworski/", "https://michiganbirdingreport.com/chris-izworski", "https://greatlakeslevels.org", "https://github.com/izworskic", "https://www.youtube.com/@izworskic", "https://www.wikidata.org/wiki/Q138283432"],
       },
     ],
@@ -1082,7 +1082,7 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
         )}
 
         <footer style={{ marginTop: 28, paddingTop: 16, borderTop: "1px solid #e4dcc8", fontSize: 12, color: "#9a8f76", lineHeight: 1.55 }}>
-          One clock for the whole natural year, drawing on the <a href="https://michigantroutreport.com">Michigan Trout Report</a>, the <a href="https://michiganbirdingreport.com">Michigan Birding Report</a>, <a href="https://greatlakeslevels.org">Great Lakes Lake Levels</a>, and <a href="https://freighterviewfarms.com">Freighter View Farms</a>. Live data from USGS, NWS, NOAA CO-OPS and NDBC, GLERL CoastWatch, NOAA SWPC, eBird, iNaturalist, USA-NPN, US Drought Monitor, and Open-Meteo. Built and maintained by <a href="https://chrisizworski.com">Chris Izworski</a>. Updated {generatedAt}.
+          One clock for the whole natural year, drawing on the <a href="https://michigantroutreport.com">Michigan Trout Report</a>, the <a href="https://michiganbirdingreport.com">Michigan Birding Report</a>, <a href="https://greatlakeslevels.org">Great Lakes Lake Levels</a>, and <a href="https://freighterviewfarms.com">Freighter View Farms</a>. Live data from USGS, NWS, NOAA CO-OPS and NDBC, GLERL CoastWatch, NOAA SWPC, eBird, iNaturalist, USA-NPN, US Drought Monitor, and Open-Meteo. Built and maintained by <a href="https://chrisizworski.com/chris-izworski/">Chris Izworski</a>. Updated {generatedAt}.
         </footer>
       </div>
 
