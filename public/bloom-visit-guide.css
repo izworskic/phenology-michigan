@@ -21,3 +21,9 @@
 .bloom-tooltip-collided{visibility:hidden!important;pointer-events:none!important}
 .bloom-map-tooltip{pointer-events:none!important}
 @media(max-width:600px){.bloom-logistics-grid{grid-template-columns:1fr}.bloom-notes,.bloom-faq{padding:14px;margin:18px 0}}
+
+/* The tracker shell explicitly orders its existing sections. Keep these after the map and cards, never above the hero. */
+.page-shell>.bloom-notes{order:7}
+.page-shell>.bloom-faq{order:8}
+.page-shell>.trust-block{order:9}
+.page-shell>footer{order:10}
