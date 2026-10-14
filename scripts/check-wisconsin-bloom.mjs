@@ -68,3 +68,7 @@ assert.match(sitemap,/WISCONSIN_LASTMOD/);
 assert.doesNotMatch(sitemap,/new Date\(\)\.toISOString\(\)/);
 assert.equal((sitemap.match(/<loc>\$\{SITE\}\/wisconsin-bloom-tracker/g)||[]).length,3);
 console.log('Wisconsin search release: canonical intents, evidence history, responsive content, GA4 funnel, social previews and honest sitemap.');
+
+assert.match(analytics,/gtag\('event','page_view'/,'send GA4 native page views for Pages & Screens');
+assert.match(analytics,/page_location:'https:\/\/phenology.chrisizworski.com'/,'privacy-safe canonical page location');
+assert.match(analytics,/send_page_view:false/,'prevent automatic page view duplication');
