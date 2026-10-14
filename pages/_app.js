@@ -1,6 +1,7 @@
 import Head from "next/head";
 import Script from "next/script";
 import { useRouter } from "next/router";
+import WisconsinAnalytics from "../components/WisconsinAnalytics";
 
 const BLOOM_URL = "https://phenology.chrisizworski.com/bloom-tracker";
 const BLOOM_IMAGE = "https://phenology.chrisizworski.com/bloom-tracker-social.png";
@@ -155,6 +156,7 @@ export default function App({ Component, pageProps }) {
         .bloom-authority-link a { color: #365e3d; font-weight: 700; text-decoration: none; }
         .bloom-authority-link a:hover { text-decoration: underline; }
       `}</style>
+      {isWisconsinBloom && <WisconsinAnalytics />}
       <Component {...pageProps} />
       {isBloomTracker && <nav className="bloom-authority-link">Explore the other Great Lakes bloom guide: <a href="/wisconsin-bloom-tracker">Wisconsin Bloom Tracker 2027 — Door County, Madison, lavender and sunflowers</a></nav>}
       {isHome && (
@@ -162,6 +164,7 @@ export default function App({ Component, pageProps }) {
           Flower-season planning: <a href="/bloom-tracker">Michigan Bloom Tracker — what’s blooming and when to go</a> · <a href="/wisconsin-bloom-tracker">Wisconsin flower-season map and trip guide</a>
         </nav>
       )}
+      {isWisconsinBloom && <Script src="https://www.googletagmanager.com/gtag/js?id=G-Y5D2V2W7HN" strategy="afterInteractive" />}
       {isBloomTracker && <Script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" strategy="afterInteractive" />}
       {isBloomTracker && <Script src="/bloom-map-v2.js" strategy="afterInteractive" />}
       {isBloomTracker && <Script src="/bloom-map-label-declutter.js" strategy="afterInteractive" />}

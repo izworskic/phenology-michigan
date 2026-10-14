@@ -50,3 +50,21 @@ assert.match(page,/wi-season-timeline/,'Wisconsin gets Michigan-like compact sea
 assert.match(stylesheet,/.wi-hero-grid/);
 assert.match(stylesheet,/.wi-season-banner/);
 console.log('Wisconsin V2: premium density, three licensed venue images, type-colored map, no intrusive overlays.');
+
+const analytics=fs.readFileSync(new URL('../lib/bloom/wisconsin-analytics.mjs',import.meta.url),'utf8');
+const tracker=fs.readFileSync(new URL('../components/WisconsinAnalytics.js',import.meta.url),'utf8');
+assert.match(analytics,/send_page_view:false/);
+for(const event of ['wi_map_select','wi_filter','wi_official_source','wi_directions','wi_guide_open','wi_source_refresh','wi_faq_open','wi_state_handoff','wi_page_view'])assert.ok(analytics.includes(event),event);
+assert.match(tracker,/router.asPath.split/);
+assert.match(app,/isWisconsinBloom && <WisconsinAnalytics/);
+assert.match(app,/googletagmanager.com\/gtag\/js/);
+assert.match(page,/wi-search-guidance/);
+assert.match(page,/data-wi-destination/);
+assert.match(details,/wi-related/);
+assert.match(details,/What the UW Arboretum reported in spring 2026/);
+assert.match(page,/og:image/);assert.match(details,/og:image/);
+assert.match(page,/summary_large_image/);assert.match(details,/summary_large_image/);
+assert.match(sitemap,/WISCONSIN_LASTMOD/);
+assert.doesNotMatch(sitemap,/new Date\(\)\.toISOString\(\)/);
+assert.equal((sitemap.match(/<loc>\$\{SITE\}\/wisconsin-bloom-tracker/g)||[]).length,3);
+console.log('Wisconsin search release: canonical intents, evidence history, responsive content, GA4 funnel, social previews and honest sitemap.');

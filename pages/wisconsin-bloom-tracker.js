@@ -4,6 +4,7 @@ import {useEffect, useMemo, useRef, useState} from 'react';
 import {ArrowUpRight, MapPin, Flower2, RefreshCcw, ExternalLink, ArrowRight, ShieldCheck} from 'lucide-react';
 import WISCONSIN from '../data/wisconsin-bloom.json';
 import WisconsinPhoto from '../components/WisconsinPhoto';
+import {trackWisconsinEvent,trackWisconsinClick} from '../lib/bloom/wisconsin-analytics.mjs';
 
 const SITE = 'https://phenology.chrisizworski.com';
 const URL = SITE + '/wisconsin-bloom-tracker';
@@ -98,7 +99,7 @@ function WisconsinStop({stop,now,observations,index}){
     <p><b>What to look for:</b> {stop.lookFor}</p>
     <p><b>Make the visit work:</b> {stop.plan}</p>
     <details className="wi-logistics"><summary>Tickets, hours, parking and crowds</summary><div className="wi-logistics-grid">{[['Tickets & fees',stop.tickets],['Hours & season',stop.hours],['Parking & arrival',stop.parking],['Crowds & timing',stop.crowds]].map(([label,copy])=><div key={label}><b>{label}</b><p>{copy}</p></div>)}</div></details>
-    <div className="wi-links"><a href={stop.sourceUrl} target="_blank" rel="noopener noreferrer">Official bloom / visitor source <ExternalLink size={13}/></a><a href={'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(stop.address)} target="_blank" rel="noopener noreferrer">Directions <MapPin size={13}/></a>{stop.guide&&<a className="wi-link-strong" href={'/wisconsin-bloom-tracker/'+stop.id}>Read full destination guide <ArrowRight size={13}/></a>}</div>
+    <div className="wi-links"><a href={stop.sourceUrl} data-wi-action="wi_official_source" data-wi-destination={stop.id} data-wi-surface="card" target="_blank" rel="noopener noreferrer">Official bloom / visitor source <ExternalLink size={13}/></a><a href={'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(stop.address)} data-wi-action="wi_directions" data-wi-destination={stop.id} data-wi-surface="card" target="_blank" rel="noopener noreferrer">Directions <MapPin size={13}/></a>{stop.guide&&<a className="wi-link-strong" data-wi-action="wi_guide_open" data-wi-destination={stop.id} data-wi-surface="card" href={'/wisconsin-bloom-tracker/'+stop.id}>Read full destination guide <ArrowRight size={13}/></a>}</div>
     {observation&&<p className="wi-source-citation">Current observation from <a href={observation.sourceUrl} target="_blank" rel="noopener noreferrer">{observation.sourceName}</a> · observed <FormatDate iso={observation.observedAt}/>. Not a statewide prediction.</p>}
   </article>;
 }
@@ -110,18 +111,20 @@ export default function WisconsinBloomTracker(){
   };
   useEffect(()=>{update();},[]);
   const visible=useMemo(()=>WISCONSIN.destinations.filter(d=>(filters.flower==='all'||filters.flower===d.category)&&(filters.region==='all'||filters.region===d.region)),[filters]);
-  const onSelect=id=>{setSelected(id);document.getElementById(anchor(id))?.scrollIntoView({behavior:'smooth',block:'start'});};
+  const onSelect=id=>{trackWisconsinEvent('wi_map_select',{destination_id:id,surface:'map'});setSelected(id);document.getElementById(anchor(id))?.scrollIntoView({behavior:'smooth',block:'start'});};
   const anyVerified=WISCONSIN.destinations.some(stop=>verifiedObservation(stop,observations,now));
   const latestSources=observations.filter(x=>x.observedAt&&now.getTime()-Date.parse(x.observedAt)<=7*86400000);
   const schema={'@context':'https://schema.org','@graph':[
     {'@type':'WebApplication','@id':URL+'#app',name:'Wisconsin Bloom Tracker 2027',url:URL,description:'Wisconsin cherry blossoms, lilacs, lavender and sunflower trip planning with official source links and no unsourced peak claims.',applicationCategory:'TravelApplication',operatingSystem:'Any',isAccessibleForFree:true,author:{'@id':'https://chrisizworski.com/#person'}},
+    {'@type':'WebPage','@id':URL+'#webpage',url:URL,name:'Wisconsin Bloom Tracker 2027: Cherry Blossoms & Map',mainEntity:{'@id':URL+'#app'},author:{'@id':'https://chrisizworski.com/#person'},primaryImageOfPage:{'@type':'ImageObject',url:'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Lilacs_at_UW_Arboretum_Longenecker_Horticultural_Garden.jpg/1280px-Lilacs_at_UW_Arboretum_Longenecker_Horticultural_Garden.jpg',caption:'Historical UW Arboretum lilacs, not live'}},
+    {'@type':'ItemList','@id':URL+'#destinations',numberOfItems:WISCONSIN.destinations.length,itemListElement:WISCONSIN.destinations.map((d,i)=>({'@type':'ListItem',position:i+1,name:d.name,url:d.guide?URL+'/'+d.id:URL+'#wi-'+d.id}))},
     {'@type':'BreadcrumbList',itemListElement:[{'@type':'ListItem',position:1,name:'Phenology',item:SITE+'/'},{'@type':'ListItem',position:2,name:'Wisconsin Bloom Tracker',item:URL}]},
     {'@type':'FAQPage',mainEntity:FAQ.map(x=>({'@type':'Question',name:x.question,acceptedAnswer:{'@type':'Answer',text:x.answer}}))}
   ]};
   return <>
     <Head>
-      <title>Wisconsin Bloom Tracker 2027: Cherry Blossoms, Lilacs & Flower Map | Chris Izworski</title>
-      <meta name="description" content="When do Wisconsin cherry blossoms, lilacs, lavender and sunflower fields bloom? Explore 9 places, an interactive map, typical timing, tickets, parking and official observations."/>
+      <title>Wisconsin Bloom Tracker 2027: Cherry Blossoms &amp; Map | Chris Izworski</title>
+      <meta name="description" content="Where and when do Wisconsin flowers bloom? Map Door County cherry blossoms, Madison lilacs, island lavender and sunflowers. Find timing, parking and official updates."/>
       <link rel="canonical" href={URL}/>
       <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
       <meta name="robots" content="index,follow,max-image-preview:large"/>
@@ -129,10 +132,10 @@ export default function WisconsinBloomTracker(){
       <meta property="og:type" content="website"/><meta property="og:url" content={URL}/><meta property="og:site_name" content="Great Lakes Phenology"/>
       <meta property="og:title" content="Wisconsin Bloom Tracker 2027 — When to See Flowers"/>
       <meta property="og:description" content="Nine Wisconsin bloom experiences with map, source checks, tickets, parking and seasonal planning."/>
-      <meta name="twitter:card" content="summary"/>
+      <meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="Wisconsin Bloom Tracker 2027: Blossoms, Lilacs & Map"/><meta name="twitter:description" content="Find Door County cherry blossoms, UW lilacs, island lavender and sunflower fields. Compare nine places, access rules and official bloom reports."/><meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Lilacs_at_UW_Arboretum_Longenecker_Horticultural_Garden.jpg/1280px-Lilacs_at_UW_Arboretum_Longenecker_Horticultural_Garden.jpg"/><meta property="og:image:type" content="image/jpeg"/><meta property="og:image:alt" content="Historical reference photo of UW Arboretum lilac gardens, not live"/><meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Lilacs_at_UW_Arboretum_Longenecker_Horticultural_Garden.jpg/1280px-Lilacs_at_UW_Arboretum_Longenecker_Horticultural_Garden.jpg"/><meta name="twitter:image:alt" content="UW Arboretum lilacs photographed in an earlier season, not live"/>
       <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}}/>
     </Head>
-    <main className="wisconsin-bloom">
+    <main className="wisconsin-bloom" onClickCapture={trackWisconsinClick}>
       <nav className="wi-top" aria-label="Bloom trackers"><a href="/">Phenology</a><span>/</span><a href="/bloom-tracker">Michigan Bloom Tracker</a><span>/</span><strong>Wisconsin</strong></nav>
       <section className="wi-hero">
         <div className="wi-hero-grid">
@@ -140,7 +143,7 @@ export default function WisconsinBloomTracker(){
             <div className="wi-kicker"><Flower2 size={14}/> Wisconsin Bloom Tracker · 2027</div>
             <h1>When will Wisconsin bloom?</h1>
             <p className="wi-lead">Door County cherry blossoms, Madison lilacs, island lavender and sunflower fields. Find the right week, choose a place, and check what’s actually been reported before the drive.</p>
-            <div className="wi-hero-actions"><a href="#wi-map" className="wi-main-action">Explore the flower map <ArrowRight size={15}/></a><a href="#wi-destinations">Compare 9 destinations</a></div>
+            <div className="wi-hero-actions"><a href="#wi-map" data-wi-action="wi_map_jump" data-wi-surface="hero" className="wi-main-action">Explore the flower map <ArrowRight size={15}/></a><a href="#wi-destinations" data-wi-action="wi_map_jump" data-wi-surface="hero">Compare 9 destinations</a></div>
             <div className="wi-hero-bottom"><span className="wi-neutral-dot"/> <strong>{anyVerified?'Recent verified reports available':'Season planning · no current bloom claim'}</strong><span> · {now.toLocaleDateString('en-US',{timeZone:'America/Chicago',month:'long',day:'numeric',year:'numeric'})}</span></div>
           </div>
           <WisconsinPhoto id="uw-arboretum" variant="hero" priority />
@@ -160,17 +163,25 @@ export default function WisconsinBloomTracker(){
           ['MAY','Cherry orchards','door-county-cherries'],
           ['JUL','Island lavender','fragrant-isle-lavender'],
           ['AUG','Summer flower fields','eugsters-sunflowers']
-        ].map(([month,label,id],i)=><a key={id} href={'#'+anchor(id)}><span className="wi-season-month">{month}</span><strong>{label}</strong><span className="wi-season-arrow" aria-hidden="true">{i<3?'→':''}</span></a>)}
+        ].map(([month,label,id],i)=><a key={id} href={'#'+anchor(id)} data-wi-action="wi_timeline_jump" data-wi-destination={id} data-wi-surface="timeline"><span className="wi-season-month">{month}</span><strong>{label}</strong><span className="wi-season-arrow" aria-hidden="true">{i<3?'→':''}</span></a>)}
         <small>Typical months only · no live bloom implied</small>
       </section>
       <section className="wi-map-section" id="wi-map">
         <div className="wi-heading"><span className="wi-kicker">Interactive seasonal map</span><h2>How Wisconsin’s flower season unfolds</h2><p>Follow the progression from spring gardens to Door County orchards and midsummer fields. Colors identify flower types, never verified bloom stage.</p></div>
         <div className="wi-filter" aria-label="Wisconsin bloom filters">
-          <div><span>Flower experience</span><div className="wi-pills">{FLOWER_NAMES.map(([value,label])=><button type="button" className={filters.flower===value?'active':''} aria-pressed={filters.flower===value} onClick={()=>setFilters(old=>({...old,flower:value}))} key={value}>{label}</button>)}</div></div>
-          <div><span>Region</span><div className="wi-pills">{REGION_NAMES.map(value=><button type="button" className={filters.region===value?'active':''} aria-pressed={filters.region===value} onClick={()=>setFilters(old=>({...old,region:value}))} key={value}>{value==='all'?'All Wisconsin':value}</button>)}</div></div>
-          <div className="wi-result-count">{visible.length} matching destinations <button type="button" onClick={()=>setFilters({flower:'all',region:'all'})}>Clear filters</button></div>
+          <div><span>Flower experience</span><div className="wi-pills">{FLOWER_NAMES.map(([value,label])=><button type="button" className={filters.flower===value?'active':''} aria-pressed={filters.flower===value} onClick={()=>{trackWisconsinEvent('wi_filter',{selection:value,surface:'flower'});setFilters(old=>({...old,flower:value}));}} key={value}>{label}</button>)}</div></div>
+          <div><span>Region</span><div className="wi-pills">{REGION_NAMES.map(value=><button type="button" className={filters.region===value?'active':''} aria-pressed={filters.region===value} onClick={()=>{trackWisconsinEvent('wi_filter',{selection:value==='all'?'all':value==='Door Peninsula'?'door':value==='Madison and South Central'?'madison':value==='Milwaukee and Southeast'?'milwaukee':'driftless',surface:'region'});setFilters(old=>({...old,region:value}));}} key={value}>{value==='all'?'All Wisconsin':value}</button>)}</div></div>
+          <div className="wi-result-count">{visible.length} matching destinations <button type="button" onClick={()=>{trackWisconsinEvent('wi_filter',{selection:'clear',surface:'all'});setFilters({flower:'all',region:'all'});}}>Clear filters</button></div>
         </div>
         {visible.length?<WisconsinMap destinations={visible} activeId={selected} onSelect={onSelect}/>:<div className="wi-empty">No destinations match both filters. Select another region or show all flowers.</div>}
+      </section>
+      <section className="wi-search-guidance" aria-label="Wisconsin cherry blossoms and lilacs">
+        <div className="wi-heading"><span className="wi-kicker">Wisconsin spring flower planning</span><h2>Where are the best places to see cherry blossoms and lilacs in Wisconsin?</h2><p>Two different spring trips. Choose the flowers you want, then read a recent dated operator observation before driving.</p></div>
+        <div className="wi-compare-choices">
+          <article><span className="wi-kicker">Door County · May orchard landscape</span><h3>Where to see Wisconsin cherry blossoms</h3><p>Door County offers orchard scenery along the Highway 42 corridor near Egg Harbor, Fish Creek and Sister Bay. Cherry flowering typically falls in May, not on a guaranteed festival date. Farms are private: use legal roadside locations and visitor businesses that are open.</p><a data-wi-action="wi_guide_open" data-wi-destination="door-county-cherries" data-wi-surface="comparison" href="/wisconsin-bloom-tracker/door-county-cherries">Plan the Door County blossom drive →</a></article>
+          <article><span className="wi-kicker">Madison · April–May garden collections</span><h3>Where to find lilacs, crabapples and magnolias</h3><p>UW–Madison Arboretum is the species-specific garden trip. Its dated 2026 bulletins recorded crabapples around late April and lilacs progressing in May. Those are <strong>historical observations, not a 2027 forecast</strong>.</p><a data-wi-action="wi_guide_open" data-wi-destination="uw-arboretum" data-wi-surface="comparison" href="/wisconsin-bloom-tracker/uw-arboretum">Check the UW spring bloom guide →</a></article>
+        </div>
+        <p className="wi-small">Primary sources: <a data-wi-action="wi_official_source" data-wi-destination="door-county-cherries" data-wi-surface="comparison" href="https://www.doorcounty.com/experience/cherries/">Destination Door County’s cherry report</a> and <a data-wi-action="wi_official_source" data-wi-destination="uw-arboretum" data-wi-surface="comparison" href="https://arboretum.wisc.edu/news/arboretum-news/whats-in-bloom/">UW’s dated garden bloom bulletin</a>.</p>
       </section>
       <section className="wi-destinations" id="wi-destinations">
         <div className="wi-heading"><span className="wi-kicker">Destination field guides</span><h2>Compare the places before you go</h2><p>Each destination has a genuine visitor plan and source links. All bloom labels default to unknown until a dated observation is available.</p></div>
@@ -178,11 +189,11 @@ export default function WisconsinBloomTracker(){
       </section>
       <section className="wi-notes" id="wi-notes"><div className="wi-heading"><span className="wi-kicker">Dated Wisconsin bloom notes · April–September</span><h2>What changed this week?</h2><p>Only attributable, time-stamped bloom-stage evidence enters the current notes. Opening dates, archived photos and typical season windows are never a substitute.</p></div>
         {latestSources.length?<ul>{latestSources.map(note=><li key={note.destinationId+note.observedAt}><strong>{WISCONSIN.destinations.find(d=>d.id===note.destinationId)?.name}</strong> · {note.stage} on <FormatDate iso={note.observedAt}/> · <a href={note.sourceUrl}>Source</a></li>)}</ul>:<div className="wi-empty"><strong>No recent verified Wisconsin field notes.</strong> The available 2026 Arboretum reports are archived seasonal evidence, not current 2027 conditions. We will only show a present bloom state when the current dated source is available.</div>}
-        <div className="wi-source-bar"><div><b>Evidence feed</b><span>{checkedAt?'Latest stored observation feed checked. No unsupported bloom-stage inference.':'No evidence-feed response confirmed yet.'}</span></div><button type="button" onClick={update} disabled={loading}><RefreshCcw size={14}/>{loading?'Checking':'Check for source notes'}</button></div>
+        <div className="wi-source-bar"><div><b>Evidence feed</b><span>{checkedAt?'Latest stored observation feed checked. No unsupported bloom-stage inference.':'No evidence-feed response confirmed yet.'}</span></div><button type="button" onClick={()=>{trackWisconsinEvent('wi_source_refresh',{surface:'notes'});update();}} disabled={loading}><RefreshCcw size={14}/>{loading?'Checking':'Check for source notes'}</button></div>
         <p className="wi-small">For an immediate decision, open the original <a href="https://www.doorcounty.com/experience/cherries/">Door County cherry-stage report</a> or <a href="https://arboretum.wisc.edu/news/arboretum-news/whats-in-bloom/">UW Arboretum dated bloom bulletin</a>. The evidence feed currently requires reviewed observations; pressing refresh does not crawl those sites live.</p>
       </section>
-      <section className="wi-faq"><div className="wi-heading"><span className="wi-kicker">Wisconsin bloom questions</span><h2>When does Wisconsin bloom?</h2></div>{FAQ.map(({question,answer})=><details key={question}><summary>{question}</summary><p>{answer}</p></details>)}</section>
-      <section className="wi-more"><div><span className="wi-kicker">The Great Lakes bloom network</span><h2>Two states. Separate seasonal truth.</h2><p>Michigan’s 19-stop tracker retains its own data pipeline and bloom map. Wisconsin has its own source registry and observation rules. A peak in Door County must never change Traverse City’s bloom status.</p></div><a href="/bloom-tracker">Explore Michigan’s 19 flower destinations <ArrowUpRight size={16}/></a></section>
+      <section className="wi-faq"><div className="wi-heading"><span className="wi-kicker">Wisconsin bloom questions</span><h2>When does Wisconsin bloom?</h2></div>{FAQ.map(({question,answer})=><details key={question}><summary onClick={()=>trackWisconsinEvent('wi_faq_open',{surface:'state_faq'})}>{question}</summary><p>{answer}</p></details>)}</section>
+      <section className="wi-more"><div><span className="wi-kicker">The Great Lakes bloom network</span><h2>Two states. Separate seasonal truth.</h2><p>Michigan’s 19-stop tracker retains its own data pipeline and bloom map. Wisconsin has its own source registry and observation rules. A peak in Door County must never change Traverse City’s bloom status.</p></div><a href="/bloom-tracker" data-wi-action="wi_state_handoff" data-wi-selection="michigan" data-wi-surface="footer">Explore Michigan’s 19 flower destinations <ArrowUpRight size={16}/></a></section>
       <footer className="wi-footer"><span>Wisconsin Bloom Tracker · Seasonal planning and sourced field reports · Not affiliated with venue operators</span><a href="https://chrisizworski.com/chris-izworski/">Built by Chris Izworski</a></footer>
     </main>
   </>;

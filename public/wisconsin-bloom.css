@@ -75,3 +75,13 @@
 .wi-detail-lead,.wi-guide-section{margin:16px 0}
 @media(max-width:760px){.wisconsin-bloom{padding:0 14px 30px}.wi-hero-grid{grid-template-columns:1fr}.wi-hero h1{font-size:clamp(32px,8vw,41px)}.wi-photo-hero .wi-photo-frame{height:195px}.wi-photo-hero figcaption{font-size:8px}.wi-season-banner{grid-template-columns:1fr}.wi-next-watch{border-left:0;border-top:1px solid #cfdbca;padding:9px 0 0}.wi-season-timeline{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.wi-season-timeline a:nth-of-type(2) .wi-season-arrow{display:none}.wi-season-timeline a:nth-of-type(4) .wi-season-arrow{display:none}.wi-map-section{padding:11px}.wi-map-canvas{height:360px}.wi-detail-hero-grid{grid-template-columns:1fr}.wi-photo-detail{max-width:none}.wi-photo-detail .wi-photo-frame{height:200px}}
 @media(max-width:440px){.wi-hero{padding-top:4px}.wi-hero h1{font-size:34px}.wi-photo-hero .wi-photo-frame{height:166px}.wi-season-banner{padding:13px}.wi-season-banner h2{font-size:21px}.wi-season-timeline{padding:10px}.wi-season-timeline strong{font-size:12px}.wi-map-canvas{height:335px}.wi-map-legend small{width:100%}.wi-stop-list{grid-template-columns:1fr}}
+
+.wi-search-guidance{padding:21px 22px;background:#f9faf4;border:1px solid #d6dfd1;border-radius:13px;margin:19px 0 24px}
+.wi-compare-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.wi-compare-choices>article{background:#fff;border:1px solid #dce5d7;border-radius:10px;padding:18px}
+.wi-compare-choices h3{font-size:23px;margin:0 0 9px}.wi-compare-choices p{font-size:13.5px;color:#607064;line-height:1.55}
+.wi-compare-choices a,.wi-related a,.wi-history>a{font:800 12px Arial,Helvetica,sans-serif}
+.wi-related{border:1px solid #d2dccd;background:#f6f8f0;border-radius:13px;padding:21px;margin:20px 0}
+.wi-related h2{font-size:clamp(22px,2.7vw,29px);margin-bottom:8px}.wi-related p{color:#627364;font-size:14px}
+.wi-history{border-color:#ceddd0;background:#f6f9f2}
+@media(max-width:710px){.wi-compare-choices{grid-template-columns:1fr}.wi-search-guidance,.wi-related{padding:14px}.wi-compare-choices>article{padding:14px}}
