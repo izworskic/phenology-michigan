@@ -439,7 +439,7 @@ function MichiganBloomMap({ destinations, generatedAt, seasonContext, editorial,
         {mapState === 'loading' && <div className="map-loading">Loading Michigan geography…</div>}
         {mapState === 'error' && <div className="map-fallback"><MapPin size={22} /><strong>Map unavailable.</strong><span>The trip and seasonal reads above remain usable.</span></div>}
         {mapState === 'ready' && geography && (
-          <svg className="census-map" viewBox={`0 0 ${MAP.width} ${MAP.height}`} role="img" aria-label={seasonalMode ? 'Michigan flower destinations labeled by typical April-to-September timing' : 'Michigan and neighboring states with current bloom destinations'}>
+          <svg className="census-map" viewBox={`0 0 ${MAP.width} ${MAP.height}`} role="img" aria-label={seasonalMode ? 'Michigan flower destinations labeled by typical April-to-October timing' : 'Michigan and neighboring states with current bloom destinations'}>
             <rect width={MAP.width} height={MAP.height} fill="#dbe8e5" />
             <g aria-hidden="true">
               {geography.features?.flatMap((feature) => geometryPaths(feature.geometry).map((path, index) => (
@@ -550,7 +550,7 @@ function BloomWeeklyNotes({ snapshot, referenceDate }) {
       <h2 id="bloom-notes-title">What changed in Michigan’s bloom season this week?</h2>
       <p>Only dated, attributable observations appear as current field notes. A calendar date, refreshed webpage or archived photograph never becomes evidence that flowers are open.</p>
       {!inSeason ? (
-        <div className="bloom-note-empty"><strong>Off-season planning for 2027.</strong> The outdoor flower season is beyond its normal major displays. The nine planning windows above are typical timing, not a claim about what is flowering now. Weekly observation notes resume when credible spring evidence becomes available.</div>
+        <div className="bloom-note-empty"><strong>Off-season planning for 2027.</strong> The outdoor flower season is beyond its normal major displays. The 19 planning windows above are typical timing, not a claim about what is flowering now. Weekly observation notes resume when credible spring evidence becomes available.</div>
       ) : observed.length ? (
         <ul className="bloom-note-list">{observed.map((entry) => (
           <li key={entry.id}><strong>{entry.name}</strong>
@@ -657,7 +657,7 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
         <meta name="description" content="Michigan Bloom Tracker 2027: compare 19 Michigan flower destinations from apple and cherry blossoms to tulips, lavender, sunflowers and autumn gardens, with maps and visitor tips." />
         <link rel="canonical" href={PAGE_URL} />
         <meta property="og:title" content="Michigan Bloom Tracker 2027 — What’s Blooming & When to Go" />
-        <meta property="og:description" content="See which tracked Michigan flower display is strongest now, what is worth the drive, and how the season moves from April cherries and tulips into September sunflowers." />
+        <meta property="og:description" content="See which tracked Michigan flower display is strongest now, what is worth the drive, and how Michigan blooms move from spring orchard flowers to lavender, sunflowers and October gardens." />
         <meta property="og:url" content={PAGE_URL} /><meta property="og:type" content="website" /><meta name="twitter:card" content="summary_large_image" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       </Head>
@@ -678,6 +678,17 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
 
         <SeasonBanner seasonContext={seasonContext} />
         {seasonalMode && <SeasonRouteStrip seasonContext={seasonContext} />}
+
+        <div className="bloom-filters" aria-label="Filter Michigan bloom destinations">
+                <div><strong>Flower type</strong><div className="bloom-filter-chips">
+                  {BLOOM_TYPES.map(([value,label])=><button type="button" key={value} className={flowerFilter===value?'selected':''} aria-pressed={flowerFilter===value} onClick={()=>setFlowerFilter(value)}>{label}</button>)}
+                </div></div>
+                <div><strong>Michigan region</strong><div className="bloom-filter-chips">
+                  {[['all','All regions'],['west','West Michigan'],['north','Northern Michigan'],['central','Central'],['southeast','Southeast']].map(([value,label])=><button type="button" key={value} className={regionFilter===value?'selected':''} aria-pressed={regionFilter===value} onClick={()=>setRegionFilter(value)}>{label}</button>)}
+                </div></div>
+              </div>
+              <p className="bloom-filter-count" aria-live="polite">Showing {visibleDestinations.length} of {destinations.length} destinations. The map follows these filters.</p>
+
 
         {!destinations.length ? <EmptyState /> : (
           <>
@@ -707,15 +718,6 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
             <section className="opportunity-section" aria-labelledby="where-title">
               <div className="section-heading"><div><span className="eyebrow">{seasonalMode ? 'Michigan flower season, place by place' : 'Statewide opportunity desk'}</span><h2 id="where-title">{seasonalMode ? 'What does each stop feel like?' : 'Where should I go?'}</h2></div><span className="count">{destinations.length} tracked displays</span></div>
               <p className="opportunity-intro">{seasonalMode ? 'The season has a geography as well as a calendar. Compare 19 locations from spring orchard blossoms and woodland wildflowers to summer flower fields and late garden color; filters update both the destinations and map.' : 'The live decision stays primary. Each place gets just enough visual context to show what you are driving toward; expand only the destinations you care about.'}</p>
-              <div className="bloom-filters" aria-label="Filter Michigan bloom destinations">
-                <div><strong>Flower type</strong><div className="bloom-filter-chips">
-                  {BLOOM_TYPES.map(([value,label])=><button type="button" key={value} className={flowerFilter===value?'selected':''} aria-pressed={flowerFilter===value} onClick={()=>setFlowerFilter(value)}>{label}</button>)}
-                </div></div>
-                <div><strong>Michigan region</strong><div className="bloom-filter-chips">
-                  {[['all','All regions'],['west','West Michigan'],['north','Northern Michigan'],['central','Central'],['southeast','Southeast']].map(([value,label])=><button type="button" key={value} className={regionFilter===value?'selected':''} aria-pressed={regionFilter===value} onClick={()=>setRegionFilter(value)}>{label}</button>)}
-                </div></div>
-              </div>
-              <p className="bloom-filter-count" aria-live="polite">Showing {visibleDestinations.length} of {destinations.length} destinations. The map follows these filters.</p>
               {visibleDestinations.length ? <div className="opportunity-list">{visibleDestinations.map((entry, index) => <OpportunityCard key={entry.id} entry={entry} rank={index + 1} generatedAt={generatedAt} seasonContext={seasonContext} editorial={editorial} seasonalMode={seasonalMode} />)}</div>
               : <p className="bloom-filter-empty">No tracked destinations match both filters. Choose another flower type or region.</p>}
             </section>

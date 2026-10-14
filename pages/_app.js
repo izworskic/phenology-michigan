@@ -59,7 +59,7 @@ const bloomStructuredData = {
       featureList: [
         "Live Michigan flower bloom trip decisions",
         "Weekend bloom outlooks",
-        "Seasonal timing from April into September",
+        "Seasonal planning windows from April through October",
         "Interpretive Michigan bloom map",
         "Official-source bloom evidence and provenance",
       ],
