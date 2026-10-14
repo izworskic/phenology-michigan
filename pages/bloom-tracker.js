@@ -581,7 +581,21 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
   const [regionFilter, setRegionFilter] = useState('all');
   const [pageLoadedAt] = useState(() => new Date().toISOString());
   const generatedAt = snapshot?.generatedAt || pageLoadedAt;
-  const liveDestinations = useMemo(() => sortPublicDestinations(snapshot?.destinations || [], generatedAt), [snapshot, generatedAt]);
+  const liveDestinations = useMemo(() => {
+    const clock = new Date(fixtureName ? generatedAt : pageLoadedAt).getTime();
+    return sortPublicDestinations((snapshot?.destinations || []).map(entry => {
+      const moment = new Date(entry?.observation?.observedAt || '').getTime();
+      const age = clock - moment;
+      if (!Number.isFinite(moment) || !Number.isFinite(age) || age < -86400000 || age > 5 * 86400000) {
+        return { ...entry, usable:false, observation:null,
+          decision:{ ...(entry?.decision || {}), decision:'UNKNOWN', currentStage:null, source:null,
+            forecast:[], confidence:'LOW', observationAgeDays:null,
+            reason:'No verified current bloom observation is available; older records are not a live trip call.' },
+        };
+      }
+      return entry;
+    }), generatedAt);
+  }, [snapshot, generatedAt, fixtureName, pageLoadedAt]);
   // A stored snapshot can predate new destination registry entries. Append only
   // UNKNOWN planning records; never fabricate observations or erase live snapshots.
   const seasonBase = useMemo(() => {
