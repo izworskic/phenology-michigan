@@ -166,7 +166,7 @@ export default function App({ Component, pageProps }) {
       {isBloomTracker && <Script src="/bloom-map-v2.js" strategy="afterInteractive" />}
       {isBloomTracker && <Script src="/bloom-map-label-declutter.js" strategy="afterInteractive" />}
       {isBloomTracker && <Script src="/bloom-vignette-guard.js" strategy="afterInteractive" />}
-      {!isBloomTracker && <script defer src="https://chrisizworski.com/assets/network-ads-v1.js"></script>}
+      {!isBloomTracker && !isWisconsinBloom && <script defer src="https://chrisizworski.com/assets/network-ads-v1.js"></script>}
     </>
   );
 }

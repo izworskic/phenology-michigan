@@ -3,3 +3,75 @@
 @media(max-width:780px){.wisconsin-bloom{padding:0 13px 36px}.wi-decision,.wi-detail-lead{grid-template-columns:1fr}.wi-stop-list{grid-template-columns:1fr}.wi-hero{padding:27px 21px}.wi-decision{padding:20px}.wi-guide-steps{grid-template-columns:1fr}.wi-more{grid-template-columns:1fr}.wi-map-canvas{height:430px}}
 @media(max-width:480px){.wi-hero h1{font-size:37px}.wi-stop{padding:17px}.wi-stop h3{font-size:24px}.wi-timing,.wi-logistics-grid,.wi-link-cards{grid-template-columns:1fr}.wi-faq,.wi-notes,.wi-guide-section{padding:16px}.wi-pills button{font-size:10px;padding:7px 9px}.wi-map-canvas{height:385px}.wi-top{font-size:10px}.wi-hero-bottom{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.wisconsin-bloom{scroll-behavior:auto}}
+
+
+/* Wisconsin V2 visual parity: Michigan-like density, field-guide typography, no intrusive overlays. */
+.wisconsin-bloom{max-width:1040px;color:#303d32;font-family:'Newsreader',Georgia,serif;font-size:15px;line-height:1.47}
+.wisconsin-bloom h1,.wisconsin-bloom h2,.wisconsin-bloom h3{font-family:'Fraunces',Georgia,serif;letter-spacing:-.016em}
+.wi-top{padding:15px 0 12px;border-bottom:1px solid #d5d8cd;margin-bottom:12px;font-family:Arial,Helvetica,sans-serif;font-size:11px}
+.wi-hero{background:transparent;border:0;border-radius:0;box-shadow:none;margin:0 0 16px;padding:11px 0 0}
+.wi-hero-grid{display:grid;grid-template-columns:minmax(0,1.27fr) minmax(0,.73fr);gap:22px;align-items:center}
+.wi-hero-grid:has(>.wi-hero-copy:only-child){grid-template-columns:1fr}
+.wi-hero h1{font-size:clamp(35px,4.4vw,53px);max-width:630px;line-height:1.09;margin:0 0 13px;color:#253e2b}
+.wi-lead{font:400 clamp(15px,1.55vw,17px)/1.5 'Newsreader',Georgia,serif!important;color:#627064!important;max-width:670px;margin:0 0 13px!important}
+.wi-kicker{font-family:Arial,Helvetica,sans-serif;font-size:10px;letter-spacing:.1em;color:#617863;margin-bottom:10px}
+.wi-hero-actions{margin:15px 0;gap:10px 15px}
+.wi-hero-actions a{font-family:Arial,Helvetica,sans-serif;font-size:12px}
+.wi-main-action{padding:9px 13px!important;border-radius:8px}
+.wi-hero-bottom{font:11px/1.35 Arial,Helvetica,sans-serif;margin-top:15px;padding-top:10px;gap:5px}
+.wi-photo{margin:0}
+.wi-photo-frame{position:relative;overflow:hidden;background:#e6eee6;border-radius:11px;border:1px solid #d1d7ce}
+.wi-photo img{display:block;width:100%;height:100%;object-fit:cover}
+.wi-photo-not-live{position:absolute;left:8px;bottom:8px;display:inline-block;padding:4px 7px;border-radius:5px;background:rgba(255,255,250,.91);color:#536353;font:700 9px/1.2 Arial,Helvetica,sans-serif}
+.wi-photo figcaption{display:flex;flex-wrap:wrap;justify-content:space-between;gap:3px 12px;margin-top:5px;font:9px/1.4 Arial,Helvetica,sans-serif;color:#697b6e}
+.wi-photo figcaption a{font-weight:700;font-size:9px}
+.wi-photo-hero .wi-photo-frame{height:224px;box-shadow:0 12px 28px rgba(51,63,51,.1)}
+.wi-photo-hero img{object-position:50% 50%}
+.wi-season-banner{display:grid;grid-template-columns:minmax(0,1fr) 210px;align-items:center;gap:20px;background:linear-gradient(95deg,#f5f5ec,#edf4eb);border:1px solid #cbd5c8;border-radius:13px;margin:6px 0 14px;padding:15px 19px}
+.wi-season-banner .wi-kicker{margin-bottom:5px}
+.wi-season-banner h2{font-size:clamp(20px,2.6vw,27px);line-height:1.2;margin:0 0 5px}
+.wi-season-banner p{color:#667469;font-size:13px;margin:0;line-height:1.45}
+.wi-next-watch{border-left:1px solid #cfdbca;padding:3px 0 3px 15px}
+.wi-next-watch span,.wi-next-watch small{display:block;color:#76857a;font:9px/1.4 Arial,Helvetica,sans-serif;text-transform:uppercase;letter-spacing:.07em}
+.wi-next-watch strong{display:block;font:700 16px/1.2 'Fraunces',Georgia,serif;margin:5px 0}
+.wi-next-watch small{text-transform:none;letter-spacing:0;font-size:11px}
+.wi-season-timeline{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px 10px;margin:0 0 18px;border:1px solid #e0e2d8;border-radius:11px;padding:12px 14px;background:#fafaf4}
+.wi-season-timeline a{position:relative;display:flex;flex-direction:column;gap:2px;text-decoration:none}
+.wi-season-timeline .wi-season-month{color:#5e876b;font:800 9px Arial,Helvetica,sans-serif;letter-spacing:.1em}
+.wi-season-timeline strong{font:700 13px/1.25 'Fraunces',Georgia,serif;color:#374e3e}
+.wi-season-arrow{position:absolute;right:8px;top:12px;color:#9aafa0;font:700 19px Georgia,serif}
+.wi-season-timeline>small{grid-column:1/-1;color:#89948a;font:9px Arial,Helvetica,sans-serif;text-align:right}
+.wi-map-section{margin:20px 0 18px;background:#fbfaf5;border:1px solid #d9dbd0;border-radius:14px;padding:15px}
+.wi-heading h2{font-size:clamp(23px,2.9vw,32px);margin-bottom:4px}
+.wi-heading p,.wi-map-section .wi-heading p{font:13px/1.45 'Newsreader',Georgia,serif;color:#68766b}
+.wi-heading{margin-bottom:12px}
+.wi-filter{margin:0 0 11px;padding:11px;border-color:#d5ddd1;background:#f1f5ef;gap:8px}
+.wi-filter>div>span{font-size:10px}.wi-pills button{font-size:10px;padding:6px 10px}
+.wi-map-canvas{height:410px}.wi-map-wrap{border-radius:11px}
+.wi-map-legend{gap:7px;font-family:Arial,Helvetica,sans-serif;align-items:center}
+.wi-map-legend-title{font-size:10px;font-weight:800;color:#536453;margin-right:5px}
+.wi-legend-item{display:inline-flex;align-items:center;gap:4px;font-size:10px}
+.wi-legend-item i{width:8px;height:8px;border-radius:50%;background:#cf7796}
+.wi-legend-item.wi-gardens i{background:#628b6d}.wi-legend-item.wi-lavender i{background:#9375b5}.wi-legend-item.wi-sunflowers i{background:#d4a53f}
+.wi-destinations{margin:22px 0}
+.wi-stop-list{gap:12px}
+.wi-stop{padding:17px;border-radius:13px;background:#fdfcf7;box-shadow:0 2px 11px rgba(47,61,48,.035)}
+.wi-stop h3{font-size:clamp(21px,2.3vw,24px);margin-bottom:8px}
+.wi-stop-intro{font:14px/1.5 'Newsreader',Georgia,serif;color:#596b5a}
+.wi-stop .wi-kicker,.wi-phase,.wi-timing,.wi-verdict,.wi-links,.wi-logistics summary{font-family:Arial,Helvetica,sans-serif}
+.wi-stop>p:not(.wi-stop-intro){font-size:13px!important;font-family:'Newsreader',Georgia,serif}
+.wi-photo-card{margin:-3px -3px 14px}
+.wi-photo-card .wi-photo-frame{height:158px}
+.wi-photo-card figcaption{padding:0 3px}
+.wi-timing{margin:12px 0;gap:6px}
+.wi-timing>div{padding:8px}
+.wi-verdict{margin:10px 0;padding:9px}
+.wi-photo-detail{max-width:360px}
+.wi-photo-detail .wi-photo-frame{height:220px}
+.wi-detail .wi-detail-hero{padding:23px 25px;margin-bottom:16px}
+.wi-detail-hero-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.65fr);gap:22px;align-items:center}
+.wi-detail-hero h1{font-size:clamp(30px,3.5vw,43px)}
+.wi-detail-hero>p,.wi-detail-hero-grid p{font:15px/1.5 'Newsreader',Georgia,serif;color:#587260}
+.wi-detail-lead,.wi-guide-section{margin:16px 0}
+@media(max-width:760px){.wisconsin-bloom{padding:0 14px 30px}.wi-hero-grid{grid-template-columns:1fr}.wi-hero h1{font-size:clamp(32px,8vw,41px)}.wi-photo-hero .wi-photo-frame{height:195px}.wi-photo-hero figcaption{font-size:8px}.wi-season-banner{grid-template-columns:1fr}.wi-next-watch{border-left:0;border-top:1px solid #cfdbca;padding:9px 0 0}.wi-season-timeline{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.wi-season-timeline a:nth-of-type(2) .wi-season-arrow{display:none}.wi-season-timeline a:nth-of-type(4) .wi-season-arrow{display:none}.wi-map-section{padding:11px}.wi-map-canvas{height:360px}.wi-detail-hero-grid{grid-template-columns:1fr}.wi-photo-detail{max-width:none}.wi-photo-detail .wi-photo-frame{height:200px}}
+@media(max-width:440px){.wi-hero{padding-top:4px}.wi-hero h1{font-size:34px}.wi-photo-hero .wi-photo-frame{height:166px}.wi-season-banner{padding:13px}.wi-season-banner h2{font-size:21px}.wi-season-timeline{padding:10px}.wi-season-timeline strong{font-size:12px}.wi-map-canvas{height:335px}.wi-map-legend small{width:100%}.wi-stop-list{grid-template-columns:1fr}}
