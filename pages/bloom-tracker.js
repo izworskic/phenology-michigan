@@ -15,10 +15,11 @@ const DESTINATION_BY_ID = Object.freeze(Object.fromEntries(BLOOM_DESTINATIONS.ma
 
 const BLOOM_TYPES = [
   ['all','All flowers'],['orchard','Orchard blossoms'],['tulip','Tulips'],['garden','Gardens'],
-  ['lavender','Lavender'],['sunflower','Sunflowers & zinnias'],['wildflower','Wildflowers'],['lilac','Lilacs'],['petunia','Petunias']
+  ['lavender','Lavender'],['sunflower','Sunflowers & zinnias'],['wildflower','Wildflowers'],['lilac','Lilacs'],['petunia','Petunias'],['mum','Autumn mums']
 ];
 function bloomKind(entry) {
   if (entry?.bloomKind) return entry.bloomKind;
+  if (DESTINATION_BY_ID[entry?.id]?.bloomKind) return DESTINATION_BY_ID[entry.id].bloomKind;
   const id=entry?.id || '';
   if (id.includes('cherries')) return 'cherry';
   if (id.includes('tulip')) return 'tulip';
@@ -33,6 +34,8 @@ function matchesBloomType(entry, filter) {
   if(filter==='all')return true;
   if(filter==='orchard')return ['apple','cherry'].includes(kind);
   if(filter==='garden')return ['garden','peony'].includes(kind);
+  if(filter==='mum')return entry?.id==='meijer-gardens-cherries';
+  if(filter==='sunflower')return kind==='sunflower';
   return kind===filter;
 }
 function areaFor(entry) {
@@ -339,7 +342,7 @@ function OpportunityCard({ entry, rank, generatedAt, seasonContext, editorial, s
               <p><strong>Make the trip count:</strong> {visit.tip}</p>
               <a href={visit.link} target="_blank" rel="noopener noreferrer">Official visitor information <ArrowUpRight size={13} /></a>
               <p className="bloom-logistics-caveat">2027 schedules, prices and individual event dates may not yet be published. Confirm details with the operator before setting out.</p>
-              {entry.id==='meijer-gardens-cherries' && <p className="bloom-autumn-note"><strong>Also here: September–October mums.</strong> Meijer Gardens has an autumn chrysanthemum tradition. These are separate from spring cherries; check current operator displays rather than using the cherry bloom stage as evidence.</p>}
+              {entry.id==='meijer-gardens-cherries' && <p className="bloom-autumn-note"><strong>Second flower season: October mums.</strong> Meijer Gardens advertises more than 8,000 chrysanthemums in its October exhibition. This is a separate display from spring cherries. <a href="https://www.meijergardens.org/autumn/" target="_blank" rel="noopener noreferrer">Meijer Gardens official autumn details ↗</a>. October event scheduling is not proof of a dated current flower-stage observation.</p>}
             </section>
           )}
 
@@ -677,6 +680,12 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
         </section>
 
         <SeasonBanner seasonContext={seasonContext} />
+        {[9,10].includes(Number(new Intl.DateTimeFormat('en-US',{timeZone:'America/Detroit',month:'numeric'}).format(new Date(pageLoadedAt)))) && <section className="bloom-autumn-banner" aria-label="Autumn mums planning">
+          <span className="eyebrow">October · distinct display at an existing stop</span>
+          <h2>Meijer Gardens: 8,000+ autumn mums</h2>
+          <p>Michigan’s flower calendar does not end with sunflowers. Meijer Gardens advertises its October chrysanthemum display, a separate garden experience from the spring cherry trees. This is <strong>operator-confirmed event information, not a live flower-stage observation</strong>.</p>
+          <a href="https://www.meijergardens.org/autumn/" target="_blank" rel="noopener noreferrer">Check official Mums at Meijer Gardens schedule and tickets ↗</a>
+        </section>
         {seasonalMode && <SeasonRouteStrip seasonContext={seasonContext} />}
 
         <div className="bloom-filters" aria-label="Filter Michigan bloom destinations">

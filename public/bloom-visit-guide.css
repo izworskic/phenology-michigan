@@ -53,3 +53,9 @@
 .page-shell>.bloom-faq{order:9}
 .page-shell>.trust-block{order:10}
 .page-shell>footer{order:11}
+
+.bloom-autumn-banner{padding:14px 18px;border:1px solid #d7c8ae;background:#fffaf1;border-radius:12px;margin:12px 0}
+.bloom-autumn-banner h2{font:700 21px/1.25 Georgia,serif;color:#55492f;margin:4px 0 8px}
+.bloom-autumn-banner p{font-size:13px;line-height:1.5;color:#665b43;margin:0 0 8px}
+.bloom-autumn-banner a{font-size:12px;font-weight:750;color:#79552d;text-decoration:underline}
+.page-shell>.bloom-autumn-banner{order:2}
