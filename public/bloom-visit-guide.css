@@ -1,0 +1,23 @@
+.bloom-idle-dot{width:7px;height:7px;border-radius:50%;background:#9eaa9f;flex:0 0 auto}
+.bloom-logistics{margin:12px 0;padding:13px;border:1px solid #d7dece;border-radius:12px;background:#f4f8f1}
+.bloom-logistics h4{font:700 19px/1.2 Georgia,serif;margin:5px 0 11px;color:#304536}
+.bloom-logistics-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.bloom-logistics-grid>div{padding:10px;background:#fff;border:1px solid #e1e6db;border-radius:8px}
+.bloom-logistics dt{color:#5b745f;font-size:10px;text-transform:uppercase;letter-spacing:.06em;font-weight:800}
+.bloom-logistics dd{margin:4px 0 0;color:#4a554b;font-size:12.5px;line-height:1.55}
+.bloom-logistics p{margin:10px 0 6px;color:#4a554b;font-size:12.5px;line-height:1.55}
+.bloom-logistics .bloom-logistics-caveat{font-size:10.5px;color:#777e74}
+.bloom-logistics a{display:inline-flex;gap:6px;align-items:center;color:#356447;font-size:12px;font-weight:800;text-decoration:underline}
+.bloom-notes,.bloom-faq{margin:24px 0;padding:19px;border:1px solid #d5d9cf;background:#fbfaf5;border-radius:15px}
+.bloom-notes h2,.bloom-faq h2{font:700 clamp(21px,3vw,28px)/1.18 Georgia,serif;color:#2f4132;margin:5px 0 9px}
+.bloom-notes>p,.bloom-faq>p{font-size:13px;color:#536457;line-height:1.6;margin:0 0 12px;max-width:770px}
+.bloom-note-empty{background:#eef2e9;border:1px solid #d6dfd2;border-radius:10px;padding:13px;color:#4d604f;font-size:13px;line-height:1.58}
+.bloom-note-list{margin:0;padding:0;list-style:none;display:grid;gap:7px}
+.bloom-note-list li{background:white;border:1px solid #dce2d9;padding:10px;border-radius:9px;font-size:13px;line-height:1.5}
+.bloom-note-list li strong{display:block}.bloom-note-list a{color:#376f49;font-weight:750}
+.bloom-faq details{border-top:1px solid #dedfd7;padding:12px 2px}
+.bloom-faq summary{color:#2b4631;font-size:14px;line-height:1.5;font-weight:750;cursor:pointer}
+.bloom-faq details p{font-size:13px;line-height:1.65;max-width:860px;color:#4f5a50;margin:9px 0 3px}
+.bloom-tooltip-collided{visibility:hidden!important;pointer-events:none!important}
+.bloom-map-tooltip{pointer-events:none!important}
+@media(max-width:600px){.bloom-logistics-grid{grid-template-columns:1fr}.bloom-notes,.bloom-faq{padding:14px;margin:18px 0}}

@@ -1,68 +1,32 @@
 (() => {
   'use strict';
-
-  const MOBILE_MAX = 600;
-  const PADDING = 3;
-  let scheduled = false;
-
-  function overlaps(a, b) {
-    return a.left < b.right + PADDING
-      && a.right + PADDING > b.left
-      && a.top < b.bottom + PADDING
-      && a.bottom + PADDING > b.top;
-  }
-
-  function declutter() {
-    scheduled = false;
-    const tooltips = [...document.querySelectorAll('.bloom-map-tooltip')];
-    if (!tooltips.length) return;
-
-    tooltips.forEach((node) => {
-      node.style.visibility = '';
-      node.style.pointerEvents = '';
-      node.removeAttribute('aria-hidden');
-    });
-
-    if (window.innerWidth > MOBILE_MAX) return;
-
-    // Leaflet creates tooltip DOM in marker insertion order. Bloom Tracker
-    // inserts ranked/current opportunities first, so a simple greedy pass
-    // preserves the most decision-relevant labels and suppresses only labels
-    // that would collide with one already kept. Every marker remains tappable.
-    const kept = [];
-    for (const node of tooltips) {
-      const rect = node.getBoundingClientRect();
-      if (!rect.width || !rect.height) continue;
-      if (kept.some((other) => overlaps(rect, other))) {
-        node.style.visibility = 'hidden';
-        node.style.pointerEvents = 'none';
-        node.setAttribute('aria-hidden', 'true');
-      } else {
-        kept.push(rect);
-      }
+  // Every marker stays on the map. Only overlapping permanent text is hidden.
+  // This applies on tablets and desktop as well as phones, not just <=600px.
+  const PAD = 6;
+  let queued = false;
+  const collides = (a,b) => a.left < b.right+PAD && a.right+PAD > b.left && a.top < b.bottom+PAD && a.bottom+PAD > b.top;
+  function declutter(){
+    queued=false;
+    const nodes=[...document.querySelectorAll('.bloom-map-tooltip')];
+    nodes.forEach(node => node.classList.remove('bloom-tooltip-collided'));
+    const placed=[];
+    for(const node of nodes){
+      const rect=node.getBoundingClientRect();
+      if(!rect.width || !rect.height) continue;
+      if(placed.some(p=>collides(rect,p))) node.classList.add('bloom-tooltip-collided');
+      else placed.push(rect);
     }
   }
-
-  function schedule() {
-    if (scheduled) return;
-    scheduled = true;
-    requestAnimationFrame(declutter);
-  }
-
-  const observer = new MutationObserver(schedule);
-
-  function boot() {
-    observer.observe(document.body, {
-      subtree: true,
-      childList: true,
-      attributes: true,
-      attributeFilter: ['class', 'style'],
-    });
-    window.addEventListener('resize', schedule, { passive: true });
-    window.addEventListener('orientationchange', schedule, { passive: true });
+  function schedule(){if(queued)return;queued=true;requestAnimationFrame(declutter)}
+  function start(){
+    new MutationObserver((records)=>{
+      // Ignore class changes made by the declutter pass itself.
+      if(records.some(r=>!r.target?.classList?.contains('bloom-map-tooltip'))) schedule();
+    }).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style']});
+    window.addEventListener('bloom-map-ready',schedule);
+    window.addEventListener('resize',schedule,{passive:true});
+    window.addEventListener('orientationchange',schedule,{passive:true});
     schedule();
   }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
-  else boot();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();

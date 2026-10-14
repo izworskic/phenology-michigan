@@ -684,7 +684,7 @@
           keyboard: true,
           title: `${destination.fullName}: ${seasonal ? destination.timing : style.label}`,
         });
-        marker.bindTooltip(tooltipHtml(record, seasonal), { permanent: window.innerWidth > 600, direction: 'top', offset: [0, -13], className: 'bloom-map-tooltip', opacity: 0.95 });
+        marker.bindTooltip(tooltipHtml(record, seasonal), { permanent: window.innerWidth > 600, direction: 'top', offset: [0, -13], className: 'bloom-map-tooltip', opacity: 0.95, interactive: false });
         marker.bindPopup(popupHtml(record, seasonal), { closeButton: true, maxWidth: 280 });
         marker.addTo(map);
       });
@@ -698,7 +698,7 @@
       if (origin && activeView === VIEW.FROM_ME) boundsPoints.push([origin.lat, origin.lon]);
       const bounds = window.L.latLngBounds(boundsPoints);
       map.fitBounds(bounds.pad(0.20), { padding: [18, 18], maxZoom: 7 });
-      setTimeout(() => map?.invalidateSize(false), 80);
+      setTimeout(() => { map?.invalidateSize(false); window.dispatchEvent(new Event('bloom-map-ready')); }, 80);
     } finally {
       installing = false;
     }
