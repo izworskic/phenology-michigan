@@ -105,7 +105,7 @@ const snapshot = await buildBloomObservationSnapshot({
 });
 assert.equal(snapshot.counts.observed, 2);
 assert.equal(snapshot.counts.unknown, 7, 'four new planning-only summer displays must remain UNKNOWN until verified current evidence arrives');
-assert.equal(snapshot.destinations.length, 9);
+assert.equal(snapshot.destinations.length, 19);
 assert.equal(snapshot.destinations.find((d) => d.id === 'um-peony-garden').observation.stage, 'PEAK');
 assert.equal(snapshot.destinations.find((d) => d.id === 'holland-tulips').status, 'OBSERVED');
 assert.equal(snapshot.destinations.find((d) => d.id === 'meijer-gardens-cherries').status, 'UNKNOWN', 'undated abnormal-season copy cannot become a current observation');

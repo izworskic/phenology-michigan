@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import { BLOOM_DESTINATIONS } from '../lib/bloom/destinations.mjs';
-import { BLOOM_VISIT_GUIDES, BLOOM_FAQS } from '../lib/bloom/visit-guides.mjs';
+import { BLOOM_VISIT_GUIDES, BLOOM_EXPANDED_VISIT_GUIDES, BLOOM_FAQS, getBloomVisitGuide } from '../lib/bloom/visit-guides.mjs';
 import { BLOOM_EXPERIENCES } from '../lib/bloom/experience-layer.mjs';
 import { BLOOM_PLANNING_WINDOWS, BLOOM_SEASON_STATES, buildBloomSeasonContext } from '../lib/bloom/seasonal-context.mjs';
 import { getBloomTrackerFixture } from '../lib/bloom/tracker-fixtures.mjs';
@@ -39,7 +39,10 @@ weak.destinations.filter((d) => d.decision.decision === 'UNKNOWN').forEach((entr
 });
 
 assert.equal(Object.keys(BLOOM_VISIT_GUIDES).length, 9, '2027 visitor guides cover exactly nine tracked destinations');
-assert.equal(BLOOM_FAQS.length, 9, 'nine expanded search FAQs are available');
+assert.equal(BLOOM_FAQS.length, 12, 'twelve expanded search FAQs include apple blooms and autumn mums');
+assert.equal(Object.keys(BLOOM_EXPANDED_VISIT_GUIDES).length, 10, 'ten new places have operator-grounded logistics');
+assert.equal(BLOOM_DESTINATIONS.length, 19, 'all 19 originals plus expansion stops registered');
+for(const d of BLOOM_DESTINATIONS) assert.ok(getBloomVisitGuide(d.id), `missing visitor logistics for ${d.id}`);
 for (const guide of Object.values(BLOOM_VISIT_GUIDES)) {
   for (const field of ['tickets', 'hours', 'parking', 'crowds', 'tip']) {
     assert.ok(guide[field]?.length > 55, 'visitor guide must include actionable ' + field);
@@ -53,7 +56,8 @@ for (const destination of BLOOM_DESTINATIONS) {
   assert.ok(experience.headline && experience.whatYouWillSee && experience.bestExperience && experience.lookFor, `${destination.id} must explain the actual visitor experience`);
   assert.ok(experience.experienceSource?.url?.startsWith('https://'), `${destination.id} must cite a local visitor source`);
   assert.ok(planning?.windowLabel && planning?.sourceUrl?.startsWith('https://'), `${destination.id} must have a sourced broad seasonal planning window`);
-  assert.ok(experience.photos.length >= 1 && experience.photos.length <= 2, `${destination.id} must use a restrained one-or-two-photo set`);
+  assert.ok(experience.photos.length <= 2, `${destination.id} must use at most two vetted photos; an unverified destination photo is never invented`);
+  if (!destination.bloomKind) assert.ok(experience.photos.length >= 1, `${destination.id} must preserve the original vetted media`);
   for (const photo of experience.photos) {
     assert.ok(['exact-bloom', 'flower-reference', 'location-setting'].includes(photo.kind), `${destination.id} photo must declare its fit`);
     assert.ok(photo.imageUrl.startsWith('https://commons.wikimedia.org/wiki/Special:Redirect/file/'), `${destination.id} photo must use the vetted Commons path`);
@@ -64,15 +68,19 @@ for (const destination of BLOOM_DESTINATIONS) {
   }
 }
 
-const october = buildBloomSeasonContext(strong.destinations, new Date('2026-10-01T12:00:00-04:00'));
-assert.equal(october.phase, BLOOM_SEASON_STATES.OFF_SEASON, 'a banked May snapshot must never masquerade as current bloom in October');
-assert.equal(october.map.mode, 'SEASONAL_SEQUENCE', 'off season must convert the map into a seasonal interpretation surface');
-assert.match(october.copy.title, /flowers are quiet/i, 'off-season copy must plainly say the bloom season is quiet');
+const november = buildBloomSeasonContext(strong.destinations, new Date('2026-11-15T12:00:00-05:00'));
+assert.equal(november.phase, BLOOM_SEASON_STATES.OFF_SEASON, 'a banked May snapshot must never masquerade as current bloom in November');
+assert.equal(november.map.mode, 'SEASONAL_SEQUENCE', 'off season must convert the map into a seasonal interpretation surface');
+assert.match(november.copy.title, /flowers are quiet/i, 'off-season copy must plainly say the bloom season is quiet');
 assert.deepEqual(
-  october.items.map((item) => item.destinationId),
+  november.items.map((item) => item.destinationId),
   ['meijer-gardens-cherries', 'holland-tulips', 'traverse-city-cherries', 'um-peony-garden', 'mackinac-lilacs'],
   'off-season presentation must follow the typical spring sequence rather than stale live ranking'
 );
+
+const octoberNoEvidence = buildBloomSeasonContext(BLOOM_DESTINATIONS.map(d=>({ ...d, usable:false, decision:{decision:'UNKNOWN',currentStage:null} })), new Date('2026-10-14T12:00:00-04:00'));
+assert.ok(octoberNoEvidence.phase !== BLOOM_SEASON_STATES.ACTIVE, 'October calendar alone must not issue an ACTIVE bloom report');
+assert.ok(octoberNoEvidence.items.some(x=>x.destinationId==='dow-gardens'), 'fall garden window must remain in seasonal model');
 
 const may = buildBloomSeasonContext(strong.destinations, new Date(strong.generatedAt));
 assert.equal(may.phase, BLOOM_SEASON_STATES.ACTIVE, 'fresh May GO evidence must put the statewide product in active bloom mode');
@@ -108,7 +116,7 @@ assert.ok(!page.includes('details-section'), 'destination evidence must live wit
 // Search, social and entity guardrails. These are intentionally explicit so a UI rewrite cannot
 // silently remove the signals that make the recurring spring URL easy to understand and share.
 assert.ok(page.includes('<title>Michigan Bloom Tracker 2027 — What&apos;s Blooming &amp; When to Go</title>'), 'Bloom Tracker must carry requested 2027 peak-week search title');
-assert.ok(page.includes('Michigan Bloom Tracker 2027: compare 9 cherry, tulip, peony'), 'Bloom Tracker must describe nine destinations and 2027 peak-week trip decisions in the snippet');
+assert.ok(page.includes('Michigan Bloom Tracker 2027: compare 19 Michigan flower destinations'), 'Bloom Tracker must describe nineteen Michigan destinations in its snippet');
 assert.ok(page.includes('<link rel="canonical" href={PAGE_URL} />'), 'Bloom Tracker must retain its self canonical');
 
 const app = await fs.readFile(new URL('../pages/_app.js', import.meta.url), 'utf8');

@@ -4,7 +4,7 @@ import { buildBloomDecision } from '../lib/bloom/engine.mjs';
 import { fetchBloomWeather } from '../lib/bloom/weather.mjs';
 import { CONFIDENCE, DECISIONS, DISPLAY_POTENTIAL, exactStageAllowed } from '../lib/bloom/contracts.mjs';
 
-assert.equal(BLOOM_DESTINATIONS.length, 9);
+assert.equal(BLOOM_DESTINATIONS.length, 19, 'nineteen distinct Michigan flower destinations');
 assert.equal(new Set(BLOOM_DESTINATIONS.map((d) => d.id)).size, BLOOM_DESTINATIONS.length);
 for (const id of ['milan-lavender', 'frankenmuth-sunflowers', 'gull-meadow-sunflowers', 'blakes-sunflowers']) {
   assert.ok(getBloomDestination(id), `${id} must be registered as a first-class bloom destination`);

@@ -40,3 +40,5 @@
 
 .opportunity-card-summary.is-photo-free{grid-template-columns:27px minmax(0,1fr)!important}
 .bloom-autumn-note{padding:9px 10px;border-left:3px solid #b6844d;background:#fff8e9;border-radius:5px}
+
+.trip-story:has(> .trip-copy:only-child){grid-template-columns:minmax(0,1fr)}
