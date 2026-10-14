@@ -20,7 +20,7 @@ for(const entry of data.destinations){
 }
 assert.equal(data.destinations.filter(d=>d.guide).length,2,'two in-depth launch guides');
 assert.match(page,/max-image-preview:large/);
-assert.match(page,/No current verified peak claim/);
+assert.match(page,/Season planning · no current bloom claim/);
 assert.match(page,/scrollWheelZoom:false/);
 assert.match(page,/leaflet@1\.9\.4/);
 assert.match(page,/observation\.stage/);
