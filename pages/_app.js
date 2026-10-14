@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 const BLOOM_URL = "https://phenology.chrisizworski.com/bloom-tracker";
 const BLOOM_IMAGE = "https://phenology.chrisizworski.com/bloom-tracker-social.png";
 const BLOOM_TITLE = "Michigan Bloom Tracker 2027 — What’s Blooming & When to Go";
-const BLOOM_DESCRIPTION = "Michigan Bloom Tracker 2027: compare 9 cherry, tulip, peony, lilac, lavender and sunflower stops, peak-week timing, tickets, parking and verified bloom updates.";
+const BLOOM_DESCRIPTION = "Michigan Bloom Tracker 2027: compare 19 cherry, apple, tulip, peony, lilac, lavender, garden and sunflower stops, peak-week timing, tickets, parking and verified bloom updates.";
 const CHRIS_PERSON = "https://chrisizworski.com/#person";
 
 const bloomStructuredData = {

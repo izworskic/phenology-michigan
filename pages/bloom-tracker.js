@@ -13,6 +13,36 @@ const SITE = 'https://phenology.chrisizworski.com';
 const PAGE_URL = `${SITE}/bloom-tracker`;
 const DESTINATION_BY_ID = Object.freeze(Object.fromEntries(BLOOM_DESTINATIONS.map((d) => [d.id, d])));
 
+const BLOOM_TYPES = [
+  ['all','All flowers'],['orchard','Orchard blossoms'],['tulip','Tulips'],['garden','Gardens'],
+  ['lavender','Lavender'],['sunflower','Sunflowers & zinnias'],['wildflower','Wildflowers'],['lilac','Lilacs'],['petunia','Petunias']
+];
+function bloomKind(entry) {
+  if (entry?.bloomKind) return entry.bloomKind;
+  const id=entry?.id || '';
+  if (id.includes('cherries')) return 'cherry';
+  if (id.includes('tulip')) return 'tulip';
+  if (id.includes('peony')) return 'peony';
+  if (id.includes('lilacs')) return 'lilac';
+  if (id.includes('lavender')) return 'lavender';
+  if (id.includes('sunflower')) return 'sunflower';
+  return 'garden';
+}
+function matchesBloomType(entry, filter) {
+  const kind=bloomKind(entry);
+  if(filter==='all')return true;
+  if(filter==='orchard')return ['apple','cherry'].includes(kind);
+  if(filter==='garden')return ['garden','peony'].includes(kind);
+  return kind===filter;
+}
+function areaFor(entry) {
+  const {lat=0,lon=0}=DESTINATION_BY_ID[entry.id]?.coordinates || {};
+  if(lat>=44.5)return 'north';
+  if(lon<=-85.3)return 'west';
+  if(lon>=-84.1 && lat<43.2)return 'southeast';
+  return 'central';
+}
+
 const DECISION_TONE = {
   GO_BEFORE: { fg: '#8b3d16', bg: '#fff0e7', border: '#e6a37d', dot: '#bd5520' },
   GO: { fg: '#245934', bg: '#eaf6ed', border: '#9fcbaa', dot: '#3f8a55' },
@@ -236,7 +266,13 @@ function OpportunityCard({ entry, rank, generatedAt, seasonContext, editorial, s
   const visit = getBloomVisitGuide(entry.id);
 
   return (
-    <article className="opportunity-card" data-state={seasonalMode ? seasonItem?.state : state}>
+    <article className="opportunity-card" data-state={seasonalMode ? seasonItem?.state : state}
+      data-lat={DESTINATION_BY_ID[entry.id]?.coordinates?.lat}
+      data-lon={DESTINATION_BY_ID[entry.id]?.coordinates?.lon}
+      data-kind={bloomKind(entry)}
+      data-season-label={seasonItem?.windowLabel || ''}
+      data-source-url={seasonItem?.sourceUrl || ''}
+      data-order={seasonItem?.order || 99}>
       <div className="opportunity-card-summary">
         <div className="rank" aria-hidden="true">{rank}</div>
         <div className="opportunity-main">
@@ -500,7 +536,7 @@ function planningFallbackDestinations() {
 function BloomWeeklyNotes({ snapshot, referenceDate }) {
   const today = new Date(referenceDate);
   const month = Number(new Intl.DateTimeFormat('en-US', {month:'numeric',timeZone:'America/Detroit'}).format(today));
-  const inSeason = month >= 4 && month <= 9;
+  const inSeason = month >= 4 && month <= 10;
   const observed = (snapshot?.destinations || []).filter((entry) => {
     const value = entry?.observation?.observedAt;
     const age = today.getTime() - new Date(value).getTime();
@@ -509,11 +545,11 @@ function BloomWeeklyNotes({ snapshot, referenceDate }) {
   });
   return (
     <section className="bloom-notes" aria-labelledby="bloom-notes-title">
-      <span className="eyebrow">Weekly field notes · April–September</span>
+      <span className="eyebrow">Weekly field notes · April–October</span>
       <h2 id="bloom-notes-title">What changed in Michigan’s bloom season this week?</h2>
       <p>Only dated, attributable observations appear as current field notes. A calendar date, refreshed webpage or archived photograph never becomes evidence that flowers are open.</p>
       {!inSeason ? (
-        <div className="bloom-note-empty"><strong>Off-season planning for 2027.</strong> The 2026 bloom season has finished. The nine planning windows above are typical timing, not a claim about what is flowering now. Weekly observation notes resume when credible spring evidence becomes available.</div>
+        <div className="bloom-note-empty"><strong>Off-season planning for 2027.</strong> The outdoor flower season is beyond its normal major displays. The nine planning windows above are typical timing, not a claim about what is flowering now. Weekly observation notes resume when credible spring evidence becomes available.</div>
       ) : observed.length ? (
         <ul className="bloom-note-list">{observed.map((entry) => (
           <li key={entry.id}><strong>{entry.name}</strong>
@@ -540,18 +576,28 @@ function BloomFAQs() {
 export default function BloomTracker({ initialSnapshot = null, fixtureName = null }) {
   const [snapshot, setSnapshot] = useState(initialSnapshot);
   const [refreshing, setRefreshing] = useState(false);
+  const [flowerFilter, setFlowerFilter] = useState('all');
+  const [regionFilter, setRegionFilter] = useState('all');
   const [pageLoadedAt] = useState(() => new Date().toISOString());
   const generatedAt = snapshot?.generatedAt || pageLoadedAt;
   const liveDestinations = useMemo(() => sortPublicDestinations(snapshot?.destinations || [], generatedAt), [snapshot, generatedAt]);
-  const seasonBase = liveDestinations.length ? liveDestinations : planningFallbackDestinations();
+  // A stored snapshot can predate new destination registry entries. Append only
+  // UNKNOWN planning records; never fabricate observations or erase live snapshots.
+  const seasonBase = useMemo(() => {
+    const records = liveDestinations.length ? liveDestinations : [];
+    const byId = new Map(records.map(e => [e.id, e]));
+    return [...records, ...planningFallbackDestinations().filter(e => !byId.has(e.id))];
+  }, [liveDestinations]);
   const seasonReference = fixtureName ? generatedAt : pageLoadedAt;
   const seasonContext = useMemo(() => buildBloomSeasonContext(seasonBase, new Date(seasonReference)), [seasonBase, seasonReference]);
   const seasonalMode = seasonContext?.map?.mode === 'SEASONAL_SEQUENCE';
   const destinations = useMemo(() => {
-    if (!seasonalMode) return liveDestinations;
+    if (!seasonalMode) return sortPublicDestinations(seasonBase, generatedAt);
     const byId = new Map(seasonBase.map((entry) => [entry.id, entry]));
     return (seasonContext.items || []).map((item) => byId.get(item.destinationId)).filter(Boolean);
-  }, [seasonalMode, liveDestinations, seasonBase, seasonContext]);
+  }, [seasonalMode, liveDestinations, seasonBase, seasonContext, generatedAt]);
+  const visibleDestinations = destinations.filter(e=>matchesBloomType(e,flowerFilter) &&
+    (regionFilter==='all' || areaFor(e)===regionFilter));
   const counts = decisionCounts(liveDestinations);
   const useful = liveDestinations.filter((entry) => ['GO', 'GO_BEFORE'].includes(entry?.decision?.decision));
   const featured = useful[0] || liveDestinations.find((entry) => entry?.decision?.decision === 'WAIT') || liveDestinations[0] || null;
@@ -646,10 +692,20 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
             <section className="opportunity-section" aria-labelledby="where-title">
               <div className="section-heading"><div><span className="eyebrow">{seasonalMode ? 'Michigan flower season, place by place' : 'Statewide opportunity desk'}</span><h2 id="where-title">{seasonalMode ? 'What does each stop feel like?' : 'Where should I go?'}</h2></div><span className="count">{destinations.length} tracked displays</span></div>
               <p className="opportunity-intro">{seasonalMode ? 'The season has a geography as well as a calendar. These are the places the tracker wakes up in from April into September, ordered by their broad planning windows.' : 'The live decision stays primary. Each place gets just enough visual context to show what you are driving toward; expand only the destinations you care about.'}</p>
-              <div className="opportunity-list">{destinations.map((entry, index) => <OpportunityCard key={entry.id} entry={entry} rank={index + 1} generatedAt={generatedAt} seasonContext={seasonContext} editorial={editorial} seasonalMode={seasonalMode} />)}</div>
+              <div className="bloom-filters" aria-label="Filter Michigan bloom destinations">
+                <div><strong>Flower type</strong><div className="bloom-filter-chips">
+                  {BLOOM_TYPES.map(([value,label])=><button type="button" key={value} className={flowerFilter===value?'selected':''} aria-pressed={flowerFilter===value} onClick={()=>setFlowerFilter(value)}>{label}</button>)}
+                </div></div>
+                <div><strong>Michigan region</strong><div className="bloom-filter-chips">
+                  {[['all','All regions'],['west','West Michigan'],['north','Northern Michigan'],['central','Central'],['southeast','Southeast']].map(([value,label])=><button type="button" key={value} className={regionFilter===value?'selected':''} aria-pressed={regionFilter===value} onClick={()=>setRegionFilter(value)}>{label}</button>)}
+                </div></div>
+              </div>
+              <p className="bloom-filter-count" aria-live="polite">Showing {visibleDestinations.length} of {destinations.length} destinations. The map follows these filters.</p>
+              {visibleDestinations.length ? <div className="opportunity-list">{visibleDestinations.map((entry, index) => <OpportunityCard key={entry.id} entry={entry} rank={index + 1} generatedAt={generatedAt} seasonContext={seasonContext} editorial={editorial} seasonalMode={seasonalMode} />)}</div>
+              : <p className="bloom-filter-empty">No tracked destinations match both filters. Choose another flower type or region.</p>}
             </section>
 
-            <MichiganBloomMap destinations={destinations} generatedAt={generatedAt} seasonContext={seasonContext} editorial={editorial} seasonalMode={seasonalMode} />
+            <MichiganBloomMap destinations={visibleDestinations} generatedAt={generatedAt} seasonContext={seasonContext} editorial={editorial} seasonalMode={seasonalMode} />
 
             <BloomWeeklyNotes snapshot={snapshot} referenceDate={pageLoadedAt} />
             <BloomFAQs />

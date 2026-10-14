@@ -140,7 +140,19 @@
   function readCards() {
     return [...document.querySelectorAll('.opportunity-card')].map((card) => {
       const id = cardId(card);
-      if (!id || !DESTINATIONS[id]) return null;
+      if (!id) return null;
+      if (!DESTINATIONS[id]) {
+        const lat=Number(card.dataset.lat), lon=Number(card.dataset.lon);
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+        const url=card.dataset.sourceUrl || null;
+        DESTINATIONS[id]={
+          name:card.querySelector('h3')?.textContent?.trim() || id,
+          fullName:card.querySelector('h3')?.textContent?.trim() || id,
+          lat,lon,timing:card.dataset.seasonLabel || 'Typical seasonal window',
+          order:Number(card.dataset.order)||99,seasonColor:'#809a75',
+          officialUrl:url,officialLabel:'Official visitor and timing context',
+        };
+      }
       const state = String(card.dataset.state || 'UNKNOWN').toUpperCase();
       const live = snapshotEntry(id);
       const stage = slugStage(live?.decision?.currentStage || stageFromText(card.querySelector('.opportunity-meta strong')?.textContent) || DECISION_STAGE[state] || 'UNKNOWN');
@@ -640,7 +652,8 @@
     const section = document.querySelector('.map-section');
     const frame = section?.querySelector('.map-frame');
     const rawRecords = readCards();
-    if (!section || !frame || rawRecords.length < 1) return;
+    if (!section || !frame) return;
+    if (!rawRecords.length) { destroyMap(); section.classList.remove('bloom-map-enhanced'); return; }
 
     const seasonal = isSeasonalMode();
     const records = projectRecords(rawRecords, seasonal);
@@ -661,7 +674,7 @@
 
       mapHost = document.createElement('div');
       mapHost.className = 'bloom-carto-map';
-      mapHost.setAttribute('aria-label', seasonal ? 'Interactive CARTO map showing typical Michigan flower-season timing from April into September' : `Interactive CARTO map showing Michigan tracked bloom intensity: ${activeView}`);
+      mapHost.setAttribute('aria-label', seasonal ? 'Interactive CARTO map showing Michigan spring through October flower timing' : `Interactive CARTO map showing Michigan tracked bloom intensity: ${activeView}`);
       frame.prepend(mapHost);
 
       map = window.L.map(mapHost, { zoomControl: true, scrollWheelZoom: false, attributionControl: true, minZoom: 5, maxZoom: 14 });
