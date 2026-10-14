@@ -2,6 +2,7 @@ import Head from 'next/head';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowUpRight, ChevronDown, Clock3, Flower2, LocateFixed, MapPin, RefreshCw, ShieldCheck, X } from 'lucide-react';
 import { BLOOM_DESTINATIONS } from '../lib/bloom/destinations.mjs';
+import { getBloomVisitGuide, BLOOM_FAQS } from '../lib/bloom/visit-guides.mjs';
 import { getBloomExperience, photoFitLabel } from '../lib/bloom/experience-layer.mjs';
 import { buildBloomSeasonContext, BLOOM_SEASON_STATES, seasonalItemFor } from '../lib/bloom/seasonal-context.mjs';
 import { editorialItemFor } from '../lib/bloom/editorial.mjs';
@@ -232,6 +233,7 @@ function OpportunityCard({ entry, rank, generatedAt, seasonContext, editorial, s
   const source = decision.source || entry?.observation?.source || null;
   const seasonItem = seasonalItemFor(seasonContext, entry.id);
   const editorialItem = editorialItemFor(editorial, entry.id);
+  const visit = getBloomVisitGuide(entry.id);
 
   return (
     <article className="opportunity-card" data-state={seasonalMode ? seasonItem?.state : state}>
@@ -285,6 +287,23 @@ function OpportunityCard({ entry, rank, generatedAt, seasonContext, editorial, s
                 <p className="trip-look"><strong>Look for:</strong> {experience.lookFor}</p>
               </div>
             </div>
+          )}
+
+
+          {visit && (
+            <section className="bloom-logistics" aria-label={"2027 visit logistics for " + entry.name}>
+              <span className="eyebrow">2027 visitor field guide</span>
+              <h4>Tickets, hours, parking &amp; crowds</h4>
+              <dl className="bloom-logistics-grid">
+                <div><dt>Tickets and costs</dt><dd>{visit.tickets}</dd></div>
+                <div><dt>Hours and access</dt><dd>{visit.hours}</dd></div>
+                <div><dt>Parking and arrival</dt><dd>{visit.parking}</dd></div>
+                <div><dt>Crowd expectations</dt><dd>{visit.crowds}</dd></div>
+              </dl>
+              <p><strong>Make the trip count:</strong> {visit.tip}</p>
+              <a href={visit.link} target="_blank" rel="noopener noreferrer">Official visitor information <ArrowUpRight size={13} /></a>
+              <p className="bloom-logistics-caveat">2027 schedules, prices and individual event dates may not yet be published. Confirm details with the operator before setting out.</p>
+            </section>
           )}
 
           {seasonalMode ? (
@@ -477,6 +496,47 @@ function planningFallbackDestinations() {
   }));
 }
 
+
+function BloomWeeklyNotes({ snapshot, referenceDate }) {
+  const today = new Date(referenceDate);
+  const month = Number(new Intl.DateTimeFormat('en-US', {month:'numeric',timeZone:'America/Detroit'}).format(today));
+  const inSeason = month >= 4 && month <= 9;
+  const observed = (snapshot?.destinations || []).filter((entry) => {
+    const value = entry?.observation?.observedAt;
+    const age = today.getTime() - new Date(value).getTime();
+    return entry?.usable && value && Number.isFinite(age) && age >= 0 &&
+      age <= 7 * 24 * 60 * 60 * 1000 && entry?.observation?.source?.url;
+  });
+  return (
+    <section className="bloom-notes" aria-labelledby="bloom-notes-title">
+      <span className="eyebrow">Weekly field notes · April–September</span>
+      <h2 id="bloom-notes-title">What changed in Michigan’s bloom season this week?</h2>
+      <p>Only dated, attributable observations appear as current field notes. A calendar date, refreshed webpage or archived photograph never becomes evidence that flowers are open.</p>
+      {!inSeason ? (
+        <div className="bloom-note-empty"><strong>Off-season planning for 2027.</strong> The 2026 bloom season has finished. The nine planning windows above are typical timing, not a claim about what is flowering now. Weekly observation notes resume when credible spring evidence becomes available.</div>
+      ) : observed.length ? (
+        <ul className="bloom-note-list">{observed.map((entry) => (
+          <li key={entry.id}><strong>{entry.name}</strong>
+            <span>Observed {new Date(entry.observation.observedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}: {stageLabel(entry.observation.stage || entry.decision?.currentStage)}. </span>
+            <a href={entry.observation.source.url} target="_blank" rel="noopener noreferrer">View dated observation</a>
+          </li>
+        ))}</ul>
+      ) : <div className="bloom-note-empty">No verified flower observation from the last seven days is available. No weekly peak claim is being inferred. Use the official links for a fresh report.</div>}
+    </section>
+  );
+}
+
+function BloomFAQs() {
+  return <section className="bloom-faq" aria-labelledby="bloom-faq-title">
+    <span className="eyebrow">2027 Michigan flower-season questions</span>
+    <h2 id="bloom-faq-title">When will Michigan flowers peak?</h2>
+    <p>Choose a likely week from the seasonal calendar, then verify the live observation and the operator’s visitor information before traveling.</p>
+    {BLOOM_FAQS.map(({question,answer}) => (
+      <details key={question}><summary>{question}</summary><p>{answer}</p></details>
+    ))}
+  </section>;
+}
+
 export default function BloomTracker({ initialSnapshot = null, fixtureName = null }) {
   const [snapshot, setSnapshot] = useState(initialSnapshot);
   const [refreshing, setRefreshing] = useState(false);
@@ -523,18 +583,19 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
   }, []);
 
   const structuredData = {
-    '@context': 'https://schema.org', '@type': 'WebApplication', name: 'Michigan Bloom Tracker', url: PAGE_URL,
-    applicationCategory: 'TravelApplication', operatingSystem: 'Any',
-    description: 'Michigan flower bloom timing, live conditions, weekend trip decisions, seasonal progression, and destination experience context.',
+    '@context': 'https://schema.org', '@graph': [
+      { '@type': 'WebApplication', name: 'Michigan Bloom Tracker', url: PAGE_URL, applicationCategory: 'TravelApplication', operatingSystem: 'Any', description: 'Nine Michigan flower stops, 2027 peak-week planning and observation-grounded visit decisions.' },
+      { '@type': 'FAQPage', mainEntity: BLOOM_FAQS.map(({question,answer}) => ({ '@type': 'Question', name: question, acceptedAnswer: { '@type': 'Answer', text: answer } })) },
+    ],
   };
 
   return (
     <>
       <Head>
-        <title>Michigan Bloom Tracker — What’s Blooming & When to Go</title>
-        <meta name="description" content="Track Michigan flower season from April into September: cherries, tulips, peonies, lilacs, lavender and major sunflower fields, with live trip calls, weekend outlooks and clear seasonal timing." />
+        <title>Michigan Bloom Tracker 2027 — What&apos;s Blooming &amp; When to Go</title>
+        <meta name="description" content="Michigan Bloom Tracker 2027: compare 9 cherry, tulip, peony, lilac, lavender and sunflower stops, peak-week timing, tickets, parking and verified bloom updates." />
         <link rel="canonical" href={PAGE_URL} />
-        <meta property="og:title" content="Michigan Bloom Tracker — What’s Blooming & When to Go" />
+        <meta property="og:title" content="Michigan Bloom Tracker 2027 — What’s Blooming & When to Go" />
         <meta property="og:description" content="See which tracked Michigan flower display is strongest now, what is worth the drive, and how the season moves from April cherries and tulips into September sunflowers." />
         <meta property="og:url" content={PAGE_URL} /><meta property="og:type" content="website" /><meta name="twitter:card" content="summary_large_image" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
@@ -551,7 +612,7 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
           <div className="kicker"><Flower2 size={15} /> Michigan Bloom Tracker</div>
           <h1>What is worth the drive, and when?</h1>
           <p>Follow Michigan’s flower season from April cherries and tulips through summer lavender and sunflower fields into September. Fresh evidence turns that progression into a trip decision.</p>
-          <div className="updated"><span className="live-dot" />{seasonalMode ? 'Season planning view · no current bloom is being inferred from the calendar' : ` Updated ${formatUpdated(snapshot?.generatedAt)} · ${snapshot?.delivery === 'persisted' ? 'banked live snapshot' : fixtureName ? 'product test fixture' : snapshot ? 'live check' : 'checking live sources'}`}</div>
+          <div className="updated"><span className={seasonalMode ? "bloom-idle-dot" : "live-dot"} />{seasonalMode ? 'Season planning view · no current bloom is being inferred from the calendar' : ` Updated ${formatUpdated(snapshot?.generatedAt)} · ${snapshot?.delivery === 'persisted' ? 'banked live snapshot' : fixtureName ? 'product test fixture' : snapshot ? 'live check' : 'checking live sources'}`}</div>
         </section>
 
         <SeasonBanner seasonContext={seasonContext} />
@@ -589,6 +650,9 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
             </section>
 
             <MichiganBloomMap destinations={destinations} generatedAt={generatedAt} seasonContext={seasonContext} editorial={editorial} seasonalMode={seasonalMode} />
+
+            <BloomWeeklyNotes snapshot={snapshot} referenceDate={pageLoadedAt} />
+            <BloomFAQs />
 
             <section className="trust-block"><div className="trust-icon"><ShieldCheck size={21} /></div><div><h2>{seasonalMode ? 'Why the calendar never becomes a bloom claim' : 'Why the tracker can say “not enough evidence”'}</h2><p>{seasonalMode ? 'The April-to-September sequence is a planning frame built from destination guidance and broad seasonal order. It helps explain what tends to come next, but only fresh observations can switch a destination into GO, WAIT, GO_BEFORE or LIMITED. File photos are never treated as current evidence.' : 'Observations anchor the forecast. Weather can change development or shorten a display, but it cannot create bloom that has not been observed. Stale observations lower confidence, abnormal-year evidence overrides normal timing, and long-range output stays a range rather than a fake peak date.'}</p></div></section>
           </>
