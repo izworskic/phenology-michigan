@@ -49,7 +49,9 @@ const hollandAuto = await fetchAutomaticObservation('holland-tulips', hollandSou
 assert.equal(hollandAuto.observation, null);
 assert.equal(hollandAuto.diagnostic, 'source_requires_locator_or_verified_override');
 
-for (const id of ['milan-lavender', 'frankenmuth-sunflowers', 'gull-meadow-sunflowers', 'blakes-sunflowers']) {
+for (const id of ['milan-lavender', 'frankenmuth-sunflowers', 'gull-meadow-sunflowers', 'blakes-sunflowers',
+  'fruit-ridge-apples','lavender-hill-farm','dow-gardens','veldheer-tulips','belle-isle-conservatory','lewis-flower-mania',
+  'cherry-point-lavender','fernwood-wildflowers','loda-lake-wildflowers','charlevoix-petunias']) {
   const source = getBloomSources(id)[0];
   assert.equal(source.mode, 'verified_override', `${id} must require a verified current observation`);
   const automatic = await fetchAutomaticObservation(id, source, async () => {
@@ -104,7 +106,7 @@ const snapshot = await buildBloomObservationSnapshot({
   now: snapshotNow,
 });
 assert.equal(snapshot.counts.observed, 2);
-assert.equal(snapshot.counts.unknown, 7, 'four new planning-only summer displays must remain UNKNOWN until verified current evidence arrives');
+assert.equal(snapshot.counts.unknown, 17, 'seventeen destinations without dated observations must remain UNKNOWN after expansion');
 assert.equal(snapshot.destinations.length, 19);
 assert.equal(snapshot.destinations.find((d) => d.id === 'um-peony-garden').observation.stage, 'PEAK');
 assert.equal(snapshot.destinations.find((d) => d.id === 'holland-tulips').status, 'OBSERVED');
