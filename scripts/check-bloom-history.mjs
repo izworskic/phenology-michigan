@@ -109,9 +109,9 @@ const cycle = await runBloomLiveCycle({
   persist: false,
 });
 assert.equal(cycle.ok, true);
-assert.equal(cycle.latest.counts.total, 9);
+assert.equal(cycle.latest.counts.total, 19);
 assert.equal(cycle.latest.counts.observed, 4, 'U-M, Meijer, Holland, and Mackinac should be observed');
-assert.equal(cycle.latest.counts.unknown, 5, 'Traverse plus the four summer additions must remain unknown without fresh verified evidence');
+assert.equal(cycle.latest.counts.unknown, 15, 'Traverse, four legacy summer farms and ten new destinations must remain UNKNOWN without recent verified evidence');
 assert.equal(cycle.latest.provenance.overridesSource, 'deployment_bootstrap');
 const um = cycle.latest.destinations.find((d) => d.id === 'um-peony-garden');
 assert.equal(um.decision.decision, 'GO');
