@@ -71,3 +71,6 @@
 .bloom-nearby-choice>strong{font-size:12px}
 .bloom-nearby-choice>span{font-size:10px;color:#657568}
 .bloom-nearby-choice:hover,.bloom-nearby-choice:focus-visible{background:#f1f6ef;outline:2px solid #aed0b1;border-radius:4px}
+
+/* No-match filters must never reveal the unfiltered fallback geographic display. */
+.map-section.bloom-map-no-matches{display:none!important}

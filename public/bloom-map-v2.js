@@ -657,7 +657,8 @@
     const frame = section?.querySelector('.map-frame');
     const rawRecords = readCards();
     if (!section || !frame) return;
-    if (!rawRecords.length) { destroyMap(); section.classList.remove('bloom-map-enhanced'); return; }
+    if (!rawRecords.length) { destroyMap(); section.classList.remove('bloom-map-enhanced'); section.classList.add('bloom-map-no-matches'); return; }
+    section.classList.remove('bloom-map-no-matches');
 
     const seasonal = isSeasonalMode();
     const records = projectRecords(rawRecords, seasonal);
@@ -693,6 +694,7 @@
       // The marker layer is independently repainted at each zoom. Nearby stops
       // stay in their exact geographic positions and are selected from a shared
       // marker at statewide zoom instead of being offset into fake locations.
+      const installedMap = map;
       const markerLayer = window.L.layerGroup().addTo(map);
       const markerGroupsForZoom = () => {
         const groups = [];
@@ -709,6 +711,7 @@
         return groups;
       };
       const drawMarkers = () => {
+        if (map !== installedMap) return;
         markerLayer.clearLayers();
         for (const group of markerGroupsForZoom()) {
           const first = group.records[0];
@@ -775,7 +778,7 @@
       map.fitBounds(bounds.pad(0.20), { padding: [18, 18], maxZoom: 7 });
       drawMarkers();
       map.on('zoomend', drawMarkers);
-      setTimeout(() => { map?.invalidateSize(false); drawMarkers(); }, 80);
+      setTimeout(() => { if (map !== installedMap) return; installedMap.invalidateSize(false); drawMarkers(); }, 80);
     } finally {
       installing = false;
     }
