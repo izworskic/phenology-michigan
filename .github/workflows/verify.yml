@@ -1,6 +1,16 @@
 name: Verify
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/verify.yml'
+      - 'lib/bloom/**'
+      - 'pages/bloom-tracker.js'
+      - 'pages/_app.js'
+      - 'pages/api/bloom-*.js'
+      - 'public/bloom-*'
+      - 'scripts/check-bloom-*.mjs'
   pull_request:
     branches: [main]
   workflow_dispatch: {}
