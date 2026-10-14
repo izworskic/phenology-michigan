@@ -59,3 +59,15 @@
 .bloom-autumn-banner p{font-size:13px;line-height:1.5;color:#665b43;margin:0 0 8px}
 .bloom-autumn-banner a{font-size:12px;font-weight:750;color:#79552d;text-decoration:underline}
 .page-shell>.bloom-autumn-banner{order:2}
+
+/* Two nearby flowers share one tap target only at overlapping map zoom levels.
+   No marker is displaced from its actual location; zoom restores separate pins. */
+.bloom-map-nearby-dot{width:32px;height:32px;display:grid;place-items:center;border-radius:50%;border:2px solid #fff;background:#375c47;color:#fff;box-shadow:0 2px 9px #1d463b55;font:900 13px/1 system-ui,sans-serif}
+.bloom-nearby-popup{min-width:180px;max-width:255px}
+.bloom-nearby-popup>strong{font-size:13px;color:#35553d}
+.bloom-nearby-popup>p{font-size:11px;line-height:1.4;color:#536456;margin:5px 0 10px}
+.bloom-nearby-choice{display:block!important;text-decoration:none!important;border-top:1px solid #e3e9e0;padding:9px 5px;color:#365844!important}
+.bloom-nearby-choice>strong,.bloom-nearby-choice>span{display:block}
+.bloom-nearby-choice>strong{font-size:12px}
+.bloom-nearby-choice>span{font-size:10px;color:#657568}
+.bloom-nearby-choice:hover,.bloom-nearby-choice:focus-visible{background:#f1f6ef;outline:2px solid #aed0b1;border-radius:4px}

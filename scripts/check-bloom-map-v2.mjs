@@ -101,6 +101,8 @@ assert.ok(!page.includes('strokeDasharray'), 'static fallback must not draw rout
 assert.ok(page.includes('April-to-October sequence'), 'trust copy must describe the full tracked season');
 assert.ok(page.includes('Explore 19 Michigan bloom destinations'), 'intro must explain all nineteen locations');
 assert.ok(page.includes('setFlowerFilter(value)') && page.includes('setRegionFilter(value)'), 'flower and region filters must be interactive');
+assert.ok(enhancer.includes('markerGroupsForZoom') && enhancer.includes("map.on('zoomend', drawMarkers)"), 'nearby places must aggregate at crowded zoom levels and ungroup on zoom');
+assert.ok(enhancer.includes('bloom-nearby-choice') && enhancer.includes("details.open = true"), 'shared map pins must open the chosen destination guide without fake location offsets');
 assert.ok(enhancer.includes('DESTINATIONS[id]='), 'new destinations must resolve map coordinates from each source-backed opportunity card');
 assert.ok(page.includes('Michigan Bloom Tracker 2027 — What&apos;s Blooming &amp; When to Go'), 'metadata must describe the decision product instead of spring-only timing');
 assert.ok(!page.includes('Track Michigan spring blooms from April through June'), 'spring-only metadata must not survive the summer expansion');

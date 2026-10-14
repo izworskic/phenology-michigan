@@ -690,20 +690,78 @@
 
       if (!seasonal) addBloomIntensitySurface(records);
 
+      // The marker layer is independently repainted at each zoom. Nearby stops
+      // stay in their exact geographic positions and are selected from a shared
+      // marker at statewide zoom instead of being offset into fake locations.
+      const markerLayer = window.L.layerGroup().addTo(map);
+      const markerGroupsForZoom = () => {
+        const groups = [];
+        records.forEach((record) => {
+          const place = DESTINATIONS[record.id];
+          const point = map.latLngToContainerPoint([place.lat, place.lon]);
+          const nearby = groups.find((group) => {
+            const center = group.point;
+            return Math.hypot(center.x-point.x, center.y-point.y) < 34;
+          });
+          if (nearby) nearby.records.push(record);
+          else groups.push({ point, records: [record] });
+        });
+        return groups;
+      };
+      const drawMarkers = () => {
+        markerLayer.clearLayers();
+        for (const group of markerGroupsForZoom()) {
+          const first = group.records[0];
+          const location = DESTINATIONS[first.id];
+          if (group.records.length === 1) {
+            const style = stageStyle(first, seasonal);
+            const marker = window.L.marker([location.lat, location.lon], {
+              icon: window.L.divIcon({ className: 'bloom-map-marker-wrap', html: markerHtml(style, first, seasonal), iconSize: [24, 24], iconAnchor: [12, 12] }),
+              keyboard: true,
+              title: `${location.fullName}: ${seasonal ? location.timing : style.label}`,
+            });
+            marker.bindTooltip(tooltipHtml(first, seasonal), { permanent: window.innerWidth > 600, direction: 'top', offset: [0, -13], className: 'bloom-map-tooltip', opacity: 0.95, interactive: false });
+            marker.bindPopup(popupHtml(first, seasonal), { closeButton: true, maxWidth: 280 });
+            marker.addTo(markerLayer);
+          } else {
+            const choiceHtml = group.records.map((record) => {
+              const place = DESTINATIONS[record.id];
+              const state = stageStyle(record, seasonal);
+              return `<a class="bloom-nearby-choice" href="#details-${record.id}" data-destination-id="${record.id}"><strong>${place.fullName}</strong><span>${seasonal ? place.timing : state.label}</span></a>`;
+            }).join('');
+            const marker = window.L.marker([location.lat, location.lon], {
+              icon: window.L.divIcon({ className: 'bloom-map-marker-wrap bloom-map-nearby-wrap', html: `<div class="bloom-map-nearby-dot">${group.records.length}</div>`, iconSize: [32, 32], iconAnchor: [16, 16] }),
+              keyboard: true,
+              title: `${group.records.length} nearby flower destinations; select one to explore`,
+            });
+            marker.bindPopup(`<div class="bloom-nearby-popup"><strong>${group.records.length} nearby flower stops</strong><p>Choose a place to open its visitor guide. Zoom in to see separate markers.</p>${choiceHtml}</div>`, { closeButton: true, maxWidth: 310 });
+            marker.on('popupopen', () => {
+              const root = marker.getPopup()?.getElement();
+              root?.querySelectorAll('.bloom-nearby-choice').forEach((link) => {
+                link.addEventListener('click', (event) => {
+                  const id = link.getAttribute('data-destination-id');
+                  const details = id && document.getElementById('details-' + id);
+                  if (!details) return;
+                  event.preventDefault();
+                  details.open = true;
+                  details.scrollIntoView({ behavior:'smooth', block:'start' });
+                  map.closePopup();
+                });
+              });
+            });
+            marker.addTo(markerLayer);
+          }
+        }
+        window.dispatchEvent(new Event('bloom-map-ready'));
+      };
+
+      // Keep seasonal timing regions behind markers, never as clickable
+      // duplicates or a second independent set of markers.
       records.forEach((record) => {
+        if (!seasonal) return;
         const destination = DESTINATIONS[record.id];
         const style = stageStyle(record, seasonal);
-        if (seasonal) {
-          window.L.circle([destination.lat, destination.lon], { radius: style.radius, color: style.color, weight: 1, opacity: 0.22, fillColor: style.color, fillOpacity: 0.08, interactive: false }).addTo(map);
-        }
-        const marker = window.L.marker([destination.lat, destination.lon], {
-          icon: window.L.divIcon({ className: 'bloom-map-marker-wrap', html: markerHtml(style, record, seasonal), iconSize: [24, 24], iconAnchor: [12, 12] }),
-          keyboard: true,
-          title: `${destination.fullName}: ${seasonal ? destination.timing : style.label}`,
-        });
-        marker.bindTooltip(tooltipHtml(record, seasonal), { permanent: window.innerWidth > 600, direction: 'top', offset: [0, -13], className: 'bloom-map-tooltip', opacity: 0.95, interactive: false });
-        marker.bindPopup(popupHtml(record, seasonal), { closeButton: true, maxWidth: 280 });
-        marker.addTo(map);
+        window.L.circle([destination.lat, destination.lon], { radius: style.radius, color: style.color, weight: 1, opacity: 0.22, fillColor: style.color, fillOpacity: 0.08, interactive: false }).addTo(map);
       });
 
       addOriginLayer(records);
@@ -715,7 +773,9 @@
       if (origin && activeView === VIEW.FROM_ME) boundsPoints.push([origin.lat, origin.lon]);
       const bounds = window.L.latLngBounds(boundsPoints);
       map.fitBounds(bounds.pad(0.20), { padding: [18, 18], maxZoom: 7 });
-      setTimeout(() => { map?.invalidateSize(false); window.dispatchEvent(new Event('bloom-map-ready')); }, 80);
+      drawMarkers();
+      map.on('zoomend', drawMarkers);
+      setTimeout(() => { map?.invalidateSize(false); drawMarkers(); }, 80);
     } finally {
       installing = false;
     }
