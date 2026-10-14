@@ -100,7 +100,7 @@ assert.ok(!css.includes('stroke-dasharray'), 'CSS must not rely on hiding dotted
 assert.ok(!page.includes('strokeDasharray'), 'static fallback must not draw route-like dotted lines');
 assert.ok(page.includes('April-to-September sequence'), 'trust copy must describe the full tracked season');
 assert.ok(page.includes('summer lavender and sunflower fields into September'), 'intro must explain the extended flower season');
-assert.ok(page.includes('Michigan Bloom Tracker — What’s Blooming & When to Go'), 'metadata must describe the decision product instead of spring-only timing');
+assert.ok(page.includes('Michigan Bloom Tracker 2027 — What&apos;s Blooming &amp; When to Go'), 'metadata must describe the decision product instead of spring-only timing');
 assert.ok(!page.includes('Track Michigan spring blooms from April through June'), 'spring-only metadata must not survive the summer expansion');
 
 assert.ok(!season.includes("shortLabel: 'APR'"), 'user-facing timing must not use APR shorthand');

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import { BLOOM_DESTINATIONS } from '../lib/bloom/destinations.mjs';
+import { BLOOM_VISIT_GUIDES, BLOOM_FAQS } from '../lib/bloom/visit-guides.mjs';
 import { BLOOM_EXPERIENCES } from '../lib/bloom/experience-layer.mjs';
 import { BLOOM_PLANNING_WINDOWS, BLOOM_SEASON_STATES, buildBloomSeasonContext } from '../lib/bloom/seasonal-context.mjs';
 import { getBloomTrackerFixture } from '../lib/bloom/tracker-fixtures.mjs';
@@ -37,6 +38,14 @@ weak.destinations.filter((d) => d.decision.decision === 'UNKNOWN').forEach((entr
   assert.equal(evidenceStrength(entry.decision), 'weak', 'stale UNKNOWN evidence must look weak');
 });
 
+assert.equal(Object.keys(BLOOM_VISIT_GUIDES).length, 9, '2027 visitor guides cover exactly nine tracked destinations');
+assert.equal(BLOOM_FAQS.length, 9, 'nine expanded search FAQs are available');
+for (const guide of Object.values(BLOOM_VISIT_GUIDES)) {
+  for (const field of ['tickets', 'hours', 'parking', 'crowds', 'tip']) {
+    assert.ok(guide[field]?.length > 55, 'visitor guide must include actionable ' + field);
+  }
+  assert.ok(guide.link.startsWith('https://'), 'each visit guide links an operator');
+}
 for (const destination of BLOOM_DESTINATIONS) {
   const experience = BLOOM_EXPERIENCES[destination.id];
   const planning = BLOOM_PLANNING_WINDOWS[destination.id];
@@ -98,8 +107,8 @@ assert.ok(!page.includes('details-section'), 'destination evidence must live wit
 
 // Search, social and entity guardrails. These are intentionally explicit so a UI rewrite cannot
 // silently remove the signals that make the recurring spring URL easy to understand and share.
-assert.ok(page.includes('<title>Michigan Bloom Tracker — What’s Blooming & When to Go</title>'), 'Bloom Tracker must keep a query-aligned evergreen search title');
-assert.ok(page.includes('Track Michigan flower season from April into September:'), 'Bloom Tracker must keep a descriptive search snippet, not a keyword list');
+assert.ok(page.includes('<title>Michigan Bloom Tracker 2027 — What&apos;s Blooming &amp; When to Go</title>'), 'Bloom Tracker must carry requested 2027 peak-week search title');
+assert.ok(page.includes('Michigan Bloom Tracker 2027: compare 9 cherry, tulip, peony'), 'Bloom Tracker must describe nine destinations and 2027 peak-week trip decisions in the snippet');
 assert.ok(page.includes('<link rel="canonical" href={PAGE_URL} />'), 'Bloom Tracker must retain its self canonical');
 
 const app = await fs.readFile(new URL('../pages/_app.js', import.meta.url), 'utf8');
