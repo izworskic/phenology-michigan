@@ -100,6 +100,7 @@ const bloomStructuredData = {
 export default function App({ Component, pageProps }) {
   const router = useRouter();
   const isBloomTracker = router.pathname === "/bloom-tracker";
+  const isWisconsinBloom = router.pathname.startsWith("/wisconsin-bloom-tracker");
   const isHome = router.pathname === "/";
 
   return (
@@ -112,6 +113,7 @@ export default function App({ Component, pageProps }) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Newsreader:ital,opsz@0,6..72;1,6..72&display=swap" rel="stylesheet" />
         {isBloomTracker && <link rel="stylesheet" href="/bloom-tracker-redesign.css" />}
+        {isWisconsinBloom && <link rel="stylesheet" href="/wisconsin-bloom.css" />}
         {isBloomTracker && <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />}
         {isBloomTracker && <link rel="stylesheet" href="/bloom-map-v2.css" />}
         {isBloomTracker && <link rel="stylesheet" href="/bloom-visit-guide.css" />}
@@ -154,9 +156,10 @@ export default function App({ Component, pageProps }) {
         .bloom-authority-link a:hover { text-decoration: underline; }
       `}</style>
       <Component {...pageProps} />
+      {isBloomTracker && <nav className="bloom-authority-link">Explore the other Great Lakes bloom guide: <a href="/wisconsin-bloom-tracker">Wisconsin Bloom Tracker 2027 — Door County, Madison, lavender and sunflowers</a></nav>}
       {isHome && (
         <nav className="bloom-authority-link" aria-label="Featured seasonal tool">
-          Flower-season planning: <a href="/bloom-tracker">Michigan Bloom Tracker — what’s blooming and when to go</a>
+          Flower-season planning: <a href="/bloom-tracker">Michigan Bloom Tracker — what’s blooming and when to go</a> · <a href="/wisconsin-bloom-tracker">Wisconsin flower-season map and trip guide</a>
         </nav>
       )}
       {isBloomTracker && <Script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" strategy="afterInteractive" />}

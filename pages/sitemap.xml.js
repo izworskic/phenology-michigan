@@ -11,6 +11,9 @@ function xml() {
     <priority>0.9</priority>
     <image:image><image:loc>${SITE}/bloom-tracker-social.png</image:loc></image:image>
   </url>
+  <url><loc>${SITE}/wisconsin-bloom-tracker</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>${SITE}/wisconsin-bloom-tracker/door-county-cherries</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>${SITE}/wisconsin-bloom-tracker/uw-arboretum</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
 </urlset>`;
 }
 export async function getServerSideProps({ res }) {

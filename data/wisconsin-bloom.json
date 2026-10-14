@@ -1,0 +1,421 @@
+{
+  "updated": "2026-10-14",
+  "year": 2027,
+  "destinations": [
+    {
+      "id": "door-county-cherries",
+      "name": "Door County Cherry Blossoms",
+      "region": "Door Peninsula",
+      "kind": "Cherry blossoms",
+      "category": "orchards",
+      "lat": 45.13,
+      "lon": -87.2,
+      "start": [
+        5,
+        5
+      ],
+      "end": [
+        5,
+        27
+      ],
+      "window": "Early to late May, weather-dependent",
+      "source": "Destination Door County cherry blossom report",
+      "sourceUrl": "https://www.doorcounty.com/experience/cherries/",
+      "visitUrl": "https://www.doorcounty.com/newsletter/when-do-the-cherry-trees-blossom/",
+      "address": "Egg Harbor and Sister Bay corridor, Door County, Wisconsin",
+      "tickets": "Public-road viewing is free. Farms and orchards are private businesses; tours or attractions may have separate admission.",
+      "hours": "Plan scenic drives in daylight. Orchard shops have their own seasonal opening dates and hours.",
+      "parking": "Park only at signed public places or an open orchard business. Never block a working farm driveway or stop on narrow shoulders.",
+      "crowds": "Expect the heaviest blossom tourism on sunny mid-May weekends, especially around Egg Harbor, Fish Creek and Sister Bay.",
+      "plan": "Start with the officially named Highway 42 orchard corridors north of Egg Harbor; compare southern routes with northern Sister Bay roads, where buds can trail the southern peninsula.",
+      "experience": "The white orchard flowers sit against rolling fields and the blue Lake Michigan shoreline. A good day here is a quiet driving circuit with a planned market stop, not a sprint through private rows.",
+      "lookFor": "Puffy white buds opening into clusters along orchard edges; northern and southern areas can be at different stages.",
+      "time": "Half day to a full scenic day",
+      "decision": "Best when the destination report describes open blossoms and you have time for a legal roadside itinerary.",
+      "note": "The blossom-stage report describes the entire growing season. Fruit development or a page refresh is not proof of open flowers.",
+      "links": [
+        [
+          "Official cherry stage report",
+          "https://www.doorcounty.com/experience/cherries/"
+        ],
+        [
+          "Door County driving routes",
+          "https://www.doorcounty.com/newsletter/when-do-the-cherry-trees-blossom/"
+        ]
+      ],
+      "guide": true
+    },
+    {
+      "id": "uw-arboretum",
+      "name": "UW–Madison Arboretum Lilacs & Crabapples",
+      "region": "Madison and South Central",
+      "kind": "Lilacs, magnolias and crabapples",
+      "category": "gardens",
+      "lat": 43.045,
+      "lon": -89.419,
+      "start": [
+        4,
+        5
+      ],
+      "end": [
+        5,
+        25
+      ],
+      "window": "April into late May; different collections flower sequentially",
+      "source": "UW Arboretum — What's in Bloom?",
+      "sourceUrl": "https://arboretum.wisc.edu/news/arboretum-news/whats-in-bloom/",
+      "visitUrl": "https://arboretum.wisc.edu/visit/getting-here/",
+      "address": "1207 Seminole Highway, Madison, WI 53711",
+      "tickets": "Free to visit. Posed photography requires a permit; garden access is not a separately ticketed event.",
+      "hours": "Grounds and parking generally open 4 a.m.–10 p.m.; Visitor Center has shorter posted hours.",
+      "parking": "Enter from Seminole Highway and follow signs to the Visitor Center lots and Longenecker Horticultural Gardens. No vehicle through traffic across the Arboretum gate.",
+      "crowds": "Peak lilac weekends can be busy near Longenecker Gardens, though walks beyond the main collections feel quieter.",
+      "plan": "Check the latest dated UW bloom bulletin before driving. Magnolia, flowering cherry, crabapple and lilac collections peak at different times—choose the plant named in the update.",
+      "experience": "Walk beneath a succession of flowering trees before reaching the lilac collection. This is best experienced slowly on foot, with labeled cultivars and changing fragrance around each corner.",
+      "lookFor": "Look at the bulletin’s plant-specific date. A fading crabapple report does not automatically mean lilacs are finished.",
+      "time": "90 minutes to three hours",
+      "decision": "Best when a dated UW bulletin identifies the plant you want as opening, building or near peak.",
+      "note": "Published 2026 historical observations are useful precedent, not current 2027 bloom status.",
+      "links": [
+        [
+          "Dated UW bloom bulletin",
+          "https://arboretum.wisc.edu/news/arboretum-news/whats-in-bloom/"
+        ],
+        [
+          "UW parking and etiquette",
+          "https://arboretum.wisc.edu/visit/getting-here/"
+        ]
+      ],
+      "guide": true
+    },
+    {
+      "id": "olbrich-gardens",
+      "name": "Olbrich Botanical Gardens Spring & Summer Flowers",
+      "region": "Madison and South Central",
+      "kind": "Woodland flowers and perennials",
+      "category": "gardens",
+      "lat": 43.093,
+      "lon": -89.333,
+      "start": [
+        4,
+        15
+      ],
+      "end": [
+        9,
+        30
+      ],
+      "window": "Spring woodland flowers through late-summer perennial displays",
+      "source": "Olbrich Botanical Gardens",
+      "sourceUrl": "https://www.olbrich.org/visit",
+      "visitUrl": "https://www.olbrich.org/visit",
+      "address": "3330 Atwood Avenue, Madison, WI 53704",
+      "tickets": "Outdoor gardens: free admission; donations encouraged. Indoor Bolz Conservatory has separate admission.",
+      "hours": "Outdoor gardens typically 10 a.m.–6 p.m. April–September and 10 a.m.–4 p.m. October–March; verify closures and special events.",
+      "parking": "Use the garden’s visitor arrival instructions at 3330 Atwood Avenue; bicycle access from the Capital City Trail.",
+      "crowds": "Summer weekends and special programs can be busy; a weekday morning is calmer.",
+      "plan": "For spring, start with the Woodland Garden; for midsummer, turn toward the Perennial Garden and changing mixed borders.",
+      "experience": "A compact garden walk changes character block by block, from shaded woodland wildflowers to the sunlit perennial borders and the Thai Pavilion.",
+      "lookFor": "A woodland-flower trip and a late-summer perennial trip are different experiences; check official seasonal garden updates.",
+      "time": "60–120 minutes",
+      "decision": "Reliable visit setting, but no same-day bloom-stage assertion without an operator observation.",
+      "note": "Outdoor garden free entry is different from conservatory or ticketed-event fees.",
+      "links": [
+        [
+          "Official visit and hours",
+          "https://www.olbrich.org/visit"
+        ],
+        [
+          "Woodland Garden",
+          "https://www.olbrich.org/gardens/woodland-garden"
+        ]
+      ]
+    },
+    {
+      "id": "boerner-gardens",
+      "name": "Boerner Botanical Gardens Seasonal Blooms",
+      "region": "Milwaukee and Southeast",
+      "kind": "Spring bulbs, roses and formal gardens",
+      "category": "gardens",
+      "lat": 42.936,
+      "lon": -88.032,
+      "start": [
+        5,
+        1
+      ],
+      "end": [
+        10,
+        31
+      ],
+      "window": "May through October garden season",
+      "source": "Milwaukee County Parks / Boerner Botanical Gardens",
+      "sourceUrl": "https://county.milwaukee.gov/EN/Parks/Explore/Boerner-Botanical-Gardens",
+      "visitUrl": "https://county.milwaukee.gov/EN/Parks/Explore/Boerner-Botanical-Gardens",
+      "address": "9400 Boerner Drive, Hales Corners, WI 53130",
+      "tickets": "Paid garden-season admission. County-resident, senior, youth and member pricing may differ; verify before visiting.",
+      "hours": "Milwaukee County publishes different summer and fall hours, plus reduced off-season access; check the current schedule.",
+      "parking": "Use signed Boerner visitor parking in Whitnall Park; event days may have modified access.",
+      "crowds": "Weekend weddings, popular blooms and special events can increase congestion in landscaped garden paths.",
+      "plan": "Choose this for an organized garden afternoon near Milwaukee. Confirm the current flowering collections and garden admission before driving.",
+      "experience": "Formal borders, open lawns and carefully composed garden rooms make this a deliberate stroll rather than a wildflower hunt.",
+      "lookFor": "Seasonal rotations across the garden, not a single universal 'peak bloom' date.",
+      "time": "90 minutes to two hours",
+      "decision": "Best for a flexible garden visit; use an operator update before promising any particular flowering plant.",
+      "note": "Milwaukee County is the authoritative source for opening hours and garden admission.",
+      "links": [
+        [
+          "Official county park visitor information",
+          "https://county.milwaukee.gov/EN/Parks/Explore/Boerner-Botanical-Gardens"
+        ]
+      ]
+    },
+    {
+      "id": "rotary-cherries",
+      "name": "Rotary Botanical Gardens Cherry Blossom Walk",
+      "region": "Madison and South Central",
+      "kind": "Ornamental cherries and spring bulbs",
+      "category": "gardens",
+      "lat": 42.663,
+      "lon": -89.003,
+      "start": [
+        4,
+        15
+      ],
+      "end": [
+        5,
+        20
+      ],
+      "window": "Mid-April through May, varying by planting",
+      "source": "Rotary Botanical Gardens",
+      "sourceUrl": "https://www.rotarybotanicalgardens.org/plan-your-visit",
+      "visitUrl": "https://www.rotarybotanicalgardens.org/plan-your-visit",
+      "address": "1455 Palmer Drive, Janesville, WI 53545",
+      "tickets": "General garden admission applies; posted discounts for seniors, children and members may be available.",
+      "hours": "April and October have shorter hours than May–September; confirm the exact day, particularly weekends.",
+      "parking": "Free on-site visitor parking at the gardens.",
+      "crowds": "Spring weekend photography and garden events can draw families; leave time for the broader garden.",
+      "plan": "Come for the cherry blossom walk if the flowering trees are confirmed; combine with the Japanese and themed garden areas.",
+      "experience": "The walk of ornamental cherry trees gives a short burst of spring color, framed by the formal planting beds and water features.",
+      "lookFor": "A current garden update that confirms the cherry walk itself—not only generic spring flowers.",
+      "time": "60–120 minutes",
+      "decision": "Good alternative to Door County for a southern Wisconsin spring day without a peninsula road trip.",
+      "note": "Travel Wisconsin documents the cherry walk; precise blossom timing must be checked with the operator.",
+      "links": [
+        [
+          "Visit and admission",
+          "https://www.rotarybotanicalgardens.org/plan-your-visit"
+        ],
+        [
+          "Wisconsin cherry blossom guide",
+          "https://www.travelwisconsin.com/stories/where-to-find-spring-cherry-blossoms-in-wisconsin"
+        ]
+      ]
+    },
+    {
+      "id": "fragrant-isle-lavender",
+      "name": "Fragrant Isle Lavender — Washington Island",
+      "region": "Door Peninsula",
+      "kind": "Lavender fields",
+      "category": "lavender",
+      "lat": 45.381,
+      "lon": -86.913,
+      "start": [
+        6,
+        20
+      ],
+      "end": [
+        8,
+        10
+      ],
+      "window": "Late June into early August, field-dependent",
+      "source": "Fragrant Isle Lavender Farm & Shop",
+      "sourceUrl": "https://fragrantisle.com/pages/hours",
+      "visitUrl": "https://fragrantisle.com/pages/hours",
+      "address": "Washington Island, Door County, WI",
+      "tickets": "2026 field entry was listed at $6 per person in peak season. Recheck the 2027 fee; ferry passage is a separate expense.",
+      "hours": "Farm publishes seasonal shop and field hours. Check both the farm and Washington Island Ferry Line for exact dates.",
+      "parking": "Drive or ride from the Washington Island ferry arrival to the lavender farm; do not assume a walkable ferry-to-field trip.",
+      "crowds": "Sunny July weekends bring travelers across the ferry and into the fields. Island logistics matter as much as bloom.",
+      "plan": "Reserve enough time for the ferry both ways, island transport and a field visit; check the last return sailing before committing.",
+      "experience": "A lavender outing here is an island day: ferry water, a quieter road network and purple rows scented in midsummer sun.",
+      "lookFor": "The farm’s bloom or harvest update, not simply an announced season-opening date.",
+      "time": "Full day including ferry",
+      "decision": "Only recommend the full island commitment when ferry schedules, field access and credible bloom information align.",
+      "note": "Never equate an open shop with lavender at peak. The farm and ferry are different operators.",
+      "links": [
+        [
+          "Official farm hours and fields",
+          "https://fragrantisle.com/pages/hours"
+        ],
+        [
+          "Washington Island Ferry schedules",
+          "https://wisferry.com/"
+        ]
+      ]
+    },
+    {
+      "id": "eugsters-sunflowers",
+      "name": "Eugster’s Farm Sunflower Days",
+      "region": "Madison and South Central",
+      "kind": "Sunflowers and zinnias",
+      "category": "sunflowers",
+      "lat": 42.988,
+      "lon": -89.225,
+      "start": [
+        7,
+        18
+      ],
+      "end": [
+        8,
+        15
+      ],
+      "window": "Late July to mid-August, annual plantings and heat dependent",
+      "source": "Eugster's Farm Market Sunflower Days",
+      "sourceUrl": "https://www.eugsters.com/sunflower-days",
+      "visitUrl": "https://www.eugsters.com/sunflower-days",
+      "address": "3865 State Road 138, Stoughton, WI 53589",
+      "tickets": "Seasonal field admission applies; 2026 operator pricing was $10 per person with infants 1 and under free. Recheck 2027 rates.",
+      "hours": "The 2026 season listed 10 a.m.–5 p.m. on open days, closed Tuesdays; check each year's dates and last-entry rule.",
+      "parking": "On-site farm visitor parking; fields may require a short walk from the entrance.",
+      "crowds": "Peak sunflower weekends and family activities draw visitors. Hot weather can dramatically shorten the display.",
+      "plan": "Only select a weekend after the operator confirms fields are open. A published event date can be cancelled or shortened by heat and rain.",
+      "experience": "A broad band of sunflowers and zinnias joins a family farm setting, with walking paths, farm animals and room to make an afternoon of it.",
+      "lookFor": "A current bloom update and any rain-related access notices; opening dates alone do not prove full flowers.",
+      "time": "Two to three hours",
+      "decision": "Good family field outing when open for the season and a current farm update confirms flowers.",
+      "note": "The 2026 farm announcement explicitly documents weather-driven early finish; don't extrapolate the 2027 dates.",
+      "links": [
+        [
+          "Official Sunflower Days",
+          "https://www.eugsters.com/sunflower-days"
+        ],
+        [
+          "Farm visiting policy",
+          "https://www.eugsters.com/"
+        ]
+      ]
+    },
+    {
+      "id": "schusters-summer-flowers",
+      "name": "Schuster’s Farm Blooms on the Farm",
+      "region": "Madison and South Central",
+      "kind": "Zinnias and sunflower fields",
+      "category": "sunflowers",
+      "lat": 43.04,
+      "lon": -89.108,
+      "start": [
+        7,
+        15
+      ],
+      "end": [
+        9,
+        5
+      ],
+      "window": "Summer plantings; confirm the current year's ticketed dates",
+      "source": "Schuster's Farm Summer Blooms",
+      "sourceUrl": "https://schustersfarm.com/bloomin-fun/",
+      "visitUrl": "https://schustersfarm.com/bloomin-fun/",
+      "address": "Deerfield, Wisconsin",
+      "tickets": "Ticketed farm visit. The 2026 page listed admission and separate U-pick flower charges; confirm 2027 prices and what is included.",
+      "hours": "Seasonal event schedule and last admission apply. Event offerings change by day.",
+      "parking": "Use signed farm visitor areas; plan walking time to the flower fields and wagon loading areas.",
+      "crowds": "Sunset picking and weekend entertainment bring heavier evening traffic than a quiet weekday visit.",
+      "plan": "Pick the experience first: photographs, U-pick flower cups, or a family visit. Check which is available on your chosen date.",
+      "experience": "This is an event-style farm afternoon among zinnias and sunflowers, with music, wagons and family attractions in addition to flowers.",
+      "lookFor": "The current year's bloom-and-event announcement plus its ticket rules.",
+      "time": "Two to four hours",
+      "decision": "Better for a complete ticketed farm outing than for a quick unplanned flower stop.",
+      "note": "Farm admission and U-pick pricing are not the same charge.",
+      "links": [
+        [
+          "Official Summer Blooms",
+          "https://schustersfarm.com/bloomin-fun/"
+        ]
+      ]
+    },
+    {
+      "id": "gays-mills-apples",
+      "name": "Gays Mills Apple Blossom Ridge Drive",
+      "region": "Driftless Southwest",
+      "kind": "Apple orchard blossoms",
+      "category": "orchards",
+      "lat": 43.319,
+      "lon": -90.852,
+      "start": [
+        4,
+        20
+      ],
+      "end": [
+        5,
+        25
+      ],
+      "window": "Late April into May, depending on spring temperatures",
+      "source": "Travel Wisconsin — Gays Mills",
+      "sourceUrl": "https://www.travelwisconsin.com/places-to-go/gays-mills",
+      "visitUrl": "https://www.travelwisconsin.com/places-to-go/gays-mills",
+      "address": "Highway 171 / Gays Mills orchard region, WI",
+      "tickets": "Public-road views are free. Orchards remain private property; confirm spring shop or tasting availability before entering.",
+      "hours": "Drive scenic public roads during daylight. Orchard farm shops often have fall-oriented schedules, not spring opening guarantees.",
+      "parking": "Use legal public turnouts or businesses open to visitors; do not park on orchard access lanes.",
+      "crowds": "Usually less concentrated than Door County's blossom corridor, but farm traffic and narrow ridge roads require care.",
+      "plan": "Take the Highway 171 ridge route above the Kickapoo Valley for a self-guided orchard landscape drive, with a prechecked farm stop.",
+      "experience": "Wisconsin's Driftless ridges lift the orchards above wooded valleys. In flower season the apple trees form pale rows along a winding scenic drive.",
+      "lookFor": "Apple flowering rather than harvest-season photos or advertisements; ask a local operator before a long drive.",
+      "time": "Half-day scenic drive",
+      "decision": "Best for a flexible scenic route, not a guaranteed peak-bloom spectacle; no reliable weekly blossom report identified yet.",
+      "note": "A well-known apple-growing area does not equal a publicly accessible spring orchard.",
+      "links": [
+        [
+          "Travel Wisconsin Gays Mills",
+          "https://www.travelwisconsin.com/places-to-go/gays-mills"
+        ],
+        [
+          "1913 Kickapoo Orchard",
+          "https://www.travelwisconsin.com/things-to-do/farm-fresh-experiences/pick-your-own/1913-kickapoo-orchard"
+        ]
+      ]
+    }
+  ],
+  "faqs": [
+    [
+      "When do cherry blossoms peak in Door County?",
+      "Door County cherries most often open in May. The county's official stage report is the relevant current source. Southern and northern peninsula orchards may not open together, and flowering can last only about one to two weeks."
+    ],
+    [
+      "Where can I see cherry blossoms near Madison?",
+      "The UW–Madison Arboretum reports flowering cherry conditions in its dated What's in Bloom bulletins. Rotary Botanical Gardens in Janesville has a spring cherry walk. Neither location should be treated as at peak from a calendar alone."
+    ],
+    [
+      "When do the lilacs bloom at the UW Arboretum?",
+      "Typically during April and May, after some earlier flowering trees. UW issues dated, species-specific reports on the Longenecker Gardens collection; early and late lilac varieties rarely flower all at once."
+    ],
+    [
+      "Is the UW Arboretum free?",
+      "Yes, garden and trail access is free. Parking and visitor routes have restrictions; check the official UW getting-here page. Posed photography requires a permit."
+    ],
+    [
+      "Do I need tickets for Boerner or Olbrich Botanical Gardens?",
+      "Boerner has garden-season admission with different rates and discounts. Olbrich's outdoor gardens are free, but its Bolz Conservatory or special exhibits may have separate charges. Verify operator policies for your date."
+    ],
+    [
+      "When is lavender season on Washington Island?",
+      "Plan roughly late June through early August but verify Fragrant Isle's current fields, access fee and seasonal opening schedule. Ferry transport from the mainland is additional and must be planned separately."
+    ],
+    [
+      "When do Wisconsin sunflowers bloom?",
+      "Ticketed sunflower fields around Stoughton and Deerfield generally operate in midsummer. Planting dates, heat and rain can shift flowering or cancel event days; the farm's current update outranks this calendar."
+    ],
+    [
+      "Can I enter the Door County or Gays Mills orchards to take photos?",
+      "Not by default. Orchards are working private property. View flowering rows from legal public stops or visit farms explicitly open to visitors; never pull into a field, driveway or shoulder unsafely."
+    ],
+    [
+      "Is this a live Wisconsin flower bloom map?",
+      "No live peak status is asserted without a recent, dated, plant-specific observation. This map is a geographic and seasonal trip planner linked to official evidence; archived reports and typical windows are identified as historical or planning context."
+    ],
+    [
+      "Does a refresh mean a flower bloom was verified?",
+      "No. Refresh reloads planning context and checks the dated-observation data layer only; it never converts a page-update time, event date or weather forecast into a measured bloom stage."
+    ]
+  ],
+  "fieldNotes": []
+}
