@@ -55,6 +55,7 @@
     },
   };
 
+  const MEIJER_CHERRY = { ...DESTINATIONS['meijer-gardens-cherries'] };
   const STAGE_ORDER = ['DORMANT', 'EMERGING', 'BUILDING', 'NEAR_PEAK', 'PEAK', 'FADING', 'DONE'];
   const STAGE_STYLE = {
     DORMANT: { color: '#92999b', className: 'dormant', label: 'Dormant', radius: 10000, energyRadius: 0, energy: 0 },
@@ -154,6 +155,9 @@
         };
       }
       const state = String(card.dataset.state || 'UNKNOWN').toUpperCase();
+      if(id === 'meijer-gardens-cherries') {
+        DESTINATIONS[id] = card.dataset.kind === 'mum' ? { ...MEIJER_CHERRY, name:'Meijer October mums', fullName:'Meijer Gardens October Mums', timing:'October exhibition (bloom unverified)', officialUrl:'https://www.meijergardens.org/autumn/', officialLabel:'Official autumn exhibition details', seasonColor:'#ad7b3c' } : { ...MEIJER_CHERRY };
+      }
       const live = snapshotEntry(id);
       const stage = slugStage(live?.decision?.currentStage || stageFromText(card.querySelector('.opportunity-meta strong')?.textContent) || DECISION_STAGE[state] || 'UNKNOWN');
       return {

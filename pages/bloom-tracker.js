@@ -257,11 +257,11 @@ function SeasonRouteStrip({ seasonContext }) {
   );
 }
 
-function OpportunityCard({ entry, rank, generatedAt, seasonContext, editorial, seasonalMode }) {
+function OpportunityCard({ entry, rank, generatedAt, seasonContext, editorial, seasonalMode, mumView = false }) {
   const decision = entry?.decision || {};
   const state = decision.decision || 'UNKNOWN';
   const experience = getBloomExperience(entry.id);
-  const photo = preferredPhoto(experience);
+  const photo = mumView ? null : preferredPhoto(experience);
   const weekend = selectWeekendForecast(decision.forecast, generatedAt);
   const source = decision.source || entry?.observation?.source || null;
   const seasonItem = seasonalItemFor(seasonContext, entry.id);
@@ -269,12 +269,12 @@ function OpportunityCard({ entry, rank, generatedAt, seasonContext, editorial, s
   const visit = getBloomVisitGuide(entry.id);
 
   return (
-    <article className="opportunity-card" data-state={seasonalMode ? seasonItem?.state : state}
+    <article className="opportunity-card" data-state={mumView ? 'UNKNOWN' : seasonalMode ? seasonItem?.state : state}
       data-lat={DESTINATION_BY_ID[entry.id]?.coordinates?.lat}
       data-lon={DESTINATION_BY_ID[entry.id]?.coordinates?.lon}
-      data-kind={bloomKind(entry)}
-      data-season-label={seasonItem?.windowLabel || ''}
-      data-source-url={seasonItem?.sourceUrl || ''}
+      data-kind={mumView ? 'mum' : bloomKind(entry)}
+      data-season-label={mumView ? 'October mums (event timing; bloom unverified)' : seasonItem?.windowLabel || ''}
+      data-source-url={mumView ? 'https://www.meijergardens.org/autumn/' : seasonItem?.sourceUrl || ''}
       data-order={seasonItem?.order || 99}>
       <div className={"opportunity-card-summary"+(!photo?" is-photo-free":"")}>
         <div className="rank" aria-hidden="true">{rank}</div>
@@ -282,12 +282,12 @@ function OpportunityCard({ entry, rank, generatedAt, seasonContext, editorial, s
           <div className="opportunity-titleline">
             <div>
               <span className="region">{entry.region}</span>
-              <h3>{entry.name}</h3>
+              <h3>{mumView ? 'Meijer Gardens October Mums' : entry.name}</h3>
             </div>
-            {seasonalMode ? <SeasonPill item={seasonItem} /> : <DecisionPill value={state} compact />}
+            {mumView ? <span className="season-pill">October planning · not live</span> : seasonalMode ? <SeasonPill item={seasonItem} /> : <DecisionPill value={state} compact />}
           </div>
-          {experience?.headline && <p className="opportunity-experience">{experience.headline}</p>}
-          {seasonalMode ? (
+          {mumView ? <p className="opportunity-experience">More than 8,000 chrysanthemums in a separate autumn garden display. Not related to the spring cherry bloom signal.</p> : experience?.headline && <p className="opportunity-experience">{experience.headline}</p>}
+          {mumView ? <><p className="opportunity-reason">Operator exhibition: <strong>October</strong>. A scheduled chrysanthemum display is not a dated bloom-stage observation. Check the official visitor page before traveling.</p><div className="opportunity-meta"><span>Autumn planning</span><span>·</span><span>No current bloom claim</span></div></> : seasonalMode ? (
             <>
               <p className="opportunity-reason">Typical window: <strong>{seasonItem?.windowLabel || 'spring'}</strong>. The calendar tells us when to watch; fresh observations decide when to go.</p>
               <div className="opportunity-meta"><span>Season planning</span><span>·</span><span>No current bloom claim</span></div>
@@ -310,13 +310,14 @@ function OpportunityCard({ entry, rank, generatedAt, seasonContext, editorial, s
           <ChevronDown className="opportunity-chevron" size={16} />
         </summary>
         <div className="opportunity-expanded">
-          {editorialItem?.text && (
+          {editorialItem?.text && !mumView && (
             <div className="editorial-read">
               <span className="eyebrow">{seasonalMode ? 'The seasonal read' : 'Why this place now'}</span>
               <p>{editorialItem.text}</p>
             </div>
           )}
-          {experience && (
+          {mumView && <p className="bloom-autumn-note">Meijer Gardens’ autumn chrysanthemum display includes seasonal planting and visitor experiences distinct from spring cherry blossoms. Follow the <a href="https://www.meijergardens.org/autumn/" target="_blank" rel="noopener noreferrer">official autumn visitor guide</a> for admission and dates. Flower stages are not provided as live evidence by this tracker.</p>}
+          {experience && !mumView && (
             <div className="trip-story">
               <ExperienceGallery experience={experience} />
               <div className="trip-copy">
@@ -346,7 +347,7 @@ function OpportunityCard({ entry, rank, generatedAt, seasonContext, editorial, s
             </section>
           )}
 
-          {seasonalMode ? (
+          {mumView ? <div className="seasonal-evidence-note"><strong>October exhibition.</strong><span>Official event information only. The spring cherry stage and the October mum stage are independent.</span></div> : seasonalMode ? (
             <div className="seasonal-evidence-note">
               <strong>Typical timing: {seasonItem?.windowLabel || 'spring'}.</strong>
               <span>This is a planning window, not a forecast or current bloom observation.</span>
@@ -727,7 +728,7 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
             <section className="opportunity-section" aria-labelledby="where-title">
               <div className="section-heading"><div><span className="eyebrow">{seasonalMode ? 'Michigan flower season, place by place' : 'Statewide opportunity desk'}</span><h2 id="where-title">{seasonalMode ? 'What does each stop feel like?' : 'Where should I go?'}</h2></div><span className="count">{destinations.length} tracked displays</span></div>
               <p className="opportunity-intro">{seasonalMode ? 'The season has a geography as well as a calendar. Compare 19 locations from spring orchard blossoms and woodland wildflowers to summer flower fields and late garden color; filters update both the destinations and map.' : 'The live decision stays primary. Each place gets just enough visual context to show what you are driving toward; expand only the destinations you care about.'}</p>
-              {visibleDestinations.length ? <div className="opportunity-list">{visibleDestinations.map((entry, index) => <OpportunityCard key={entry.id} entry={entry} rank={index + 1} generatedAt={generatedAt} seasonContext={seasonContext} editorial={editorial} seasonalMode={seasonalMode} />)}</div>
+              {visibleDestinations.length ? <div className="opportunity-list">{visibleDestinations.map((entry, index) => <OpportunityCard key={entry.id} entry={entry} rank={index + 1} generatedAt={generatedAt} seasonContext={seasonContext} editorial={editorial} seasonalMode={seasonalMode} mumView={flowerFilter === 'mum'} />)}</div>
               : <p className="bloom-filter-empty">No tracked destinations match both filters. Choose another flower type or region.</p>}
             </section>
 
