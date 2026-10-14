@@ -273,7 +273,7 @@ function OpportunityCard({ entry, rank, generatedAt, seasonContext, editorial, s
       data-season-label={seasonItem?.windowLabel || ''}
       data-source-url={seasonItem?.sourceUrl || ''}
       data-order={seasonItem?.order || 99}>
-      <div className="opportunity-card-summary">
+      <div className={"opportunity-card-summary"+(!photo?" is-photo-free":"")}>
         <div className="rank" aria-hidden="true">{rank}</div>
         <div className="opportunity-main">
           <div className="opportunity-titleline">
@@ -339,6 +339,7 @@ function OpportunityCard({ entry, rank, generatedAt, seasonContext, editorial, s
               <p><strong>Make the trip count:</strong> {visit.tip}</p>
               <a href={visit.link} target="_blank" rel="noopener noreferrer">Official visitor information <ArrowUpRight size={13} /></a>
               <p className="bloom-logistics-caveat">2027 schedules, prices and individual event dates may not yet be published. Confirm details with the operator before setting out.</p>
+              {entry.id==='meijer-gardens-cherries' && <p className="bloom-autumn-note"><strong>Also here: September–October mums.</strong> Meijer Gardens has an autumn chrysanthemum tradition. These are separate from spring cherries; check current operator displays rather than using the cherry bloom stage as evidence.</p>}
             </section>
           )}
 
@@ -630,7 +631,7 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
 
   const structuredData = {
     '@context': 'https://schema.org', '@graph': [
-      { '@type': 'WebApplication', name: 'Michigan Bloom Tracker', url: PAGE_URL, applicationCategory: 'TravelApplication', operatingSystem: 'Any', description: 'Nine Michigan flower stops, 2027 peak-week planning and observation-grounded visit decisions.' },
+      { '@type': 'WebApplication', name: 'Michigan Bloom Tracker', url: PAGE_URL, applicationCategory: 'TravelApplication', operatingSystem: 'Any', description: 'Nineteen Michigan flower destinations, 2027 peak-week planning and observation-grounded visit decisions.' },
       { '@type': 'FAQPage', mainEntity: BLOOM_FAQS.map(({question,answer}) => ({ '@type': 'Question', name: question, acceptedAnswer: { '@type': 'Answer', text: answer } })) },
     ],
   };
@@ -639,7 +640,7 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
     <>
       <Head>
         <title>Michigan Bloom Tracker 2027 — What&apos;s Blooming &amp; When to Go</title>
-        <meta name="description" content="Michigan Bloom Tracker 2027: compare 9 cherry, tulip, peony, lilac, lavender and sunflower stops, peak-week timing, tickets, parking and verified bloom updates." />
+        <meta name="description" content="Michigan Bloom Tracker 2027: compare 19 Michigan flower destinations from apple and cherry blossoms to tulips, lavender, sunflowers and autumn gardens, with maps and visitor tips." />
         <link rel="canonical" href={PAGE_URL} />
         <meta property="og:title" content="Michigan Bloom Tracker 2027 — What’s Blooming & When to Go" />
         <meta property="og:description" content="See which tracked Michigan flower display is strongest now, what is worth the drive, and how the season moves from April cherries and tulips into September sunflowers." />
@@ -657,7 +658,7 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
         <section className="intro-block">
           <div className="kicker"><Flower2 size={15} /> Michigan Bloom Tracker</div>
           <h1>What is worth the drive, and when?</h1>
-          <p>Follow Michigan’s flower season from April cherries and tulips through summer lavender and sunflower fields into September. Fresh evidence turns that progression into a trip decision.</p>
+          <p>Explore 19 Michigan bloom destinations, from spring woodland flowers, cherry and apple blossoms to summer lavender and sunflowers and autumn garden displays. Verified observations—not the calendar—decide what is worth the drive.</p>
           <div className="updated"><span className={seasonalMode ? "bloom-idle-dot" : "live-dot"} />{seasonalMode ? 'Season planning view · no current bloom is being inferred from the calendar' : ` Updated ${formatUpdated(snapshot?.generatedAt)} · ${snapshot?.delivery === 'persisted' ? 'banked live snapshot' : fixtureName ? 'product test fixture' : snapshot ? 'live check' : 'checking live sources'}`}</div>
         </section>
 
@@ -691,7 +692,7 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
 
             <section className="opportunity-section" aria-labelledby="where-title">
               <div className="section-heading"><div><span className="eyebrow">{seasonalMode ? 'Michigan flower season, place by place' : 'Statewide opportunity desk'}</span><h2 id="where-title">{seasonalMode ? 'What does each stop feel like?' : 'Where should I go?'}</h2></div><span className="count">{destinations.length} tracked displays</span></div>
-              <p className="opportunity-intro">{seasonalMode ? 'The season has a geography as well as a calendar. These are the places the tracker wakes up in from April into September, ordered by their broad planning windows.' : 'The live decision stays primary. Each place gets just enough visual context to show what you are driving toward; expand only the destinations you care about.'}</p>
+              <p className="opportunity-intro">{seasonalMode ? 'The season has a geography as well as a calendar. Compare 19 locations from spring orchard blossoms and woodland wildflowers to summer flower fields and late garden color; filters update both the destinations and map.' : 'The live decision stays primary. Each place gets just enough visual context to show what you are driving toward; expand only the destinations you care about.'}</p>
               <div className="bloom-filters" aria-label="Filter Michigan bloom destinations">
                 <div><strong>Flower type</strong><div className="bloom-filter-chips">
                   {BLOOM_TYPES.map(([value,label])=><button type="button" key={value} className={flowerFilter===value?'selected':''} aria-pressed={flowerFilter===value} onClick={()=>setFlowerFilter(value)}>{label}</button>)}

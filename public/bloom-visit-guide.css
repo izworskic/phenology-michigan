@@ -37,3 +37,6 @@
 .bloom-filter-count,.bloom-filter-empty{font-size:12px;line-height:1.5;color:#607266;margin:5px 0 10px}
 .bloom-filter-empty{background:#f2f4ed;border-radius:10px;padding:15px}
 @media(max-width:600px){.bloom-filters{padding:10px}.bloom-filter-chips button{font-size:10px;padding:7px 8px}}
+
+.opportunity-card-summary.is-photo-free{grid-template-columns:27px minmax(0,1fr)!important}
+.bloom-autumn-note{padding:9px 10px;border-left:3px solid #b6844d;background:#fff8e9;border-radius:5px}
