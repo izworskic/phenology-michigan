@@ -681,12 +681,12 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
         </section>
 
         <SeasonBanner seasonContext={seasonContext} />
-        {[9,10].includes(Number(new Intl.DateTimeFormat('en-US',{timeZone:'America/Detroit',month:'numeric'}).format(new Date(pageLoadedAt)))) && <section className="bloom-autumn-banner" aria-label="Autumn mums planning">
+        {([9,10].includes(Number(new Intl.DateTimeFormat('en-US',{timeZone:'America/Detroit',month:'numeric'}).format(new Date(pageLoadedAt))))) && <section className="bloom-autumn-banner" aria-label="Autumn mums planning">
           <span className="eyebrow">October · distinct display at an existing stop</span>
           <h2>Meijer Gardens: 8,000+ autumn mums</h2>
           <p>Michigan’s flower calendar does not end with sunflowers. Meijer Gardens advertises its October chrysanthemum display, a separate garden experience from the spring cherry trees. This is <strong>operator-confirmed event information, not a live flower-stage observation</strong>.</p>
           <a href="https://www.meijergardens.org/autumn/" target="_blank" rel="noopener noreferrer">Check official Mums at Meijer Gardens schedule and tickets ↗</a>
-        </section>
+        </section>}
         {seasonalMode && <SeasonRouteStrip seasonContext={seasonContext} />}
 
         <div className="bloom-filters" aria-label="Filter Michigan bloom destinations">
