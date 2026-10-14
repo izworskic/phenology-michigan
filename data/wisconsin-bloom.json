@@ -136,8 +136,8 @@
       "region": "Milwaukee and Southeast",
       "kind": "Spring bulbs, roses and formal gardens",
       "category": "gardens",
-      "lat": 42.936,
-      "lon": -88.032,
+      "lat": 42.93651,
+      "lon": -88.03148,
       "start": [
         5,
         1
@@ -216,8 +216,8 @@
       "region": "Door Peninsula",
       "kind": "Lavender fields",
       "category": "lavender",
-      "lat": 45.381,
-      "lon": -86.913,
+      "lat": 45.37707,
+      "lon": -86.91959,
       "start": [
         6,
         20
@@ -230,7 +230,7 @@
       "source": "Fragrant Isle Lavender Farm & Shop",
       "sourceUrl": "https://fragrantisle.com/pages/hours",
       "visitUrl": "https://fragrantisle.com/pages/hours",
-      "address": "Washington Island, Door County, WI",
+      "address": "1350 Airport Road, Washington Island, WI 54246",
       "tickets": "2026 field entry was listed at $6 per person in peak season. Recheck the 2027 fee; ferry passage is a separate expense.",
       "hours": "Farm publishes seasonal shop and field hours. Check both the farm and Washington Island Ferry Line for exact dates.",
       "parking": "Drive or ride from the Washington Island ferry arrival to the lavender farm; do not assume a walkable ferry-to-field trip.",
@@ -258,8 +258,8 @@
       "region": "Madison and South Central",
       "kind": "Sunflowers and zinnias",
       "category": "sunflowers",
-      "lat": 42.988,
-      "lon": -89.225,
+      "lat": 42.91846,
+      "lon": -89.30383,
       "start": [
         7,
         18
@@ -300,8 +300,8 @@
       "region": "Madison and South Central",
       "kind": "Zinnias and sunflower fields",
       "category": "sunflowers",
-      "lat": 43.04,
-      "lon": -89.108,
+      "lat": 43.03658,
+      "lon": -89.11332,
       "start": [
         7,
         15
@@ -314,7 +314,7 @@
       "source": "Schuster's Farm Summer Blooms",
       "sourceUrl": "https://schustersfarm.com/bloomin-fun/",
       "visitUrl": "https://schustersfarm.com/bloomin-fun/",
-      "address": "Deerfield, Wisconsin",
+      "address": "1326 US Highway 12 & 18, Deerfield, WI 53531",
       "tickets": "Ticketed farm visit. The 2026 page listed admission and separate U-pick flower charges; confirm 2027 prices and what is included.",
       "hours": "Seasonal event schedule and last admission apply. Event offerings change by day.",
       "parking": "Use signed farm visitor areas; plan walking time to the flower fields and wagon loading areas.",
