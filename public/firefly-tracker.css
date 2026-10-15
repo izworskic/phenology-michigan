@@ -24,11 +24,12 @@
 .firefly-section{padding:55px 0;border-bottom:1px solid var(--line)}
 .firefly-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:23px}
 .firefly-section-head p{font:14px/1.5 system-ui,sans-serif;color:#9db7a7;max-width:480px;margin:0}
-.firefly-desk{display:grid;grid-template-columns:minmax(0,1.13fr) minmax(325px,.87fr);gap:23px;align-items:stretch}
+.firefly-desk{display:grid;grid-template-columns:minmax(0,1fr);gap:23px;align-items:stretch}
+.firefly-desk>.firefly-panel:last-child{width:100%;max-width:910px;margin:0 auto}
 .firefly-panel{background:#10261d;border:1px solid var(--line);border-radius:17px;padding:22px;min-width:0}
 /* CARTO basemap: navigation works with touch, mouse and keyboard. */
 .firefly-map-shell{position:relative;isolation:isolate;background:#132b22;border:1px solid #3b664d;border-radius:13px;overflow:hidden;min-width:0}
-.firefly-carto-map{width:100%;height:515px;min-height:380px;background:#153326;z-index:0}
+ .firefly-carto-map{width:100%;height:550px;min-height:380px;background:#153326;z-index:0}
 .firefly-map-shell .leaflet-container{background:#153326;font:12px/1.35 system-ui,sans-serif;outline-offset:-4px}
 .firefly-map-shell .leaflet-pane{z-index:400}
 .firefly-map-shell .leaflet-control-container .leaflet-top,.firefly-map-shell .leaflet-control-container .leaflet-bottom{z-index:500}
@@ -61,7 +62,7 @@
 .firefly-map-bottom-label{pointer-events:none;position:absolute;z-index:500;left:12px;bottom:21px;max-width:calc(100% - 130px);padding:7px 9px;border-radius:6px;background:rgba(6,31,22,.89);color:#e1f2d3;font:700 9px/1.35 system-ui,sans-serif;letter-spacing:.075em}
 .firefly-key{display:flex;gap:15px;flex-wrap:wrap;padding:12px 2px 0;color:#a6bbae;font:11px system-ui,sans-serif}
 .firefly-key span{display:flex;align-items:center;gap:6px}.firefly-key i{display:inline-block;width:9px;height:9px;border-radius:50%;background:#b2e885}
-.firefly-region-list{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.firefly-region-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:12px}
 .firefly-region{min-height:64px;border:1px solid #31503e;background:#0c1e17;color:#e0eada;border-radius:9px;text-align:left;padding:11px 12px;cursor:pointer;display:flex;justify-content:space-between;gap:8px;align-items:center}
 .firefly-region[aria-pressed=true]{background:#263f2a;border-color:#bce78f;box-shadow:inset 0 0 0 1px rgba(210,247,167,.19)}
 .firefly-region strong{font:700 12px/1.35 system-ui,sans-serif;display:block}.firefly-region small{font:11px/1.4 system-ui,sans-serif;color:#8eb49c;display:block;margin-top:5px}
