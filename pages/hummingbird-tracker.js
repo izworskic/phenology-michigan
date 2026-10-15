@@ -92,7 +92,7 @@ export default function HummingbirdTracker(){
       <div className="hum-card-divider"/>
       <div className="hum-feeder-date"><MiniIcon icon={CalendarDays}/><div><small>PUT YOUR FEEDER OUT BY</small><b>{asDate(window.feeder)}, {year}</b></div></div>
       <p className="hum-card-explain">{signal.message}</p>
-      {off&&<p className="hum-off-note">Off-season planning only. No active arrival sightings are claimed for October.</p>}
+      {off&&<p className="hum-off-note">Off-season planning only. No current arrival sightings are claimed.</p>}
      </div>
     </div>
     <div className="hum-hero-edge"/>
@@ -146,7 +146,7 @@ export default function HummingbirdTracker(){
       </article>
      </div>
     </section>
-    <section className="hum-section" id="feeder-guide"><div className="hum-section-head"><div><span className="hum-kicker">04 / MAKE YOUR YARD READY</span><h2>The feeder goes out before the first bird</h2></div><p>Your local feeder-ready date is approximately ten days before the early end of the region's migration watch band.</p></div>
+    <section className="hum-section" id="feeder-guide"><div className="hum-section-head"><div><span className="hum-kicker">04 / MAKE YOUR YARD READY</span><h2>The feeder goes out before the first bird</h2></div><p>Your local feeder-ready date is approximately ten days before the start of the region's migration watch band.</p></div>
      <div className="hum-guide">
       <div className="hum-guide-lead"><div className="hum-guide-overline">YOUR NEXT FEEDER DAY</div><strong>{asDate(window.feeder)} <span>{year}</span></strong><p>for {region.name}</p><a href="https://www.nationalzoo.si.edu/migratory-birds/hummingbird-nectar-recipe" target="_blank" rel="noopener noreferrer">Smithsonian feeder instructions ↗</a></div>
       <div className="hum-guide-step"><span>01</span><MiniIcon icon={Flower2}/><h3>Mix it safely</h3><p>One part refined white table sugar to four parts water. Dissolve completely and let cool. No red food coloring, honey or artificial sweeteners.</p></div>
