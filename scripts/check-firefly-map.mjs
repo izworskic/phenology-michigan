@@ -18,6 +18,8 @@ assert.ok(map.includes('leaflet@1.9.4/dist/leaflet.js'),'Load Leaflet JS');
 assert.ok(page.includes('leaflet@1.9.4/dist/leaflet.css'),'Load matching Leaflet CSS');
 assert.ok(map.includes("setStyle('dark_all')"),'Night style switch must work');
 assert.ok(map.includes("setStyle('voyager')"),'Street style switch must work');
+assert.ok(map.includes("useState('dark_all')"),'Night basemap is the default for the firefly page');
+assert.ok(map.includes("tiles.on('load',settled)"),'Wait for all tiles before reporting map failure');
 assert.ok(map.includes('fitBounds(MICHIGAN_BOUNDS'),'Provide statewide reset');
 assert.ok(map.includes("marker.on('click'"),'Markers must select an active region');
 assert.ok(map.includes("selected===region.id"),'Selected marker must be highlighted');
