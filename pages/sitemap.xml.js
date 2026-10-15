@@ -4,6 +4,7 @@ function xml() {
   const HOME_LASTMOD='2026-10-14';
   const MICHIGAN_LASTMOD='2026-10-14';
   const WISCONSIN_LASTMOD='2026-10-14';
+  const FIREFLY_LASTMOD='2026-10-15';
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url><loc>${SITE}/</loc><lastmod>${HOME_LASTMOD}</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
@@ -14,6 +15,7 @@ function xml() {
     <priority>0.9</priority>
     <image:image><image:loc>${SITE}/bloom-tracker-social.png</image:loc></image:image>
   </url>
+  <url><loc>${SITE}/firefly-tracker</loc><lastmod>${FIREFLY_LASTMOD}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>${SITE}/wisconsin-bloom-tracker</loc><lastmod>${WISCONSIN_LASTMOD}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>${SITE}/wisconsin-bloom-tracker/door-county-cherries</loc><lastmod>${WISCONSIN_LASTMOD}</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
   <url><loc>${SITE}/wisconsin-bloom-tracker/uw-arboretum</loc><lastmod>${WISCONSIN_LASTMOD}</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
