@@ -135,7 +135,7 @@ export default function HummingbirdTracker(){
        <span className="hum-time-label">{r.name}</span><span className="hum-time-rail"><span className="hum-time-band" style={{left:position(r.window.start)+'%',width:(position(r.window.end)-position(r.window.start))+'%'}}/>{r.historical?.firstReportEarly&&r.historical?.firstReportLate&&<span className="hum-time-history" title="Historical first public reports, not confirmed arrival" style={{left:position(year+'-'+r.historical.firstReportEarly)+'%',width:Math.max(1,position(year+'-'+r.historical.firstReportLate)-position(year+'-'+r.historical.firstReportEarly))+'%'}}/>}</span><span className="hum-time-date">{asDate(r.window.start)}</span>
       </button>)}
       <div className="hum-timeline-key"><span><i className="hum-key-planning"/>Early feeder/arrival planning window</span><span><i className="hum-key-reports"/>First reported sightings (20th–80th percentiles where sufficient)</span></div>
-      <p className="hum-smallprint">The green bands are conservative seasonal planning estimates. The narrow coral bands summarize when archival public sightings first appeared. They are <b>not</b> the dates the first birds reached Michigan. Sparse regions intentionally have no archival band.</p>
+      <p className="hum-smallprint">The green bands are conservative seasonal planning estimates. The narrow coral bands appear only for moderately covered regions and summarize when archival public sightings first appeared. They are <b>not</b> the dates the first birds reached Michigan. Sparse regions intentionally have no archival band.</p>
      </div>
     </section>
     <section className="hum-section" id="history">
@@ -147,9 +147,9 @@ export default function HummingbirdTracker(){
         <div className="hum-evidence-big">{historyDate(historical.firstReportMedian)}</div>
         <p className="hum-evidence-copy">Across {historical.supportedYears} qualifying seasons, the earliest public research-grade record for this region typically appeared near this date. This <strong>does not mean the first hummingbird arrived then.</strong></p>
         <div className="hum-evidence-metrics"><div><span>EARLIER REPORTING YEARS</span><strong>{historyDate(historical.firstReportEarly)}</strong></div><div><span>LATER REPORTING YEARS</span><strong>{historyDate(historical.firstReportLate)}</strong></div></div>
-       </>:<><div className="hum-evidence-label">Historical benchmark</div><h3>Not enough independently reported seasons</h3><p className="hum-evidence-copy">We do not fabricate a median or range when the regional sample is too small. Use the earlier planning window for feeder timing.</p></>}
+       </>:<><div className="hum-evidence-label">Historical benchmark</div><h3>Not enough independently reported seasons</h3><p className="hum-evidence-copy">We withhold date estimates when the regional sample is too small to support a stable historical comparison. Use the earlier planning window for feeder timing.</p></>}
        <div className="hum-evidence-metrics"><div><span>ASSIGNED RESEARCH-GRADE RECORDS</span><strong>{historical?.reportCount??'—'}</strong></div><div><span>YEARS WITH ≥2 REPORTERS</span><strong>{historical?.supportedYears??'—'} / {historical?.archiveYears??10}</strong></div></div>
-       <p className="hum-smallprint">A qualifying year needs two different observers. Moderate coverage: at least 6 qualifying years and 40 reports; limited: at least 4 qualifying years and 20 reports. No regional date estimate is shown for less. These are coverage gates, not statistical confidence intervals.</p>
+       <p className="hum-smallprint">A qualifying year needs two different observers. Historical date bands are shown only with moderate coverage (at least 6 qualifying years and 40 reports). Limited regions display record counts but intentionally withhold date estimates. These are coverage gates, not statistical confidence intervals.</p>
       </article>
       <article className="hum-panel hum-evidence-yearly">
        <div className="hum-aside-eyebrow">ANNUAL REPORTING EFFORT · {region.name.toUpperCase()}</div><h3>How many records were available?</h3>
