@@ -1,5 +1,6 @@
 import Head from 'next/head';
-import {useEffect,useMemo,useState} from 'react';
+import {useEffect,useState} from 'react';
+import FireflyCartoMap from '../components/FireflyCartoMap';
 import {useRouter} from 'next/router';
 import {REGIONS,seasonalWindow,development,viewingLabel} from '../lib/fireflies';
 
@@ -21,43 +22,8 @@ const QUESTIONS=[
   ['Where should I look for lightning bugs?','Look for low-disturbance grassy edges, meadows, wetland margins and leafy yards away from bright artificial light. Arrive while it is still light enough to safely check paths, property boundaries and access rules. Do not assume parks are open after dusk.'],
   ['Are tonight’s ratings confirmed firefly sightings?','No. The bars compare National Weather Service evening temperature, wind and forecast precipitation using a site-defined planning heuristic. They do not count fireflies, establish actual emergence, measure abundance or guarantee a sighting.'],
 ];
-function merY(lat){return Math.log(Math.tan(Math.PI/4+lat*Math.PI/360));}
-function position(lat,lon){
-  const pad=26,west=-90.7,east=-82.05,north=48.2,south=41.55;
-  return [pad+(lon-west)/(east-west)*(1000-pad*2),pad+(merY(north)-merY(lat))/(merY(north)-merY(south))*(760-pad*2)];
-}
-function polyPaths(geometry){
-  if(!geometry)return [];
-  const draw=ring=>ring.map((xy,i)=>{const [x,y]=position(xy[1],xy[0]);return (i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1);}).join(' ')+' Z';
-  const polygons=geometry.type==='Polygon'?[geometry.coordinates]:geometry.coordinates;
-  return polygons.map(p=>p.map(draw).join(' '));
-}
 const fmt=(date)=>new Intl.DateTimeFormat('en-US',{timeZone:'UTC',weekday:'short',month:'short',day:'numeric'}).format(new Date(date+'T12:00:00Z'));
 function Badge({tone,children}){return <span className={'firefly-status '+(tone||'off')}>{children}</span>;}
-function RegionMap({features,selected,onSelect,results}){
-  const land=useMemo(()=>polyPaths(features),[features]);
-  return <div className='firefly-map' role='group' aria-label='Select a Michigan forecast region'>
-    <svg viewBox='0 0 1000 760' aria-label='Michigan outline with nine selectable forecast points'>
-      <rect width='1000' height='760' fill='#102a24'/>
-      <image href='/maps/great-lakes-water.svg' width='1000' height='760' opacity='.75'/>
-      {land.map((d,i)=><path className='miland' d={d} key={i} fillRule='evenodd'/>)}
-      {REGIONS.map((region,i)=>{
-        const [x,y]=position(region.lat,region.lon);
-        const isOn=selected===region.id;
-        const row=results?.find(r=>r.id===region.id);
-        const color=row?.current?.tone==='good'?'#b8ef92':row?.current?.tone==='poor'?'#de9874':row?.current?.tone==='mixed'?'#e9cf8d':'#abc8a0';
-        return <g key={region.id} className='marker' role='button' tabIndex={0} aria-label={'Select '+region.name}
-            onClick={()=>onSelect(region.id)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onSelect(region.id);}}}>
-          <title>{region.name}</title>
-          <circle className='glow' cx={x} cy={y} r={isOn?25:17} fill={color} opacity={isOn ? 0.42 : 0.15}/>
-          <circle cx={x} cy={y} r={isOn?13:10} fill={isOn?'#ebf7b4':'#274f38'} stroke={color} strokeWidth={isOn?3:2}/>
-          <text x={x} y={y+5} textAnchor='middle' fontSize='15'>{i+1}</text>
-        </g>;
-      })}
-      <text x='47' y='730' fill='#96b5a5' fontFamily='system-ui' fontSize='18'>REGIONAL INDICATORS · NOT OBSERVED SIGHTINGS</text>
-    </svg>
-  </div>;
-}
 function NightPanel({row,loading}){
   const nights=row?.nights||[];
   return <section className='firefly-section' id='seven-night'>
@@ -90,7 +56,7 @@ function NightPanel({row,loading}){
     </div>
   </section>;
 }
-export default function FireflyTracker({michiganGeometry}){
+export default function FireflyTracker(){
   const router=useRouter();
   const [selected,setSelected]=useState('saginaw-bay');
   const [data,setData]=useState(null);
@@ -131,7 +97,7 @@ export default function FireflyTracker({michiganGeometry}){
       <title>{PAGE_TITLE} | Chris Izworski</title><meta name='description' content={DESCRIPTION}/><link rel='canonical' href={URL}/>
       <meta name='robots' content='index,follow,max-image-preview:large,max-snippet:-1'/>
       <meta property='og:type' content='website'/><meta property='og:title' content={PAGE_TITLE}/><meta property='og:description' content={DESCRIPTION}/><meta property='og:url' content={URL}/>
-      <meta name='twitter:card' content='summary'/><link rel='stylesheet' href='/firefly-tracker.css'/>
+      <meta name='twitter:card' content='summary'/><link rel='stylesheet' href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'/><link rel='stylesheet' href='/firefly-tracker.css'/>
       <script type='application/ld+json' dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}}/>
     </Head>
     <header className='firefly-shell firefly-top'>
@@ -162,8 +128,8 @@ export default function FireflyTracker({michiganGeometry}){
           <div className='firefly-section-head'><div><div className='firefly-eyebrow'>One state · Different timing</div><h2>Explore the Michigan firefly map</h2></div><p>Select a region to change the status, degree-day context and evening forecast. Map points are representative weather locations—not proven viewing sites.</p></div>
           <div className='firefly-desk'>
             <div className='firefly-panel'>
-              <RegionMap features={michiganGeometry} selected={selected} onSelect={choose} results={data?.regions}/>
-              <div className='firefly-key'><span><i/>Location marker</span><span>Geography: U.S. Census boundary, simplified</span><span>Not a habitat or abundance heatmap</span></div>
+              <FireflyCartoMap selected={selected} onSelect={choose} results={data?.regions}/>
+              <div className='firefly-key'><span><i/>Select any numbered weather region</span><span>CARTO basemap · zoom and pan</span><span>Not an emergence or firefly density heatmap</span></div>
               <div className='firefly-region-list' role='group' aria-label='Regional locations'>
                 {REGIONS.map((r,i)=>{const item=data?.regions?.find(z=>z.id===r.id);return <button key={r.id} className='firefly-region' aria-pressed={selected===r.id} onClick={()=>choose(r.id)}>
                   <span><strong>{i+1}. {r.name}</strong><small>{item?.season?.label||seasonalWindow(r).label}</small></span><span className='region-dot'/></button>;})}
@@ -228,12 +194,4 @@ export default function FireflyTracker({michiganGeometry}){
     </main>
     <footer className='firefly-shell firefly-foot'>Built by <a href='https://chrisizworski.com/chris-izworski/'>Chris Izworski</a> · <a href='/'>Michigan Phenology</a> · <a href='/bloom-tracker'>Michigan Bloom Tracker</a>. Interpretive nature forecast; not an official NOAA product.</footer>
   </div>;
-}
-export async function getStaticProps(){
-  const fs=await import('node:fs/promises');
-  const path=await import('node:path');
-  const text=await fs.readFile(path.join(process.cwd(),'public/maps/great-lakes-context.geojson'),'utf8');
-  const geodata=JSON.parse(text);
-  const feature=geodata.features.find(f=>f.properties?.name==='Michigan');
-  return {props:{michiganGeometry:feature?.geometry||null}};
 }
