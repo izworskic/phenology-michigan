@@ -161,7 +161,7 @@ export default function App({ Component, pageProps }) {
       {isBloomTracker && <nav className="bloom-authority-link">Explore the other Great Lakes bloom guide: <a href="/wisconsin-bloom-tracker">Wisconsin Bloom Tracker 2027 — Door County, Madison, lavender and sunflowers</a></nav>}
       {isHome && (
         <nav className="bloom-authority-link" aria-label="Featured seasonal tool">
-          Flower-season planning: <a href="/bloom-tracker">Michigan Bloom Tracker — what’s blooming and when to go</a> · <a href="/wisconsin-bloom-tracker">Wisconsin flower-season map and trip guide</a>
+          Flower-season planning: <a href="/bloom-tracker">Michigan Bloom Tracker — what’s blooming and when to go</a> · <a href="/wisconsin-bloom-tracker">Wisconsin flower-season map and trip guide</a> · <a href="/firefly-tracker">Michigan Firefly Emergence Tracker</a>
         </nav>
       )}
       {isWisconsinBloom && <Script src="https://www.googletagmanager.com/gtag/js?id=G-Y5D2V2W7HN" strategy="afterInteractive" />}
