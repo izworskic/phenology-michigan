@@ -49,7 +49,7 @@ function RegionMap({features,selected,onSelect,results}){
         return <g key={region.id} className='marker' role='button' tabIndex={0} aria-label={'Select '+region.name}
             onClick={()=>onSelect(region.id)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onSelect(region.id);}}}>
           <title>{region.name}</title>
-          <circle className='glow' cx={x} cy={y} r={isOn?25:17} fill={color} opacity={isOn?.42:.15}/>
+          <circle className='glow' cx={x} cy={y} r={isOn?25:17} fill={color} opacity={isOn ? 0.42 : 0.15}/>
           <circle cx={x} cy={y} r={isOn?13:10} fill={isOn?'#ebf7b4':'#274f38'} stroke={color} strokeWidth={isOn?3:2}/>
           <text x={x} y={y+5} textAnchor='middle' fontSize='15'>{i+1}</text>
         </g>;
@@ -85,7 +85,7 @@ function NightPanel({row,loading}){
       </div>
       <div className='firefly-panel'>
         <div className='firefly-micro'>What changes with new data</div><h3 style={{marginTop:11}}>Weather updates as forecasts change</h3>
-        <p>Regional hourly National Weather Service forecasts drive the night-to-night bars during season. NOAA Regional Climate Center daily records support the broader development context. Forecast data are cached for 30 minutes, with stale data avoided when a source fails.</p>
+        <p>Regional hourly National Weather Service forecasts drive the night-to-night bars during season. NOAA Regional Climate Center daily records support the broader development context. Forecast data are cached for 30 minutes and may briefly serve a previous snapshot while an update runs.</p>
       </div>
     </div>
   </section>;
