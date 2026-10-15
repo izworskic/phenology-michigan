@@ -14,3 +14,36 @@
 @media(max-width:1050px){.hum-hero-content{gap:20px}.hum-map-grid{grid-template-columns:minmax(0,1fr)}.hum-map-aside .hum-region-buttons{grid-template-columns:repeat(3,minmax(0,1fr))}.hum-guide{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.hum-wrap{width:calc(100% - 28px)}.hum-top{flex-wrap:wrap;padding:15px 0;gap:10px}.hum-top nav{gap:13px}.hum-top nav a{font-size:11px}.hum-hero-content{grid-template-columns:1fr;gap:24px;padding:34px 0 42px}.hum-hero h1{font-size:clamp(2.6rem,9vw,4.2rem)}.hum-subtitle{font-size:14px}.hum-arrival-card{padding:22px}.hum-summary{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:16px}.hum-summary>div{padding:14px;border-bottom:1px solid #e7e8df}.hum-summary>div:nth-child(2){border-right:0}.hum-section{padding-top:45px}.hum-section-head{align-items:flex-start;flex-direction:column;gap:9px}.hum-mapcanvas,.hum-mapbox{min-height:460px;height:460px}.hum-map-aside{padding:20px}.hum-two-col,.hum-faq{grid-template-columns:1fr}.hum-timeline{padding:16px 10px}.hum-timeline-head,.hum-time-row{grid-template-columns:135px minmax(0,1fr) 49px;gap:6px}.hum-time-label{font-size:10px}.hum-time-date{font-size:10px}.hum-guide{grid-template-columns:1fr 1fr}.hum-method ul{grid-template-columns:1fr}}
 @media(max-width:470px){.hum-top nav{gap:10px}.hum-map-aside .hum-region-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}.hum-guide{grid-template-columns:1fr}.hum-mapcaption{font-size:8px}.hum-forecast{gap:3px}.hum-forecast>div{padding:9px 1px}.hum-forecast strong{font-size:17px}.hum-summary b{font-size:16px}}
+
+
+/* Coverage-aware ten-year historical reporting benchmark */
+.hum-history-callout{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:baseline;background:#edf3e9;border:1px solid #d5e3cd;border-radius:9px;padding:13px 15px;margin-top:15px}
+.hum-history-callout small{font-size:9px;letter-spacing:.1em;color:#597366;font-weight:800}
+.hum-history-callout strong{font:600 21px 'Fraunces',Georgia,serif;color:#326149}
+.hum-history-callout span{grid-column:1/-1;font-size:11px;color:#6a7d6c;line-height:1.5}
+.hum-time-band{height:6px;top:1px;bottom:auto}.hum-time-history{display:block;position:absolute;top:8px;height:5px;border-radius:5px;background:#c36e55;min-width:4px;box-shadow:0 0 0 1px #fff9}
+.hum-timeline-key{display:flex;align-items:center;gap:16px;flex-wrap:wrap;border-top:1px solid #e9ece6;margin-top:17px;padding-top:13px;font-size:11px;color:#607166}
+.hum-timeline-key span{display:flex;align-items:center;gap:7px}.hum-timeline-key i{width:22px;height:6px;display:inline-block;border-radius:9px}
+.hum-key-planning{background:#86a574}.hum-key-reports{background:#c36e55}
+.hum-historical-grid{display:grid;grid-template-columns:1fr 1fr;gap:19px;align-items:stretch}
+.hum-evidence-summary,.hum-evidence-yearly{padding:26px;min-width:0}
+.hum-history-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.hum-coverage{font-size:10px;text-transform:uppercase;border-radius:99px;padding:5px 8px;font-weight:800;color:#6b6250;background:#eee7db}
+.hum-coverage.moderate{background:#dcebd9;color:#48704c}.hum-coverage.limited{background:#f3e7cd;color:#8b693d}
+.hum-evidence-label{font-size:12px;margin-top:19px;color:#607268}
+.hum-evidence-big{font:600 clamp(32px,4vw,51px)/1.15 'Fraunces',Georgia,serif;color:#233e30;margin:5px 0 10px}
+.hum-evidence-summary h3,.hum-evidence-yearly h3{font:600 23px/1.25 'Fraunces',Georgia,serif;margin:10px 0 13px}
+.hum-evidence-copy{font-size:13px;color:#66766b;line-height:1.7}
+.hum-evidence-metrics{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #e8eee5;gap:15px;padding:15px 0;margin-top:10px}
+.hum-evidence-metrics span{font-size:9px;color:#718373;letter-spacing:.07em;font-weight:800;display:block}
+.hum-evidence-metrics strong{font:600 22px 'Fraunces',Georgia,serif;display:block;margin-top:6px}
+.hum-year-chart{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:8px;min-height:175px;align-items:end;margin:24px 0 12px;padding:0 0 8px;border-bottom:1px solid #e1e8dc}
+.hum-year-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+.hum-year-count{font-size:11px;font-weight:700;color:#60766a}
+.hum-year-track{height:115px;width:100%;max-width:34px;display:flex;align-items:flex-end;background:#f1f4ed;border-radius:5px 5px 0 0;overflow:hidden}
+.hum-year-bar{width:100%;background:#bcb9a8;border-radius:4px 4px 0 0;min-height:0;transition:height .2s ease-out}
+.hum-year-bar.supported{background:linear-gradient(0deg,#3e7b5d,#90b78d)}
+.hum-year-axis{font-size:10px;color:#748377}
+.hum-evidence-source{display:flex;align-items:flex-start;gap:10px;margin-top:24px;background:#f1f5eb;padding:13px;border-radius:8px;font-size:12px;color:#577063;line-height:1.5}
+.hum-evidence-source svg{flex:none}.hum-evidence-source a{font-weight:700;color:#2f704b}
+@media(max-width:760px){.hum-historical-grid{grid-template-columns:1fr}.hum-evidence-summary,.hum-evidence-yearly{padding:21px}.hum-year-chart{gap:5px}.hum-year-track{height:92px}.hum-evidence-metrics strong{font-size:19px}}
