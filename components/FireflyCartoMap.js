@@ -30,7 +30,7 @@ export default function FireflyCartoMap({selected,onSelect,results}){
   const onSelectRef=useRef(onSelect);
   const selectedRef=useRef(selected);
   const [leafletReady,setLeafletReady]=useState(false);
-  const [style,setStyle]=useState('voyager');
+  const [style,setStyle]=useState('dark_all');
   const [mapError,setMapError]=useState('');
   const [tilesLoaded,setTilesLoaded]=useState(false);
   onSelectRef.current=onSelect;
@@ -97,13 +97,17 @@ export default function FireflyCartoMap({selected,onSelect,results}){
     );
     let errors=0,loaded=false;
     const success=()=>{loaded=true;setTilesLoaded(true);setMapError('');};
-    const failure=()=>{errors++;if(errors>=3&&!loaded)setMapError('CARTO map tiles are not loading. The regional forecast buttons still work.');};
+    const failure=()=>{errors++;};
+    // Do not show a false-negative banner when a handful of tiles fail but others render.
+    // Leaflet's layer 'load' event means all requested tiles have completed (success or error).
+    const settled=()=>{if(!loaded&&errors>0)setMapError('CARTO map tiles are not loading. The regional forecast buttons still work.');};
     tiles.on('tileload',success);
     tiles.on('tileerror',failure);
+    tiles.on('load',settled);
     tiles.addTo(map);
     baseRef.current=tiles;
     // Ensure region pins appear above the basemap.
-    return ()=>{tiles.off('tileload',success);tiles.off('tileerror',failure);};
+    return ()=>{tiles.off('tileload',success);tiles.off('tileerror',failure);tiles.off('load',settled);};
   },[leafletReady,style]);
 
   useEffect(()=>{
