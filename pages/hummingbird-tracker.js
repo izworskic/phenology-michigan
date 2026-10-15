@@ -16,6 +16,7 @@ const FAQ=[
  ['Does warm weather mean hummingbirds are arriving tomorrow?','No. Mild weather and winds from the south can be useful clues for migration movement, but they cannot predict an individual bird’s arrival in a particular yard. The weather indicator is an editorial screening cue, not a calibrated probability.'],
  ['Can I leave feeders out in fall?','Yes. Migrating hummingbirds may use feeders in fall. Keeping a feeder clean and available does not prevent hummingbirds from migrating; day length and other factors shape their departures. The map’s primary spring watch is not an autumn departure forecast.'],
  ['What is the safe hummingbird nectar recipe?','Mix one part refined white table sugar with four parts water, allow it to cool, and never add red dye. Change nectar and thoroughly clean feeders every other day, or more frequently when needed, following Smithsonian National Zoo guidance.'],
+ ['Why is the historical reporting date later than my feeder-ready date?','The historical benchmark measures when public research-grade sightings were first submitted for that year and region. It is delayed by observer effort, identification and reporting. The earlier feeder-ready date intentionally remains a cautious spring planning guide, not an observation-derived arrival estimate.'],
  ['Are the map markers confirmed hummingbird sightings?','No. Numbered markers are approximate regional forecast centers. Actual public community observations appear separately with dates and links when an observation feed is available. Lack of reports never means there are no hummingbirds.']
 ];
 const SOURCES=[
@@ -27,6 +28,7 @@ const SOURCES=[
  ['Smithsonian National Zoo · nectar and cleaning','https://www.nationalzoo.si.edu/migratory-birds/hummingbird-nectar-recipe']
 ];
 const asDate=key=>key?monthDay(key):'—';
+const historyDate=mmdd=>mmdd?asDate('2025-'+mmdd):'—';
 const toneName=t=>t==='seen'?'seen':t==='watch'?'watch':t==='ready'?'ready':t==='after'?'after':'off';
 function Status({tone,children}){return <span className={'hum-status '+toneName(tone)}>{children}</span>;}
 function MiniIcon({icon:Icon}){return <span className="hum-feature-icon"><Icon size={17} strokeWidth={1.8}/></span>;}
@@ -53,10 +55,13 @@ export default function HummingbirdTracker(){
  const season=actual?.season||seasonState(region);
  const window=season.window;
  const signal=actual?.signal||readout(region);
+ const historical=actual?.historical||null;
+ const annual=historical?.annual||[];
+ const maxAnnual=Math.max(1,...annual.map(a=>a.reports));
  const year=window.start.slice(0,4);
  const off=season.phase==='off_season'||season.phase==='planning';
  const updated=data?.generatedAt?new Intl.DateTimeFormat('en-US',{timeZone:'America/Detroit',dateStyle:'medium',timeStyle:'short'}).format(new Date(data.generatedAt)):null;
- const dates=useMemo(()=>REGIONS.map((r,i)=>{const s=data?.regions?.[i]?.season||seasonState(r);return {...r,window:s.window,signal:data?.regions?.[i]?.signal||readout(r)};}),[data]);
+ const dates=useMemo(()=>REGIONS.map((r,i)=>{const s=data?.regions?.[i]?.season||seasonState(r);return {...r,window:s.window,signal:data?.regions?.[i]?.signal||readout(r),historical:data?.regions?.[i]?.historical||null};}),[data]);
  const plotYear=year;
  const origin=Date.parse(plotYear+'-04-01T12:00:00Z');
  const position=day=>Math.max(0,Math.min(100,((Date.parse(day+'T12:00:00Z')-origin)/86400000)/65*100));
@@ -92,6 +97,7 @@ export default function HummingbirdTracker(){
       <div className="hum-card-divider"/>
       <div className="hum-feeder-date"><MiniIcon icon={CalendarDays}/><div><small>PUT YOUR FEEDER OUT BY</small><b>{asDate(window.feeder)}, {year}</b></div></div>
       <p className="hum-card-explain">{signal.message}</p>
+      {historical?.firstReportMedian&&<div className="hum-history-callout"><small>HISTORICAL FIRST PUBLIC REPORT · MEDIAN</small><strong>{historyDate(historical.firstReportMedian)}</strong><span>{historical.supportedYears} supported spring seasons · {historical.coverage} coverage. This is usually later than actual arrival.</span></div>}
       {off&&<p className="hum-off-note">Off-season planning only. No current arrival sightings are claimed.</p>}
      </div>
     </div>
@@ -112,6 +118,7 @@ export default function HummingbirdTracker(){
        <div className="hum-aside-eyebrow">REGIONAL MIGRATION DESK</div><h3>{region.name}</h3><Status tone={signal.tone}>{signal.label}</Status>
        <p>{signal.message}</p>
        <div className="hum-datum"><span>Arrival watch</span><strong>{asDate(window.start)}–{asDate(window.end)}</strong></div>
+       <div className="hum-datum"><span>First report · historical median</span><strong>{historical?.firstReportMedian?historyDate(historical.firstReportMedian):'Insufficient records'}</strong></div>
        <div className="hum-datum"><span>Feeder ready</span><strong>{asDate(window.feeder)}</strong></div>
        <div className="hum-datum"><span>Weather cue</span><strong>{actual?.weather?.favorableDays!=null?actual.weather.favorableDays+' favorable days in outlook':season.isSpring?'Forecast unavailable':'Returns in spring'}</strong></div>
        <div className="hum-datum"><span>Research-grade records</span><strong>{actual?.sightings?.length?actual.sightings.length+' in sampled feed':data?.observationStatus==='available'?'None in sampled feed':'Not currently available'}</strong></div>
@@ -125,12 +132,36 @@ export default function HummingbirdTracker(){
      <div className="hum-panel hum-timeline">
       <div className="hum-timeline-head"><span>SELECT A REGION TO EXPLORE</span><div><span>APR</span><span>MAY</span><span>JUN</span></div></div>
       {dates.map(r=><button className={'hum-time-row '+(r.id===selected?'on':'')} key={r.id} onClick={()=>choose(r.id)}>
-       <span className="hum-time-label">{r.name}</span><span className="hum-time-rail"><span className="hum-time-band" style={{left:position(r.window.start)+'%',width:(position(r.window.end)-position(r.window.start))+'%'}}/></span><span className="hum-time-date">{asDate(r.window.start)}</span>
+       <span className="hum-time-label">{r.name}</span><span className="hum-time-rail"><span className="hum-time-band" style={{left:position(r.window.start)+'%',width:(position(r.window.end)-position(r.window.start))+'%'}}/>{r.historical?.firstReportEarly&&r.historical?.firstReportLate&&<span className="hum-time-history" title="Historical first public reports, not confirmed arrival" style={{left:position(year+'-'+r.historical.firstReportEarly)+'%',width:Math.max(1,position(year+'-'+r.historical.firstReportLate)-position(year+'-'+r.historical.firstReportEarly))+'%'}}/>}</span><span className="hum-time-date">{asDate(r.window.start)}</span>
       </button>)}
-      <p className="hum-smallprint">Illustrative regional watch bands informed by Michigan migration guidance; use linked Journey North data for actual historical sighting records. Earlier outliers are possible.</p>
+      <div className="hum-timeline-key"><span><i className="hum-key-planning"/>Early feeder/arrival planning window</span><span><i className="hum-key-reports"/>First reported sightings (20th–80th percentiles where sufficient)</span></div>
+      <p className="hum-smallprint">The green bands are conservative seasonal planning estimates. The narrow coral bands summarize when archival public sightings first appeared. They are <b>not</b> the dates the first birds reached Michigan. Sparse regions intentionally have no archival band.</p>
      </div>
     </section>
-    <section className="hum-section" id="signals"><div className="hum-section-head"><div><span className="hum-kicker">03 / CONDITIONS + EVIDENCE</span><h2>What is happening now?</h2></div><p>Two separate signals: favorable spring migration weather and publicly reported birds. A warm southerly day cannot establish a local arrival.</p></div>
+    <section className="hum-section" id="history">
+     <div className="hum-section-head"><div><span className="hum-kicker">03 / TEN SPRINGS OF EVIDENCE</span><h2>When were hummingbirds actually reported?</h2></div><p>We analyzed research-grade Ruby-throated Hummingbird observations across Michigan from 2017 through 2026. This is reporting history—not measured migration arrival.</p></div>
+     <div className="hum-historical-grid">
+      <article className="hum-panel hum-evidence-summary">
+       <div className="hum-history-top"><span className="hum-aside-eyebrow">ARCHIVED OBSERVATIONS · {region.name.toUpperCase()}</span><span className={'hum-coverage '+(historical?.coverage||'insufficient')}>{historical?.coverage||'Loading'} data</span></div>
+       {historical?.firstReportMedian?<><div className="hum-evidence-label">Median first publicly reported sighting</div>
+        <div className="hum-evidence-big">{historyDate(historical.firstReportMedian)}</div>
+        <p className="hum-evidence-copy">Across {historical.supportedYears} qualifying seasons, the earliest public research-grade record for this region typically appeared near this date. This <strong>does not mean the first hummingbird arrived then.</strong></p>
+        <div className="hum-evidence-metrics"><div><span>EARLIER REPORTING YEARS</span><strong>{historyDate(historical.firstReportEarly)}</strong></div><div><span>LATER REPORTING YEARS</span><strong>{historyDate(historical.firstReportLate)}</strong></div></div>
+       </>:<><div className="hum-evidence-label">Historical benchmark</div><h3>Not enough independently reported seasons</h3><p className="hum-evidence-copy">We do not fabricate a median or range when the regional sample is too small. Use the earlier planning window for feeder timing.</p></>}
+       <div className="hum-evidence-metrics"><div><span>ASSIGNED RESEARCH-GRADE RECORDS</span><strong>{historical?.reportCount??'—'}</strong></div><div><span>YEARS WITH ≥2 REPORTERS</span><strong>{historical?.supportedYears??'—'} / {historical?.archiveYears??10}</strong></div></div>
+       <p className="hum-smallprint">A qualifying year needs two different observers. Moderate coverage: at least 6 qualifying years and 40 reports; limited: at least 4 qualifying years and 20 reports. No regional date estimate is shown for less. These are coverage gates, not statistical confidence intervals.</p>
+      </article>
+      <article className="hum-panel hum-evidence-yearly">
+       <div className="hum-aside-eyebrow">ANNUAL REPORTING EFFORT · {region.name.toUpperCase()}</div><h3>How many records were available?</h3>
+       {annual.length?<div className="hum-year-chart" role="img" aria-label={'Research-grade public reports by year in '+region.name+': '+annual.map(a=>a.year+': '+a.reports).join(', ')}>
+        {annual.map(a=><div className="hum-year-col" key={a.year} title={a.year+': '+a.reports+' records, '+a.reporters+' reporters'}><span className="hum-year-count">{a.reports}</span><div className="hum-year-track"><div className={'hum-year-bar '+(a.firstReported?'supported':'')} style={{height:Math.max(a.reports?5:0,(a.reports/maxAnnual)*100)+'%'}}/></div><span className="hum-year-axis">{String(a.year).slice(2)}</span></div>)}
+       </div>:<p>Loading archive summary…</p>}
+       <p className="hum-smallprint">Higher counts generally improve the chance of detecting early migrants, but they also reflect observer effort. A year with zero records is a gap in public reporting, not a year without hummingbirds.</p>
+       <div className="hum-evidence-source"><Info size={16}/><span>Statewide archive: <b>{data?.historyProvenance?.observationCount??'—'}</b> geolocatable observations from {data?.historyProvenance?.firstYear??2017}–{data?.historyProvenance?.lastYear??2026}. <a href="https://www.inaturalist.org/observations?place_id=29&taxon_id=6432" target="_blank" rel="noopener noreferrer">Review source records ↗</a></span></div>
+      </article>
+     </div>
+    </section>
+    <section className="hum-section" id="signals"><div className="hum-section-head"><div><span className="hum-kicker">04 / CONDITIONS + EVIDENCE</span><h2>What is happening now?</h2></div><p>Two separate signals: favorable spring migration weather and publicly reported birds. A warm southerly day cannot establish a local arrival.</p></div>
      <div className="hum-two-col">
       <article className="hum-panel hum-signal-panel"><div className="hum-cardheading"><MiniIcon icon={Wind}/><h3>7-day movement-weather watch</h3></div>
        {actual?.weather?.days?.length?<><p>{actual.weather.favorableDays} of {actual.weather.checked} upcoming daytime forecasts meet our exploratory mild + southerly-wind screen.</p>
@@ -146,7 +177,7 @@ export default function HummingbirdTracker(){
       </article>
      </div>
     </section>
-    <section className="hum-section" id="feeder-guide"><div className="hum-section-head"><div><span className="hum-kicker">04 / MAKE YOUR YARD READY</span><h2>The feeder goes out before the first bird</h2></div><p>Your local feeder-ready date is approximately ten days before the start of the region's migration watch band.</p></div>
+    <section className="hum-section" id="feeder-guide"><div className="hum-section-head"><div><span className="hum-kicker">05 / MAKE YOUR YARD READY</span><h2>The feeder goes out before the first bird</h2></div><p>Your local feeder-ready date is approximately ten days before the start of the region's migration watch band.</p></div>
      <div className="hum-guide">
       <div className="hum-guide-lead"><div className="hum-guide-overline">YOUR NEXT FEEDER DAY</div><strong>{asDate(window.feeder)} <span>{year}</span></strong><p>for {region.name}</p><a href="https://www.nationalzoo.si.edu/migratory-birds/hummingbird-nectar-recipe" target="_blank" rel="noopener noreferrer">Smithsonian feeder instructions ↗</a></div>
       <div className="hum-guide-step"><span>01</span><MiniIcon icon={Flower2}/><h3>Mix it safely</h3><p>One part refined white table sugar to four parts water. Dissolve completely and let cool. No red food coloring, honey or artificial sweeteners.</p></div>
@@ -154,8 +185,8 @@ export default function HummingbirdTracker(){
       <div className="hum-guide-step"><span>03</span><MiniIcon icon={Bird}/><h3>Provide natural food</h3><p>Include native flowering plants and insect-friendly habitat. Ruby-throated hummingbirds rely on small arthropods as well as nectar.</p></div>
      </div>
     </section>
-    <section className="hum-section" id="faq"><div className="hum-section-head"><div><span className="hum-kicker">05 / QUESTIONS PEOPLE ASK</span><h2>Michigan hummingbird arrival FAQ</h2></div></div><div className="hum-faq">{FAQ.map(([q,a])=><details key={q}><summary>{q}</summary><p>{a}</p></details>)}</div></section>
-    <section className="hum-section hum-method"><span className="hum-kicker">DATA, SCIENCE & LIMITATIONS</span><h2>What this tracker knows—and what it doesn't</h2><p>The regional bands are editorial migration watch windows informed by Michigan Extension and Journey North context, <b>not</b> observational distributions calculated from a complete longitudinal data set. The National Weather Service spring forecast supplies daytime air temperature and wind direction; the displayed movement-weather screen is a planning heuristic. iNaturalist public research-grade observations may offer independent evidence, but the API sample is capped and biased by reporting effort. Coordinates only assign reports to an approximate region—no private feeder addresses or false route lines are shown. When a source is missing or out of season, the site shows that honestly rather than filling gaps with invented sightings or probabilities.</p><ul>{SOURCES.map(([label,url])=><li key={url}><a href={url} target="_blank" rel="noopener noreferrer">{label} ↗</a></li>)}</ul></section>
+    <section className="hum-section" id="faq"><div className="hum-section-head"><div><span className="hum-kicker">06 / QUESTIONS PEOPLE ASK</span><h2>Michigan hummingbird arrival FAQ</h2></div></div><div className="hum-faq">{FAQ.map(([q,a])=><details key={q}><summary>{q}</summary><p>{a}</p></details>)}</div></section>
+    <section className="hum-section hum-method"><span className="hum-kicker">DATA, SCIENCE & LIMITATIONS</span><h2>What this tracker knows—and what it doesn't</h2><p>The early regional planning bands are editorial watch windows informed by Michigan Extension and Journey North context, not statistical arrival dates. The separate ten-year historical comparison is calculated from public iNaturalist research-grade observation dates and uses qualifying years with at least two independent observers. Because observer effort is uneven, the historical percentiles describe first reported sightings, not true arrival dates or prediction probabilities. The National Weather Service spring forecast supplies daytime air temperature and wind direction; the displayed movement-weather screen is a planning heuristic. iNaturalist public research-grade observations may offer independent evidence, but the live API sample is capped at 400 and biased by reporting effort. The historical dataset uses complete annual spring queries and confidence-aware regional coverage gates. Coordinates only assign reports to an approximate region—no private feeder addresses or false route lines are shown. When a source is missing or out of season, the site shows that honestly rather than filling gaps with invented sightings or probabilities.</p><ul>{SOURCES.map(([label,url])=><li key={url}><a href={url} target="_blank" rel="noopener noreferrer">{label} ↗</a></li>)}</ul></section>
    </div>
   </main>
   <footer className="hum-footer"><div className="hum-wrap">Built by <a href="https://chrisizworski.com/chris-izworski/">Chris Izworski</a> · <a href="/">Michigan Phenology</a> · <a href="/bloom-tracker">Bloom Tracker</a> · <a href="/firefly-tracker">Firefly Tracker</a>. Independent educational tracker, not a NOAA or Cornell product.</div></footer>
