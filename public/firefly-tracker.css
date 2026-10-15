@@ -1,0 +1,77 @@
+/* Firefly Tracker: self-contained styling; leaves the network ad loader unchanged. */
+.firefly-tool{--ink:#e7f6e2;--muted:#9bbaa9;--lime:#b6f5a2;--gold:#ffe09b;--line:rgba(168,224,177,.17);font:16px/1.5 Georgia,serif;background:#071710;color:var(--ink);min-height:100vh;overflow:hidden}
+.firefly-tool *{box-sizing:border-box}.firefly-tool button,.firefly-tool a{font:inherit}.firefly-tool a{color:var(--lime)}.firefly-shell{max-width:1220px;margin:auto;padding:0 30px}
+.firefly-top{display:flex;justify-content:space-between;gap:16px;align-items:center;padding-top:21px;padding-bottom:21px;border-bottom:1px solid var(--line);font:700 11px/1.4 system-ui,sans-serif;letter-spacing:.16em;text-transform:uppercase}
+.firefly-top a{text-decoration:none;color:#d2ebd3}.firefly-top a:hover{color:#fff}.firefly-nav{display:flex;gap:23px;flex-wrap:wrap}
+.firefly-hero{position:relative;isolation:isolate;overflow:hidden;min-height:425px;background:radial-gradient(ellipse at 77% 30%,rgba(91,131,90,.35),transparent 39%),linear-gradient(110deg,#0c2b22 0%,#061811 72%);border-bottom:1px solid var(--line)}
+.firefly-hero:after{content:'';position:absolute;z-index:-1;inset:auto 0 0;height:142px;background:radial-gradient(ellipse at 46% 100%,rgba(57,111,58,.4),transparent 50%),linear-gradient(to top,#071710,transparent)}
+.firefly-sparks{position:absolute;inset:0;z-index:-1;opacity:.95;pointer-events:none;background-image:radial-gradient(circle,rgba(232,250,158,.95) 0 2px,rgba(213,248,143,.25) 3px,transparent 8px),radial-gradient(circle,rgba(241,253,155,.8) 0 2px,transparent 6px),radial-gradient(circle,rgba(229,247,161,.65) 0 1px,transparent 5px);background-size:145px 157px,195px 177px,250px 235px;background-position:18px 35px,56px 77px,105px 123px;mask-image:linear-gradient(90deg,transparent 28%,black 90%)}
+.firefly-hero-grid{display:grid;grid-template-columns:1.3fr .75fr;align-items:center;gap:48px;padding:61px 0 70px}
+.firefly-eyebrow{color:var(--lime);font:700 11px system-ui,sans-serif;letter-spacing:.24em;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.firefly-eyebrow:before{content:'';width:7px;height:7px;background:var(--lime);border-radius:50%;box-shadow:0 0 14px var(--lime)}
+.firefly-tool h1,.firefly-tool h2,.firefly-tool h3{font-family:'Fraunces',Georgia,serif;font-weight:500;line-height:1.1}
+.firefly-tool h1{font-size:clamp(45px,6.2vw,82px);letter-spacing:-.055em;margin:18px 0 14px;max-width:760px;color:#f3f8df}
+.firefly-tool h2{font-size:clamp(26px,3vw,37px);letter-spacing:-.025em;margin:0 0 12px}
+.firefly-tool h3{font-size:23px;margin:0 0 9px}
+.firefly-dek{max-width:640px;color:#c0d1c7;font-size:19px;line-height:1.57;margin:0}
+.firefly-hero-card{background:rgba(5,19,15,.69);border:1px solid rgba(188,234,183,.31);border-radius:18px;padding:26px;backdrop-filter:blur(7px);box-shadow:0 19px 45px rgba(0,0,0,.21)}
+.firefly-micro{font:700 10px system-ui,sans-serif;letter-spacing:.15em;text-transform:uppercase;color:#91b9a1}
+.firefly-big{font:500 clamp(28px,3vw,39px)/1.12 'Fraunces',Georgia,serif;color:#f8f5dc;margin:14px 0 9px}
+.firefly-note{font:14px/1.55 system-ui,sans-serif;color:#b2c4b9;margin:0}
+.firefly-season-strip{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.firefly-chip{font:700 11px/1.3 system-ui,sans-serif;border:1px solid #375a47;padding:8px 11px;border-radius:999px;color:#bfdccb;background:#173126}
+.firefly-chip.light{background:#223c25;color:#d9f8a8;border-color:#496a44}
+.firefly-section{padding:55px 0;border-bottom:1px solid var(--line)}
+.firefly-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:23px}
+.firefly-section-head p{font:14px/1.5 system-ui,sans-serif;color:#9db7a7;max-width:480px;margin:0}
+.firefly-desk{display:grid;grid-template-columns:minmax(0,1.13fr) minmax(325px,.87fr);gap:23px;align-items:stretch}
+.firefly-panel{background:#10261d;border:1px solid var(--line);border-radius:17px;padding:22px;min-width:0}
+.firefly-map{background:radial-gradient(circle at 55% 62%,#1c382c,#0c201a 70%);border:1px solid #2b5440;border-radius:12px;padding:0;overflow:hidden}
+.firefly-map svg{display:block;width:100%;height:auto;aspect-ratio:1000/760}
+.firefly-map .miland{fill:#294736;stroke:#8eb58f;stroke-width:2.3}
+.firefly-map .marker{cursor:pointer;outline:none}
+.firefly-map .marker circle{transition:all .15s}
+.firefly-map .marker:hover .glow,.firefly-map .marker:focus .glow{opacity:.55;r:21}
+.firefly-map .marker text{fill:#f4ffe0;font:700 19px system-ui,sans-serif;stroke:#0c2018;stroke-width:3px;paint-order:stroke}
+.firefly-key{display:flex;gap:15px;flex-wrap:wrap;padding:12px 2px 0;color:#a6bbae;font:11px system-ui,sans-serif}
+.firefly-key span{display:flex;align-items:center;gap:6px}.firefly-key i{display:inline-block;width:9px;height:9px;border-radius:50%;background:#b2e885}
+.firefly-region-list{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.firefly-region{min-height:64px;border:1px solid #31503e;background:#0c1e17;color:#e0eada;border-radius:9px;text-align:left;padding:11px 12px;cursor:pointer;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.firefly-region[aria-pressed=true]{background:#263f2a;border-color:#bce78f;box-shadow:inset 0 0 0 1px rgba(210,247,167,.19)}
+.firefly-region strong{font:700 12px/1.35 system-ui,sans-serif;display:block}.firefly-region small{font:11px/1.4 system-ui,sans-serif;color:#8eb49c;display:block;margin-top:5px}
+.firefly-region .region-dot{height:9px;width:9px;border-radius:50%;background:#819c83;flex:none}
+.firefly-divider{height:1px;background:var(--line);margin:21px 0}
+.firefly-readout{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:18px}
+.firefly-reading{border:1px solid #2b4b3a;border-radius:9px;padding:13px 10px;background:#0a1d16}
+.firefly-reading strong{display:block;font:600 24px/1.2 'Fraunces',Georgia,serif;color:#eaf5d6;margin-top:7px}
+.firefly-reading span{font:700 10px/1.3 system-ui,sans-serif;text-transform:uppercase;letter-spacing:.1em;color:#8fac9b}
+.firefly-status{display:inline-flex;gap:8px;align-items:center;border-radius:999px;padding:7px 10px;background:#24392d;border:1px solid #4d7259;color:#dbf4bb;font:700 11px system-ui,sans-serif;letter-spacing:.02em}
+.firefly-status.off{color:#a9beb0;border-color:#476254}.firefly-status.mixed{color:#ffe2a7;border-color:#8b7851}.firefly-status.poor{color:#f6baa9;border-color:#885d52}.firefly-status.unknown{color:#cbcec7}
+.firefly-status:before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor}
+.firefly-progress{height:9px;background:#284535;border-radius:99px;overflow:hidden;margin:16px 0 8px}
+.firefly-progress>span{height:100%;display:block;background:linear-gradient(90deg,#81cda4,#d4efa3);border-radius:99px}
+.firefly-night-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:11px;margin-top:21px}
+.firefly-night{border:1px solid #365240;background:#12291f;border-radius:12px;padding:15px 8px 12px;text-align:center;min-width:0}
+.firefly-night b{font:700 11px system-ui,sans-serif;text-transform:uppercase;letter-spacing:.08em;color:#c8d8c8}
+.firefly-night .night-score{display:flex;justify-content:center;align-items:flex-end;height:101px;padding-bottom:2px}
+.firefly-night .night-score div{width:40%;min-height:4px;background:linear-gradient(#c3ec98,#578a62);border-radius:5px 5px 0 0}
+.firefly-night strong{font:600 17px Georgia,serif;display:block;color:#fff7cf}.firefly-night small{font:11px/1.45 system-ui,sans-serif;color:#a5b9aa;display:block}
+.firefly-night.good{border-color:#709866}.firefly-night.poor .night-score div{background:linear-gradient(#a39c79,#506355)}
+.firefly-context{font:13px/1.55 system-ui,sans-serif;color:#b0c3b6;margin:15px 0 0}
+.firefly-subgrid{display:grid;grid-template-columns:1fr 1fr;gap:23px;margin-top:22px}
+.firefly-season-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:22px 0}
+.firefly-step{position:relative;border-top:2px solid #436348;padding:17px 11px 2px 0}
+.firefly-step:before{content:'';position:absolute;top:-6px;left:0;width:10px;height:10px;border-radius:50%;background:#c0e79c}
+.firefly-step b{display:block;font:700 12px/1.4 system-ui,sans-serif;color:#edffd4}.firefly-step span{display:block;font:11px/1.5 system-ui,sans-serif;color:#a3baa9;margin-top:5px}
+.firefly-how{display:grid;grid-template-columns:repeat(3,1fr);gap:17px}
+.firefly-how>article{background:#10271e;border:1px solid #2d4838;border-radius:15px;padding:24px}
+.firefly-how .no{font:700 12px system-ui,sans-serif;color:#9dc989;letter-spacing:.15em;margin-bottom:13px}
+.firefly-how p,.firefly-panel p{font:14px/1.7 system-ui,sans-serif;color:#b4c8ba;margin:0}
+.firefly-faq{max-width:930px}.firefly-faq details{border-bottom:1px solid #2b4637;padding:16px 0}.firefly-faq summary{cursor:pointer;font:500 19px 'Fraunces',Georgia,serif;color:#eaf4db}.firefly-faq details p{font:14px/1.75 system-ui,sans-serif;color:#b0c6b8;max-width:850px;margin:13px 0 0}
+.firefly-sources{font:13px/1.8 system-ui,sans-serif;color:#abc2b1}.firefly-sources a{color:#d1e9ac;text-underline-offset:3px}.firefly-sources li{margin:5px 0}
+.firefly-foot{padding:32px 0 44px;color:#94b19d;font:12px/1.7 system-ui,sans-serif}.firefly-foot a{color:#cbe2b1}
+.firefly-loading{height:15px;width:80%;margin:8px 0;border-radius:999px;background:linear-gradient(90deg,#203c2d,#34503a,#203c2d);background-size:200% 100%;animation:firefly-shimmer 1.5s infinite linear}
+@keyframes firefly-shimmer{to{background-position:200% 0}}
+@media(max-width:900px){.firefly-hero-grid{grid-template-columns:1fr;gap:20px;padding:44px 0}.firefly-hero-card{max-width:580px}.firefly-desk{grid-template-columns:1fr}.firefly-how{grid-template-columns:1fr}.firefly-subgrid{grid-template-columns:1fr}}
+@media(max-width:620px){.firefly-shell{padding:0 17px}.firefly-nav{gap:12px}.firefly-top{align-items:flex-start;gap:10px}.firefly-hero-grid{padding:37px 0 39px}.firefly-tool h1{font-size:49px}.firefly-dek{font-size:17px}.firefly-section{padding:35px 0}.firefly-section-head{display:block}.firefly-section-head p{margin-top:8px}.firefly-region-list{grid-template-columns:1fr 1fr}.firefly-region{padding:9px 8px}.firefly-readout{gap:5px}.firefly-reading{padding:10px 6px}.firefly-reading strong{font-size:20px}.firefly-night-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.firefly-season-steps{grid-template-columns:repeat(2,1fr);gap:12px 3px}.firefly-panel{padding:16px}.firefly-map .marker text{font-size:24px}}
+@media(prefers-reduced-motion:reduce){.firefly-loading{animation:none}}
