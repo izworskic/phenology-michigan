@@ -1,4 +1,7 @@
+import historyArchive from '../../data/hummingbird-history.json';
+import {calibrateHistory} from '../../lib/hummingbird-calibration';
 import {REGIONS,getDateKey,seasonState,groupSightings,weatherSignal,readout} from '../../lib/hummingbirds';
+const HISTORY=calibrateHistory(historyArchive,REGIONS.map(r=>r.id));
 const UA='MichiganPhenologyHummingbirds/1.0 (https://phenology.chrisizworski.com/hummingbird-tracker)';
 async function getJson(url,timeout=7200){
  const r=await fetch(url,{headers:{Accept:'application/json','User-Agent':UA},signal:AbortSignal.timeout(timeout)});
@@ -7,10 +10,17 @@ async function getJson(url,timeout=7200){
 }
 async function observations(now){
  const today=getDateKey(now),year=today.slice(0,4);
- const params=new URLSearchParams({taxon_name:'Archilochus colubris',place_id:'29',quality_grade:'research',d1:year+'-03-01',d2:today,per_page:'200',order_by:'observed_on',order:'desc',geo:'true'});
- const data=await getJson('https://api.inaturalist.org/v1/observations?'+params,8500);
- if(!Array.isArray(data?.results))throw Error('Unusable iNaturalist response');
- return {rows:data.results,total:data.total_results??null,truncated:(data.total_results||0)>data.results.length};
+ const params=new URLSearchParams({taxon_id:'6432',place_id:'29',quality_grade:'research',d1:year+'-03-01',d2:today,per_page:'200',order_by:'observed_on',order:'desc',fields:'id,observed_on,geojson,quality_grade'});
+ const prefix='https://api.inaturalist.org/v2/observations?'+params.toString();
+ const first=await getJson(prefix,8500);
+ if(!Array.isArray(first?.results))throw Error('Unusable iNaturalist response');
+ let rows=first.results;
+ if(first.total_results>rows.length){
+   const second=await getJson(prefix+'&page=2',8500);
+   if(!Array.isArray(second?.results))throw Error('Incomplete iNaturalist second page');
+   rows=rows.concat(second.results);
+ }
+ return {rows,total:first.total_results??null,truncated:(first.total_results||0)>rows.length};
 }
 async function regionalWeather(region,now){
  const season=seasonState(region,now);
@@ -42,14 +52,15 @@ export default async function handler(req,res){
  }
  const regions=REGIONS.map((r,i)=>({
    ...r,season:seasonState(r,now),weather:all[i].weather,weatherStatus:all[i].weatherStatus,
-   weatherUpdated:all[i].weatherUpdated||null,sightings:grouped[r.id],
+   weatherUpdated:all[i].weatherUpdated||null,sightings:grouped[r.id],historical:HISTORY[r.id],
    signal:readout(r,now,all[i].weather,grouped[r.id])
  }));
  res.status(200).json({
   generatedAt:now.toISOString(),today,species:'Ruby-throated Hummingbird',scientificName:'Archilochus colubris',
-  observationStatus,observationSource:'iNaturalist Research Grade',observationSampling:'Up to 200 most recently observed research-grade records from Michigan for this spring. Not a full count, not first arrivals, and not proof of local absence.',
+  observationStatus,observationSource:'iNaturalist Research Grade',observationSampling:'Up to 400 most recently observed research-grade records from Michigan for this spring. Not a full count, not first arrivals, and not proof of local absence.',
   observationTotal:obsTotal,sampleTruncated,regions,
-  methodology:'Regional arrival watch dates are editorial approximate seasonal windows, not statistically fitted arrival percentiles. NWS southerly winds and mild daytime highs are an exploratory movement-weather heuristic, not a calibrated bird prediction. Public iNaturalist observations are community-submitted and subject to identification error and observer sampling bias.',
+  historyProvenance:{archiveYears:historyArchive.years.length,firstYear:historyArchive.years[0].year,lastYear:historyArchive.years[historyArchive.years.length-1].year,observationCount:historyArchive.observationCount,source:historyArchive.provenance.source,limits:historyArchive.provenance.limitations},
+  methodology:'Regional arrival watch dates remain early editorial planning windows. Historical reporting intervals are 20th–80th percentiles of first public research-grade observations, calculated only for annual samples with two independent observers; they measure public reporting onset, not biological arrival. NWS southerly winds and mild daytime highs are an exploratory movement-weather heuristic, not a calibrated bird prediction. Public iNaturalist observations are community-submitted and subject to identification error and observer sampling bias.',
   sources:[
    {label:'Journey North hummingbird migration maps',url:'https://maps.journeynorth.org/'},
    {label:'Michigan State University Extension',url:'https://ask.extension.org/kb/faq.php?id=820761'},
