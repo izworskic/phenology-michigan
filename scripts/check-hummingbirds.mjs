@@ -16,7 +16,8 @@ assert.equal(spring.phase,'arrival_window');
 const evidence=m.groupSightings([
  {id:12,quality_grade:'research',observed_on:'2027-04-28',geojson:{coordinates:[-83.89,43.60]}},
  {id:13,quality_grade:'casual',observed_on:'2027-04-28',geojson:{coordinates:[-83.89,43.60]}},
- {id:14,quality_grade:'research',observed_on:'2027-04-28',geojson:{coordinates:[-73.89,43.60]}}
+ {id:14,quality_grade:'research',observed_on:'2027-04-28',geojson:{coordinates:[-73.89,43.60]}},
+ {id:15,quality_grade:'research',observed_on:'2027-04-28',geojson:{coordinates:[-83.89,43.60]},public_positional_accuracy:28000}
 ],new Date('2027-04-29T18:00:00Z'));
 assert.equal(evidence['saginaw-bay'].length,1,'Only locally assignable research-grade records count');
 assert.equal(m.readout(bay,new Date('2027-04-29T18:00:00Z'),null,evidence['saginaw-bay']).tone,'seen');
