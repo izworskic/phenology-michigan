@@ -30,6 +30,8 @@ assert.ok(page.includes('FireflyCartoMap')&&!page.includes('function RegionMap('
 assert.ok(!page.includes('getStaticProps'),'Do not load redundant map geometry into props');
 assert.ok(page.includes('Not an emergence or firefly density heatmap'),'Do not misrepresent weather points as actual sightings');
 assert.ok(css.includes('.firefly-carto-map{height:390px}'),'Mobile map height must be defined');
+assert.ok(css.includes('.firefly-desk{display:grid;grid-template-columns:minmax(0,1fr)'), 'Michigan map should occupy a full-width row');
+assert.ok(css.includes('repeat(3,minmax(0,1fr))'),'Regional chooser should use three columns on desktop');
 assert.ok(css.includes('.firefly-pin-container'),'Custom map markers must be styled');
 assert.ok(app.includes('network-ads-v1.js'),'Do not remove the existing ad loader');
 console.log('CARTO firefly map: tile key, loading, navigation, map states and mobile CSS checked');
