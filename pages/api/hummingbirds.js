@@ -10,7 +10,7 @@ async function getJson(url,timeout=7200){
 }
 async function observations(now){
  const today=getDateKey(now),year=today.slice(0,4);
- const params=new URLSearchParams({taxon_id:'6432',place_id:'29',quality_grade:'research',d1:year+'-03-01',d2:today,per_page:'200',order_by:'observed_on',order:'desc',fields:'id,observed_on,geojson,quality_grade'});
+ const params=new URLSearchParams({taxon_id:'6432',place_id:'29',quality_grade:'research',d1:year+'-03-01',d2:today,per_page:'200',order_by:'observed_on',order:'desc',fields:'id,observed_on,geojson,quality_grade,public_positional_accuracy'});
  const prefix='https://api.inaturalist.org/v2/observations?'+params.toString();
  const first=await getJson(prefix,8500);
  if(!Array.isArray(first?.results))throw Error('Unusable iNaturalist response');
