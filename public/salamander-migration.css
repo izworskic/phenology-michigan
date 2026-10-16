@@ -46,3 +46,52 @@
 .sala-night-caption{min-height:43px}
 @media(max-width:900px){.sala-thaw-layout{grid-template-columns:1fr}.sala-thaw-chart{height:205px}.sala-thaw-details{min-height:0}}
 @media(max-width:520px){.sala-thaw-panel,.sala-thaw-details{padding:15px}.sala-thaw-panel-top{flex-direction:column;align-items:flex-start;gap:6px}.sala-thaw-chart{padding-left:4px;padding-right:4px;gap:2px}.sala-thaw-day{gap:4px}.sala-thaw-bar-slot{height:120px;width:90%}.sala-freeze-line{bottom:103px}.sala-thaw-metrics strong{font-size:21px}.sala-thaw-metrics>div{padding:10px}}
+
+
+/* Independent sightings vs source-reviewed migration evidence: not mapped as precise habitat. */
+.sala-evidence-head{display:flex;gap:12px;align-items:center;justify-content:space-between;margin:0 0 13px;flex-wrap:wrap}
+.sala-evidence-label{font:700 10px/1.4 system-ui,sans-serif;letter-spacing:.13em;text-transform:uppercase;color:#b9d6b9}
+.sala-evidence-fresh{font:11px/1.4 system-ui,sans-serif;color:#adc1ae}
+.sala-evidence-grid{display:grid;grid-template-columns:minmax(0,1.23fr) minmax(285px,.82fr);gap:16px;align-items:stretch}
+.sala-evidence-main,.sala-evidence-confirm{border:1px solid #46644c;border-radius:15px;padding:24px;background:#1b2d24;min-width:0}
+.sala-evidence-main h3,.sala-evidence-confirm h3{font-size:27px;margin:13px 0 12px}
+.sala-evidence-main p,.sala-evidence-confirm p{font:13px/1.65 system-ui,sans-serif;color:#c4d3c5}
+.sala-evidence-context{min-height:43px}
+.sala-evidence-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:19px 0}
+.sala-evidence-stats>div{padding:17px 15px;border:1px solid #46654c;border-radius:10px;background:#10251c;display:flex;flex-direction:column;min-width:0}
+.sala-evidence-stats span{font:700 10px/1.35 system-ui,sans-serif;color:#b8d5b6}
+.sala-evidence-stats strong{font:500 39px/1.2 'Fraunces',Georgia,serif;margin:9px 0 5px;color:#f2f1da}
+.sala-evidence-stats small{font:11px/1.5 system-ui,sans-serif;color:#a9bdab}
+.sala-sighting-trend{border:1px solid #435f48;border-radius:11px;background:#13281e;padding:15px;margin:18px 0}
+.sala-sighting-trend-head{display:flex;align-items:center;justify-content:space-between;gap:12px;font:12px/1.4 system-ui,sans-serif;color:#dae9d6}
+.sala-sighting-trend-head span{font-size:10px;color:#a6c1af}
+.sala-sighting-bars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:13px}
+.sala-sighting-week{display:flex;flex-direction:column;align-items:center;min-width:0}
+.sala-sighting-week>strong{font:500 18px 'Fraunces',Georgia,serif;color:#e9e7ce}
+.sala-sighting-bar{height:90px;width:min(90%,92px);display:flex;align-items:flex-end;border-bottom:1px solid #64806b;background:#1d3a2b36;margin-top:5px}
+.sala-sighting-bar i{width:100%;min-height:3px;display:block;background:linear-gradient(#b7cfac,#67906c);border-radius:4px 4px 0 0}
+.sala-sighting-week small{text-align:center;font:10px/1.35 system-ui,sans-serif;color:#b4c9b8;min-height:28px;margin-top:7px}
+.sala-evidence-empty{min-height:137px;background:#14291f;border:1px solid #3a5542;border-radius:10px;padding:20px;display:flex;align-items:center;color:#adc4b2;font:13px/1.6 system-ui,sans-serif;margin-bottom:16px}
+.sala-evidence-species{display:flex;gap:10px;flex-wrap:wrap;margin:11px 0 19px}
+.sala-evidence-species>div{display:flex;gap:9px;align-items:center;justify-content:space-between;border:1px solid #526c52;border-radius:99px;padding:7px 12px;background:#244434;flex:1 1 210px}
+.sala-evidence-species span{font:12px system-ui,sans-serif;color:#d7e1d1}
+.sala-evidence-species strong{font:700 13px system-ui,sans-serif;color:#f5e5ac}
+.sala-evidence-footnote{border-top:1px solid #405d48;padding-top:12px;margin:12px 0 0}
+.sala-evidence-confirm{background:radial-gradient(ellipse at 100% 0%,#38554055,transparent 57%),#1d3027}
+.sala-evidence-confirm>p{margin-top:13px}
+.sala-review-empty{border:1px dashed #64836a;background:#162b21;border-radius:9px;padding:22px 16px;font:12px/1.65 system-ui,sans-serif;color:#c1d2c3;margin:21px 0}
+.sala-review-dot{display:inline-block;width:9px;height:9px;border-radius:50%;border:2px solid #b4caa7;margin-right:11px}
+.sala-evidence-separation{border-top:1px solid #4b6550;padding-top:20px;margin-top:24px}
+.sala-evidence-separation strong{font:500 21px 'Fraunces',Georgia,serif;color:#efebd1}
+.sala-evidence-separation p{margin-top:8px}
+.sala-reviewed-list{display:flex;flex-direction:column;gap:10px}
+.sala-reviewed-list>div{padding:15px;border:1px solid #638169;border-radius:9px;background:#193a2a}
+.sala-reviewed-list span{display:block;font:700 10px/1.4 system-ui,sans-serif;letter-spacing:.07em;color:#c1d6b6}
+.sala-reviewed-list strong{display:block;margin:8px 0;font:500 19px 'Fraunces',Georgia,serif}
+.sala-reviewed-list a{font:700 12px system-ui,sans-serif}
+.sala-evidence-privacy{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:19px}
+.sala-evidence-privacy>div{padding:0 8px 3px 17px;border-left:1px solid #61765c;min-width:0}
+.sala-evidence-privacy strong{font:500 20px 'Fraunces',Georgia,serif}
+.sala-evidence-privacy p{font:12px/1.7 system-ui,sans-serif;color:#b6c9b7;margin:8px 0 0}
+@media(max-width:960px){.sala-evidence-grid{grid-template-columns:1fr}.sala-evidence-privacy{grid-template-columns:1fr 1fr}}
+@media(max-width:580px){.sala-evidence-main,.sala-evidence-confirm{padding:17px}.sala-evidence-stats strong{font-size:33px}.sala-evidence-privacy{grid-template-columns:1fr;gap:18px}.sala-evidence-stats>div{padding:12px 11px}.sala-sighting-trend-head{flex-direction:column;align-items:flex-start;gap:4px}.sala-sighting-bars{gap:9px}.sala-evidence-species>div{flex-basis:100%}}
