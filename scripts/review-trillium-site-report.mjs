@@ -59,12 +59,12 @@ async function main(){
  if(process.env.REVIEW_SOURCE==='jotform'){
    // The owner independently reviews the received Jotform submission.
    // The numeric external reference is internal provenance, never displayed as a person.
-   const number=Number(process.env.REVIEW_EXTERNAL_ID);
+   const number=String(process.env.REVIEW_EXTERNAL_ID||'');
    const site=STOPS.find(s=>s.id===process.env.REVIEW_SITE_ID);
    const current=new Intl.DateTimeFormat('en-US',{timeZone:'America/Detroit',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
    const get=k=>current.find(p=>p.type===k)?.value;
    const nowDate=get('year')+'-'+get('month')+'-'+get('day');
-   if(!site||!Number.isSafeInteger(number)||number<1)throw Error('Valid approved form ID and exact preserve required');
+   if(!site||!/^[0-9]{10,25}$/.test(number))throw Error('Valid approved form ID and exact preserve required');
    const url=process.env.REVIEW_EVIDENCE_URL;
    const kind=/^https:\/\/(www\.)?inaturalist\.org\/observations\/\d+/.test(url||'')?'reviewed_observation':'land_manager';
    record=validateSiteRecord({siteId:site.id,siteName:site.name,observedAt:process.env.REVIEW_OBSERVED_AT,reviewedAt:nowDate,
