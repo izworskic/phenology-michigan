@@ -5,8 +5,8 @@ import {Bird,Flower2,Wind,CalendarDays,MapPin,ArrowRight,CheckCircle2,AlertCircl
 import HummingbirdMap from '../components/HummingbirdMap';
 import {REGIONS,seasonState,datesFor,monthDay,readout} from '../lib/hummingbirds';
 
-const HUMMINGBIRD_PHOTO='https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/RubyThroatedHummingbird.jpg/640px-RubyThroatedHummingbird.jpg';
-const HUMMINGBIRD_CREDIT='https://commons.wikimedia.org/wiki/File:RubyThroatedHummingbird.jpg';
+const HUMMINGBIRD_PHOTO='https://images.unsplash.com/photo-1634516723800-cbb1650264db?auto=format&fit=crop&w=640&q=80';
+const HUMMINGBIRD_CREDIT='https://unsplash.com/photos/a-hummingbird-hovering-over-a-red-flower-d1cfklf8cwE';
 const URL='https://phenology.chrisizworski.com/hummingbird-tracker';
 const TITLE='Michigan Hummingbird Arrival Tracker 2027: Migration Map & Feeder Dates';
 const DESCRIPTION='When do hummingbirds return to Michigan? Explore nine regional arrival windows, when to put feeders out, a CARTO migration map, NWS spring weather clues and clearly labeled iNaturalist sightings.';
@@ -91,7 +91,7 @@ export default function HummingbirdTracker(){
       <div className="hum-select-wrap"><label htmlFor="hum-region">YOUR MICHIGAN REGION</label><select id="hum-region" value={selected} onChange={e=>choose(e.target.value)}>{REGIONS.map(r=><option key={r.id} value={r.id}>{r.name}</option>)}</select></div>
       <a className="hum-mobile-feeder" href="#feeder-guide" aria-label={"Your regional feeder-ready date: "+asDate(window.feeder)+", "+year+". Open feeder guide."}><CalendarDays size={20}/><span><small>PUT YOUR FEEDER OUT BY</small><strong>{asDate(window.feeder)}, {year}</strong></span><ArrowRight size={18}/></a>
       <div className="hum-chips"><span><MapPin size={14}/> 9 Michigan regions</span><span><CloudSun size={14}/> NWS weather signals</span><span><Bird size={14}/> Observations linked</span></div>
-      <figure className="hum-hero-bird"><img src={HUMMINGBIRD_PHOTO} alt="Female Ruby-throated Hummingbird drinking nectar from scarlet beebalm" width="210" height="178" decoding="async"/><figcaption>RUBY-THROATED HUMMINGBIRD</figcaption></figure>
+      <figure className="hum-hero-bird"><img src={HUMMINGBIRD_PHOTO} alt="Ruby-throated Hummingbird hovering near a red bee balm flower" width="210" height="178" decoding="async"/><figcaption>RUBY-THROATED HUMMINGBIRD</figcaption></figure>
      </div>
      <div className="hum-arrival-card">
       <div className="hum-arrival-top"><span>YOUR SPRING ARRIVAL WATCH</span><Status tone={signal.tone}>{signal.label}</Status></div>
@@ -109,7 +109,7 @@ export default function HummingbirdTracker(){
    </section>
    <div className="hum-wrap">
     <section className="hum-summary" aria-label="Tracker snapshot">
-     <div className="hum-species-snapshot"><img src={HUMMINGBIRD_PHOTO} alt="Ruby-throated Hummingbird feeding on scarlet beebalm" width="74" height="74" loading="lazy" decoding="async"/><div><span>SPECIES</span><b>Ruby-throated</b><small>Michigan's regular hummingbird</small></div></div>
+     <div className="hum-species-snapshot"><img src={HUMMINGBIRD_PHOTO} alt="Ruby-throated Hummingbird visiting red bee balm blossoms" width="74" height="74" loading="lazy" decoding="async"/><div><span>SPECIES</span><b>Ruby-throated</b><small>Michigan's regular hummingbird</small></div></div>
      <div><span>REGION</span><b>{region.name}</b><small>Forecast center · not bird location</small></div>
      <div><span>SEASON</span><b>{year} spring</b><small>{off?'Next arrival season':'Weather & observations watch'}</small></div>
      <div><span>SOURCE HEALTH</span><b>{loading?'Checking…':error?'Seasonal only':data?.observationStatus==='available'?'Sightings sampled':data?.observationStatus==='off_season'?'Off-season': 'Reports unavailable'}</b><small>{updated?'Checked '+updated+' ET':'Regional calendar always available'}</small></div>
@@ -193,6 +193,6 @@ export default function HummingbirdTracker(){
     <section className="hum-section hum-method"><span className="hum-kicker">DATA, SCIENCE & LIMITATIONS</span><h2>What this tracker knows—and what it doesn't</h2><p>The early regional planning bands are editorial watch windows informed by Michigan Extension and Journey North context, not statistical arrival dates. The separate ten-year historical comparison is calculated from public iNaturalist research-grade observation dates and uses qualifying years with at least two independent observers. Because observer effort is uneven, the historical percentiles describe first reported sightings, not true arrival dates or prediction probabilities. The National Weather Service spring forecast supplies daytime air temperature and wind direction; the displayed movement-weather screen is a planning heuristic. iNaturalist public research-grade observations may offer independent evidence, but the live API sample is capped at 400 and biased by reporting effort. The historical dataset uses complete annual spring queries and confidence-aware regional coverage gates. Coordinates only assign reports to an approximate region—no private feeder addresses or false route lines are shown. When a source is missing or out of season, the site shows that honestly rather than filling gaps with invented sightings or probabilities.</p><ul>{SOURCES.map(([label,url])=><li key={url}><a href={url} target="_blank" rel="noopener noreferrer">{label} ↗</a></li>)}</ul></section>
    </div>
   </main>
-  <footer className="hum-footer"><div className="hum-wrap">Built by <a href="https://chrisizworski.com/chris-izworski/">Chris Izworski</a> · <a href="/">Michigan Phenology</a> · <a href="/bloom-tracker">Bloom Tracker</a> · <a href="/firefly-tracker">Firefly Tracker</a>. Independent educational tracker, not a NOAA or Cornell product. · Wildlife photo: <a href={HUMMINGBIRD_CREDIT} target="_blank" rel="noopener noreferrer">Joe Schneid</a> · <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener noreferrer">CC BY 3.0</a> (cropped).</div></footer>
+  <footer className="hum-footer"><div className="hum-wrap">Built by <a href="https://chrisizworski.com/chris-izworski/">Chris Izworski</a> · <a href="/">Michigan Phenology</a> · <a href="/bloom-tracker">Bloom Tracker</a> · <a href="/firefly-tracker">Firefly Tracker</a>. Independent educational tracker, not a NOAA or Cornell product. · Wildlife photo: <a href={HUMMINGBIRD_CREDIT} target="_blank" rel="noopener noreferrer">Joshua J. Cotten</a> · <a href="https://unsplash.com/license" target="_blank" rel="noopener noreferrer">Unsplash License</a> (cropped).</div></footer>
  </div>;
 }
