@@ -1,0 +1,95 @@
+name: Publish reviewed trillium field evidence
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Existing public [Trillium field report] intake issue number'
+        required: true
+        type: string
+      reviewed_stage:
+        description: 'Flower stage independently verified by the site reviewer'
+        required: true
+        type: choice
+        options:
+          - FLOWERING
+          - BUDDING
+          - FADING
+          - DONE
+          - NEAR_PEAK
+          - PEAK
+      on_site_review_note:
+        description: 'Reviewer-positive evidence of exact preserve identity (not proximity), 24+ chars'
+        required: true
+        type: string
+      observation_flowering_reviewed:
+        description: 'For iNaturalist: I independently inspected species, flowering annotation AND site proof'
+        required: true
+        default: false
+        type: boolean
+      peak_review_note:
+        description: 'Only for NEAR_PEAK / PEAK: explicit official evidence supporting stage'
+        required: false
+        type: string
+permissions:
+  contents: write
+  issues: read
+concurrency:
+  group: trillium-published-evidence
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Require account owner editorial approval
+        env:
+          REVIEWER: ${{ github.actor }}
+          OWNER: ${{ github.repository_owner }}
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+        run: |
+          if [ "$REVIEWER" != "$OWNER" ]; then
+            echo "Only the repository owner may approve and publish preserve reports."
+            exit 1
+          fi
+          if ! [[ "$ISSUE_NUMBER" =~ ^[1-9][0-9]*$ ]]; then
+            echo "Invalid issue number."
+            exit 1
+          fi
+      - name: Download candidate issue, not individual plant coordinates
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+        run: gh issue view "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --json number,title,body,state,labels --jq '.' > /tmp/trillium-issue.json
+      - name: Independently gate publication
+        env:
+          TRILLIUM_ISSUE_JSON: /tmp/trillium-issue.json
+          REVIEWED_STAGE: ${{ inputs.reviewed_stage }}
+          ON_SITE_REVIEW_NOTE: ${{ inputs.on_site_review_note }}
+          OBSERVATION_FLOWERING_REVIEWED: ${{ inputs.observation_flowering_reviewed }}
+          PEAK_REVIEW_NOTE: ${{ inputs.peak_review_note }}
+        run: node scripts/review-trillium-site-report.mjs
+      - name: Verify all evidence and the site build
+        run: |
+          npm ci
+          npm test
+          npm run build
+      - name: Publish reviewed archive as versioned provenance
+        env:
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+        run: |
+          git add data/trillium-site-history.json
+          if git diff --cached --quiet; then
+            echo "No reviewed report was added."
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Publish reviewed preserve bloom evidence from field report #$ISSUE_NUMBER"
+          git pull --rebase origin main
+          git push origin HEAD:main
