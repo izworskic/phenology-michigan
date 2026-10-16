@@ -199,6 +199,7 @@ function LakeSmokeHistory({site,history,loading,error}){
         :<div className='smoke-evidence-empty'><strong>No reviewed lake-smoke sightings for this lookout yet.</strong><span>That does not mean lake smoke was absent. It means the tool has no reviewed evidence for this location.</span></div>}
         <div className='smoke-evidence-method'><strong>Evidence rules</strong>
           <p>Reports need a precise location, observation date/time, original photo, camera record or official source, and an independent editorial review. Generic fog reports, an unavailable webcam, and forecast scores never become confirmed sightings automatically.</p>
+          <a href='https://github.com/izworskic/phenology-michigan/issues/new?template=lake-smoke-observation.yml' target='_blank' rel='noopener noreferrer'>Submit a documented observation for review ↗</a>
           <a href='#cameras'>Find the camera sources for this shoreline ↓</a>
         </div>
       </article>
