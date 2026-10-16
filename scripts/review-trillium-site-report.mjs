@@ -70,7 +70,7 @@ async function main(){
    record=validateSiteRecord({siteId:site.id,siteName:site.name,observedAt:process.env.REVIEW_OBSERVED_AT,reviewedAt:nowDate,
       reviewedBy:actor,stage:inputs.stage,sourceKind:kind,sourceUrl:url,issueNumber:number,
       siteEvidenceNote:inputs.siteEvidenceNote,peakEvidenceNote:inputs.peakEvidenceNote,
-      sourceExcerpt:process.env.REVIEW_SOURCE_EXCERPT,observationFloweringReviewed:inputs.observationFloweringReviewed},STOPS);
+      sourceExcerpt:process.env.REVIEW_SOURCE_EXCERPT,intakeKind:'jotform',observationFloweringReviewed:inputs.observationFloweringReviewed},STOPS);
  }else{
    if(!file)throw Error('Existing GitHub issue input required');
    const issue=JSON.parse(await fs.readFile(file,'utf8'));
