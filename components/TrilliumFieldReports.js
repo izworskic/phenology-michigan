@@ -1,5 +1,6 @@
+import TrilliumDirectReport from './TrilliumDirectReport';
 import {Flower2,ClipboardCheck,CalendarDays,ExternalLink,BookOpen} from 'lucide-react';
-export const PUBLIC_REPORT_URL='https://form.jotform.com/262882681844066';
+export const PUBLIC_REPORT_URL='#tri-direct-report';
 const fmt=s=>new Date(s+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
 const STAGE={BUDDING:'Buds',FLOWERING:'Open flowers',FADING:'Flowers fading',DONE:'Finished',NEAR_PEAK:'Near peak, reviewed',PEAK:'Peak, reviewed'};
 export function SiteReportHistory({site,history,autoReports=[]}){
@@ -20,17 +21,18 @@ export function SiteReportHistory({site,history,autoReports=[]}){
     <small>{r.checkStatus==='species_date_flowering_checked'?'Species, date and flowering annotation checked':'Public source link only — awaiting validation'}</small></div>
     <a href={r.sourceUrl} rel='noopener noreferrer' target='_blank'>Source <ExternalLink size={13}/></a></div>)}
    </div>}
- <a className='tri-evidence-submit' href={PUBLIC_REPORT_URL} target='_blank' rel='noopener noreferrer'><Flower2 size={15}/> Share a dated report for this preserve <ExternalLink size={13}/></a>
+ <a className='tri-evidence-submit' href={PUBLIC_REPORT_URL}><Flower2 size={15}/> Share a flowering observation <Flower2 size={13}/></a>
  </section>;
 }
 export default function TrilliumReportProgram({total=0,sitesWithReports=0,multiYearSites=0,autoCounts={sourceChecked:0,linkOnly:0}}){
  return <section className='tri-report-program' id='tri-report-program' aria-labelledby='tri-report-program-title'>
  <div className='tri-report-program-top'><div><span className='tri-kicker'>FIELD EVIDENCE PROGRAM / ALL TEN PRESERVES</span>
  <h3 id='tri-report-program-title'>Help establish the actual bloom dates</h3><p>Calendar dates and temperature trends can only take a prediction so far. We need dated, source-linked observations that clearly identify a specific preserve. That history will help test whether local-weather models are actually useful.</p></div>
- <a className='tri-report-program-cta' href={PUBLIC_REPORT_URL} target='_blank' rel='noopener noreferrer'>Share a field report <ExternalLink size={16}/></a></div>
+ <a className='tri-report-program-cta' href={PUBLIC_REPORT_URL} target='_blank' rel='noopener noreferrer'>Report flowers automatically <Flower2 size={16}/></a></div>
+ <TrilliumDirectReport/>
  <div className='tri-report-program-stats'><div><strong>{total}</strong><span>independently reviewed reports</span></div><div><strong>{sitesWithReports} / 10</strong><span>destinations with evidence</span></div><div><strong>{multiYearSites}</strong><span>destinations with multiple observed years</span></div></div>
  <div className='tri-automatic-stats'><ClipboardCheck size={17}/><span><b>{autoCounts.sourceChecked||0} automatically source-checked flowering reports</b> · {autoCounts.linkOnly||0} unconfirmed public source links. These are not verified preserve blooms.</span></div>
  <div className='tri-report-program-method'><span><CalendarDays size={16}/> Include the actual observation date</span><span><Flower2 size={16}/> Identify buds, open flowers or fading</span><span><ClipboardCheck size={16}/> Editor checks that the source identifies the preserve</span></div>
- <p className='tri-report-program-fine'>Submission opens a visitor-friendly form. Share a public iNaturalist observation or dated land-manager report, not private plant coordinates or sensitive locations. Submissions are screened automatically and, when source checks pass, saved as unverified source evidence. Exact preserve membership and any confirmed bloom status require independent supporting proof. Multiple reports do not automatically establish a peak or a calibrated prediction.</p>
+ <p className='tri-report-program-fine'>Public iNaturalist flowering evidence is checked and saved automatically without an account. The record becomes a source-checked, unverified-site report, never an automatic on-site confirmation. The separate evidence form accepts other source types that require review. Multiple reports do not automatically establish a peak or a calibrated prediction.</p>
  </section>;
 }
