@@ -47,3 +47,37 @@
 .hum-evidence-source{display:flex;align-items:flex-start;gap:10px;margin-top:24px;background:#f1f5eb;padding:13px;border-radius:8px;font-size:12px;color:#577063;line-height:1.5}
 .hum-evidence-source svg{flex:none}.hum-evidence-source a{font-weight:700;color:#2f704b}
 @media(max-width:760px){.hum-historical-grid{grid-template-columns:1fr}.hum-evidence-summary,.hum-evidence-yearly{padding:21px}.hum-year-chart{gap:5px}.hum-year-track{height:92px}.hum-evidence-metrics strong{font-size:19px}}
+
+
+/* Visual audit 2026-10-15: keep the live decision first, bring the actual
+   Ruby-throated Hummingbird into the design, and shorten mobile time-to-answer.
+   Advertising implementation and slots intentionally unchanged. */
+.hum-hero-main{position:relative;min-width:0}
+.hum-hero-bird{position:absolute;bottom:-19px;right:-19px;width:169px;margin:0;padding:5px;background:#f1f4e5;border:1px solid #e1e9c4b3;border-radius:15px;transform:rotate(3deg);box-shadow:0 15px 40px #081b1659}
+.hum-hero-bird img{width:100%;height:136px;display:block;object-fit:cover;object-position:center;border-radius:10px}
+.hum-hero-bird figcaption{color:#3e5b49;font-size:9px;font-weight:800;letter-spacing:.06em;white-space:nowrap;text-align:center;padding:7px 0 3px}
+.hum-mobile-feeder{display:none}
+.hum-summary .hum-species-snapshot{display:flex;align-items:center;gap:12px}
+.hum-species-snapshot img{width:65px;height:65px;border-radius:12px;object-fit:cover;object-position:center;flex:none;background:#d7e2cf;border:1px solid #dce6d4}
+.hum-species-snapshot>div{min-width:0}
+.hum-tool .hum-select-wrap select:focus-visible,.hum-tool .hum-region-buttons button:focus-visible,.hum-tool .hum-time-row:focus-visible{outline:3px solid #d9a869;outline-offset:3px}
+@media(max-width:1150px){.hum-hero-bird{display:none}}
+@media(max-width:760px){
+ .hum-hero-content{padding-top:29px;padding-bottom:32px;gap:18px}
+ .hum-hero h1{margin:13px 0 13px;line-height:1.05}
+ .hum-subtitle{line-height:1.54;margin-bottom:19px}
+ .hum-chips{display:none}
+ .hum-mobile-feeder{display:flex;align-items:center;gap:12px;text-decoration:none;color:#eaf1de!important;background:#ffffff14;border:1px solid #ffffff56;padding:13px 14px;border-radius:11px;margin-top:12px}
+ .hum-mobile-feeder svg{flex:none;color:#ebd6ac}
+ .hum-mobile-feeder svg:last-child{margin-left:auto}
+ .hum-mobile-feeder small{color:#d6e7d2;font-size:10px;font-weight:800;letter-spacing:.1em;display:block}
+ .hum-mobile-feeder strong{font:600 21px 'Fraunces',Georgia,serif;color:#fff;display:block;margin-top:2px}
+ .hum-arrival-card{padding:19px 20px}
+ .hum-card-region{margin-top:16px}
+ .hum-card-divider{margin:18px 0}
+ .hum-species-snapshot{gap:8px!important}
+ .hum-species-snapshot img{width:48px;height:48px;border-radius:9px}
+ .hum-species-snapshot b{font-size:16px;line-height:1.1}
+}
+@media(max-width:350px){.hum-species-snapshot img{width:39px;height:45px}}
+@media(prefers-reduced-motion:reduce){.hum-tool .hum-hero-bird{transform:none}}
