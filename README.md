@@ -8,3 +8,7 @@ Built and maintained by Chris Izworski.
 ## Great Lakes Lake Smoke Predictor
 
 Route: `/lake-smoke` (API `/api/lake-smoke`). NOAA GLSEA/ACSPO 24-hour satellite-analysis surface-water grid cells and NWS hourly forecast air/wind drive a transparent **steam fog setup** heuristic for 15 mapped shoreline locations across all five Great Lakes. The 5–10 a.m. local viewing windows are planning guidance, not an observation or probability; no score when sources fail or surface-water values are stale, missing or near the freezing/ice boundary. CARTO basemap falls back to OSM. Validation: `node scripts/check-lake-smoke.mjs` and `npm run build`.
+
+### Lake smoke: ice guard and camera sources
+
+From November through May the lake smoke API requests NOAA `GL_Ice_Concentration_GCS` local offshore ice concentration. Ice grid values above 0% limit the score (1–14.9% caps at 45; 15% or above blocks it); missing or 96h-old ice results block the score. In the other months no ice observation is claimed, and near-freezing/missing surface-water pixels remain excluded by the existing water gate. The camera verification panel uses curated operator links (not embeds, hotlinked images, computer vision, or claims of working streams); some listed operator cameras are seasonal, and not every location has a verified camera. `node scripts/check-lake-smoke.mjs` covers the winter fail-closed and camera contracts.
