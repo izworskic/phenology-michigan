@@ -34,7 +34,7 @@ async function recentFlowers(now){
 async function siteNearby(stop,now){
  const since=new Date(now.getTime()-10*86400000).toISOString().slice(0,10);
  const u=new URL(INAT);
- Object.entries({latitude:stop.lat,longitude:stop.lon,radius:SITE_RADIUS_KM,place_id:29,taxon_name:'Trillium grandiflorum',term_id:12,term_value_id:13,quality_grade:'research',d1:since,order_by:'observed_on',order:'desc',per_page:50}).forEach(([key,value])=>u.searchParams.set(key,String(value)));
+ Object.entries({lat:stop.lat,lng:stop.lon,radius:SITE_RADIUS_KM,place_id:29,taxon_name:'Trillium grandiflorum',term_id:12,term_value_id:13,quality_grade:'research',d1:since,order_by:'observed_on',order:'desc',per_page:50}).forEach(([key,value])=>u.searchParams.set(key,String(value)));
  const data=await json(u.toString(),5500);
  if(!Array.isArray(data?.results))throw new Error('Unusable iNaturalist site results');
  return nearbyFlowers(stop,data.results,now);
