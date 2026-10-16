@@ -1,0 +1,51 @@
+name: Refresh Trillium Bloom History
+on:
+  schedule:
+    # After the observed spring flowering season; one archive update per year.
+    - cron: '20 11 20 7 *'
+  workflow_dispatch:
+    inputs:
+      year:
+        description: 'Completed spring year to rebuild (YYYY); blank for current year'
+        required: false
+        type: string
+permissions:
+  contents: write
+concurrency:
+  group: trillium-history-refresh
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Download flowering report histograms
+        env:
+          REQUESTED_YEAR: ${{ inputs.year }}
+        run: |
+          if [ -n "$REQUESTED_YEAR" ]; then
+            if ! [[ "$REQUESTED_YEAR" =~ ^20[0-9][0-9]$ ]]; then
+              echo "year must be a four-digit year"
+              exit 1
+            fi
+            node scripts/refresh-trillium-history.mjs --year="$REQUESTED_YEAR"
+          else
+            node scripts/refresh-trillium-history.mjs
+          fi
+      - name: Commit archived weekly counts
+        run: |
+          git add data/trillium-flowering-history.json
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Refresh Michigan trillium flowering history"
+            git push
+          else
+            echo "Historical flowering archive unchanged"
+          fi
