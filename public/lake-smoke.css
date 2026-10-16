@@ -20,3 +20,26 @@
 @media(max-width:920px){.smoke-explore-grid{grid-template-columns:minmax(0,1fr)}.smoke-sidebar{min-height:unset}.smoke-location-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));max-height:340px}.smoke-map,.smoke-map-wrap{height:450px;min-height:450px}.smoke-detail-grid{grid-template-columns:1fr}}
 @media(max-width:620px){.smoke-wrap{padding-left:15px;padding-right:15px}.smoke-header{align-items:flex-start;padding-top:13px;padding-bottom:13px;flex-direction:column;gap:7px}.smoke-header nav{gap:14px}.smoke-hero{min-height:0}.smoke-hero-content{padding-top:34px;padding-bottom:36px}.smoke-hero h1{font-size:42px}.smoke-hero p{font-size:15px}.smoke-status-strip{padding:18px;flex-direction:column}.smoke-status-strip h2{font-size:23px}.smoke-updated{align-self:flex-start;text-align:left;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}.smoke-updated span{font-size:30px}.smoke-section-line{display:block}.smoke-section-line>p{margin-top:9px}.smoke-top-grid,.smoke-science-grid{grid-template-columns:1fr}.smoke-map,.smoke-map-wrap{height:365px;min-height:365px}.smoke-map-legend{font-size:10px;gap:6px}.smoke-location-list{display:block;max-height:310px}.smoke-panel{padding:17px}.smoke-chart-day{grid-template-columns:90px minmax(30px,1fr) 48px;column-gap:6px}.smoke-chart-number{font-size:18px}.smoke-chart-note{font-size:10px}.smoke-result .smoke-score{font-size:49px}}
 @media(prefers-reduced-motion:reduce){.smoke-tool *{scroll-behavior:auto!important;transition:none!important}}
+
+
+/* Ice-aware status and webcam-source verification */
+.smoke-ice-readout{margin-top:15px;padding:14px 15px;background:#eaf3f4;border:1px solid #cae0e3;border-radius:10px;display:flex;justify-content:space-between;align-items:center;gap:15px}
+.smoke-ice-readout>div:first-child{min-width:0}.smoke-ice-readout small{display:block;font-size:11px;color:#5e7981;font-weight:600}
+.smoke-ice-readout strong{display:block;font-size:14px;color:#174b5a;line-height:1.4;margin-top:4px}
+.smoke-ice-value{font:700 25px Georgia,serif;color:#245e78;text-align:right;white-space:nowrap}
+.smoke-ice-value small{font:11px Arial,sans-serif;white-space:normal;max-width:120px}
+.smoke-panel .smoke-ice-note{margin:8px 0 12px!important;font-size:11px!important}
+.smoke-cameras{margin-bottom:55px;scroll-margin-top:20px}
+.smoke-cameras-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:15px}
+.smoke-camera-card,.smoke-camera-howto{background:#fff;border:1px solid var(--sm-line);border-radius:12px;padding:24px}
+.smoke-camera-kicker{text-transform:uppercase;color:#2a8093;letter-spacing:.12em;font-size:11px;font-weight:800}
+.smoke-camera-card h3,.smoke-camera-howto h3{font-size:24px;margin:10px 0 15px}
+.smoke-camera-card p,.smoke-camera-howto p,.smoke-camera-howto li{font-size:13px;color:#57737d;line-height:1.65}
+.smoke-camera-howto ol{padding-left:22px;margin:6px 0 18px}.smoke-camera-howto li{margin:0 0 10px}
+.smoke-camera-link{display:inline-flex;align-items:center;justify-content:center;color:#fff!important;background:#175a71;padding:11px 18px;border-radius:8px;font-size:13px;font-weight:800;text-decoration:none;margin:6px 0}
+.smoke-camera-link:hover,.smoke-camera-link:focus-visible{background:#1e728d;text-decoration:none!important}
+.smoke-camera-link.secondary{background:#e6f0f2;color:#1c647e!important}
+.smoke-camera-fine{font-size:11px!important;color:#84969b!important;margin-top:10px}
+.smoke-camera-card .smoke-camera-notice{padding-left:10px;border-left:3px solid #d8ad67;color:#835c2b}
+@media(max-width:740px){.smoke-cameras-grid{grid-template-columns:1fr}}
+@media(max-width:480px){.smoke-camera-card,.smoke-camera-howto{padding:18px}.smoke-ice-readout{align-items:flex-start;flex-direction:column}.smoke-ice-value{text-align:left}.smoke-ice-value small{max-width:unset}}
