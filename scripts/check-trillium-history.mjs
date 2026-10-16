@@ -11,7 +11,7 @@ assert.equal(ARCHIVE.annotation.term_value_id,13);
 assert.equal(ARCHIVE.quality_grade,'research');
 assert.equal(ARCHIVE.interval,'week');
 assert.equal(ARCHIVE.date_field,'observed');
-assert.deepEqual(ALLOWED_REGION_IDS,REGIONS.map(x=>x.id).sort().sort()===ALLOWED_REGION_IDS.slice().sort().join() ? ALLOWED_REGION_IDS : ALLOWED_REGION_IDS); // follow count below, not order
+assert.deepEqual([...ALLOWED_REGION_IDS].sort(),REGIONS.map(x=>x.id).sort(),'Archive regions must cover every tracked region');
 assert.equal(Object.keys(ARCHIVE.regions).length,7);
 assert.equal(Object.values(ARCHIVE.regions).reduce((n,x)=>n+x.weekly.reduce((s,row)=>s+row[1],0),0),1885,'Provenance-check baseline counts from 2019–2026 actual archive');
 assert.equal(dateToDoy('2020-05-01'),dateToDoy('2025-05-01'),'Leap-year normalization must not shift May');
