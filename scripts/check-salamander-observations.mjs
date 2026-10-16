@@ -93,6 +93,6 @@ const page=fs.readFileSync(new URL('../pages/salamander-migration.js',import.met
 assert.ok(api.includes('isSeason(now)')&&api.includes('s-maxage=10800'));
 assert.ok(api.includes('aggregateObservations')&&api.includes('reviewedMigration'));
 assert.ok(comp.includes('not documented migration')||comp.includes('not establish'));
-assert.ok(comp.includes('No reviewed migration report yet'));
+assert.ok(comp.includes('No recent reviewed migration reports'));
 assert.ok(page.includes('SalamanderObservations')&&page.includes('#observations'));
 console.log('Salamander observations: privacy, research-grade vs migration, low-sample suppression, regional uncertainty, errors, off-season, zero seeded reports and UI passed.');

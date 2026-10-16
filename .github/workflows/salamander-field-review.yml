@@ -1,0 +1,106 @@
+name: Publish source-reviewed salamander migration evidence
+on:
+  workflow_dispatch:
+    inputs:
+      region_id:
+        description: 'Coarse Michigan region (never a crossing or breeding site)'
+        required: true
+        type: choice
+        options: [southeast, southwest, west, mid, saginaw-bay, northwest, northeast, central-up, western-up]
+      observed_on:
+        description: 'Actual movement date YYYY-MM-DD'
+        required: true
+        type: string
+      evidence_method:
+        description: 'How observed movement was independently documented'
+        required: true
+        type: choice
+        options: [institutional_report, direct_field_monitoring]
+      organization:
+        description: 'Official publisher organization'
+        required: true
+        type: string
+      source_url:
+        description: 'Direct public dated institutional source URL (HTTPS, no query)'
+        required: true
+        type: string
+      source_excerpt:
+        description: '30-600 chars explicitly describing movement, no exact site information'
+        required: true
+        type: string
+      reviewed_summary:
+        description: '25-240 chars: only broad Michigan region and event'
+        required: true
+        type: string
+      owner_approved:
+        description: 'I independently reviewed and approve publication'
+        required: true
+        type: boolean
+        default: false
+      source_checked:
+        description: 'Original institution source explicitly documents movement, not just sightings'
+        required: true
+        type: boolean
+        default: false
+      date_checked:
+        description: 'Observed date and broad region confirmed in original source'
+        required: true
+        type: boolean
+        default: false
+      privacy_checked:
+        description: 'Report contains no habitat sites, roads, GPS, pool directions or personal data'
+        required: true
+        type: boolean
+        default: false
+permissions:
+  contents: write
+concurrency:
+  group: salamander-reviewed-history
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Require repository owner
+        env:
+          REVIEWER: ${{ github.actor }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          test "$REVIEWER" = "$OWNER" || { echo "Only repository owner may approve"; exit 1; }
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Independently validate and archive event
+        env:
+          REVIEW_REGION_ID: ${{ inputs.region_id }}
+          REVIEW_OBSERVED_ON: ${{ inputs.observed_on }}
+          REVIEW_METHOD: ${{ inputs.evidence_method }}
+          REVIEW_ORGANIZATION: ${{ inputs.organization }}
+          REVIEW_SOURCE_URL: ${{ inputs.source_url }}
+          REVIEW_SOURCE_EXCERPT: ${{ inputs.source_excerpt }}
+          REVIEW_SUMMARY: ${{ inputs.reviewed_summary }}
+          REVIEW_OWNER_APPROVED: ${{ inputs.owner_approved }}
+          REVIEW_SOURCE_CHECKED: ${{ inputs.source_checked }}
+          REVIEW_DATE_CHECKED: ${{ inputs.date_checked }}
+          REVIEW_PRIVACY_CHECKED: ${{ inputs.privacy_checked }}
+        run: node scripts/review-salamander-field-report.mjs
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Publish only if all checks passed
+        run: |
+          git add data/salamander-migration-reports.json
+          if git diff --cached --quiet; then
+            echo "No reviewed archive change"; exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Publish source-reviewed salamander migration evidence"
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "$(git rev-parse HEAD^)" || { echo "main changed since review tests; rerun review on latest main"; exit 1; }
+          git push origin HEAD:main

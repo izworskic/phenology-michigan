@@ -1,6 +1,7 @@
 import {REGIONS,isSeason,localDate} from '../../lib/salamanders.mjs';
 import {TARGET_TAXA,observationUrl,aggregateObservations,reviewedMigration,INAT_SOURCE} from '../../lib/salamander-observations.mjs';
 import REPORTS from '../../data/salamander-migration-reports.json';
+import {fieldEvidenceReadiness} from '../../lib/salamander-field-review.mjs';
 
 const UA='Michigan Salamander Observation Evidence (https://phenology.chrisizworski.com/salamander-migration)';
 async function speciesObservations(taxon,day){
@@ -15,10 +16,13 @@ export default async function handler(req,res){
  // Two GETs total each cache refresh, independent of NWS/ACIS. Do not poll outside spring.
  res.setHeader('Cache-Control','public, s-maxage=10800, stale-while-revalidate=10800');
  const now=new Date(),day=localDate(now),spring=isSeason(now);
- const reports=reviewedMigration(REPORTS,day).filter(r=>r.observedOn.slice(0,4)===day.slice(0,4));
+ const archive=reviewedMigration(REPORTS,day);
+ const reports=spring?archive.filter(r=>r.observedOn>=day.slice(0,4)+'-03-01'&&r.observedOn>=new Date(new Date(day+'T12:00:00Z').getTime()-21*86400000).toISOString().slice(0,10)).slice(0,12):[];
+ const readiness=fieldEvidenceReadiness(REPORTS,day);
  const base={generatedAt:now.toISOString(),date:day,season:spring?'spring':'off_season',
-  migration:{status:reports.length?'source_reviewed':'no_reviewed_reports',reports,count:reports.length,
-   explanation:'Only independently source-reviewed institutional reports qualify as migration evidence. No verified movement reports have been added unless shown below.'},
+  migration:{status:reports.length?'recent_source_reviewed':'no_recent_source_reviewed_reports',reports,count:reports.length,
+   history:archive.slice(0,12),readiness,
+   explanation:'Only independently source-reviewed institutional reports qualify as documented migration. Historical reports are separate from current activity; forecast scoring is not calibrated from these events.'},
   sources:[{name:'iNaturalist research-grade observations',url:INAT_SOURCE},
    {name:'iNaturalist Research Grade explanation',url:'https://help.inaturalist.org/en/support/solutions/articles/151000169936-what-is-the-data-quality-assessment-dqa-and-how-do-observations-qualify-to-become-research-grade-'},
    {name:'iNaturalist geoprivacy',url:'https://help.inaturalist.org/en/support/solutions/articles/151000169938-what-is-geoprivacy-what-does-it-mean-for-an-observation-to-be-obscured-'}]};

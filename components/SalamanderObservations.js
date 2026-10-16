@@ -8,6 +8,8 @@ export default function SalamanderObservations({selected}){
  const [payload,setPayload]=useState(null),[error,setError]=useState('');
  useEffect(()=>{let mounted=true;fetch('/api/salamander-observations').then(r=>{if(!r.ok)throw Error('Observation evidence unavailable');return r.json();}).then(value=>{if(mounted)setPayload(value);}).catch(()=>{if(mounted)setError('The observation feed could not be retrieved. The independent weather outlook is still available.');});return()=>{mounted=false;};},[]);
  const obs=payload?.observations,reported=payload?.migration?.reports||[];
+ const history=payload?.migration?.history||[],readiness=payload?.migration?.readiness;
+ const progress=readiness?.sourceReviewedEvents||0;
  const active=obs?.state!=='off_season',sampled=obs?.state==='sampled';
  const regional=obs?.regions?.find(r=>r.id===selected);
  const regionName=REGIONS.find(r=>r.id===selected)?.name||'Selected Michigan region';
@@ -41,12 +43,35 @@ export default function SalamanderObservations({selected}){
    </article>
    <article className="sala-evidence-confirm">
     <span className="sala-overline">Higher bar · source-reviewed movement</span>
-    <h3>{reported.length?'Institutional migration reports':'No reviewed migration report yet'}</h3>
-    <p>{reported.length?'These records were manually reviewed against an institutional public source, and show only broad Michigan regions.':'The observation feed cannot certify a Big Night. This independent category will show movement only when an authoritative public report has been reviewed.'}</p>
+    <h3>{reported.length?'Recent source-reviewed migration reports':'No recent reviewed migration reports'}</h3>
+    <p>{reported.length?'These records were manually reviewed against an institutional public source, and show only broad Michigan regions.':'The observation feed cannot certify a Big Night. Only independently reviewed public institutional reports can document movement, and older reports belong in the historical archive.'}</p>
     {reported.length?<div className="sala-reviewed-list">{reported.map((r,i)=><div key={r.sourceUrl+i}><span>{period(r.observedOn)} · {REGIONS.find(x=>x.id===r.regionId)?.name||'Michigan'}</span><strong>{r.organization}</strong><p>{r.summary}</p><a href={r.sourceUrl} target="_blank" rel="noreferrer">Institutional evidence →</a></div>)}</div>
-    :<div className="sala-review-empty"><span className="sala-review-dot"/>Review ledger empty · Not a claim that no migration occurred</div>}
+    :<div className="sala-review-empty"><span className="sala-review-dot"/>No recent verified report · Not evidence that migration did not happen</div>}
     <div className="sala-evidence-separation"><strong>Important distinction</strong><p>A photograph of a salamander does not establish that a migration is underway. A forecast that looks promising is not an observation at all.</p></div>
    </article>
+  </div>
+  <div className="sala-field-workflow" id="field-reports">
+   <div className="sala-field-intro">
+    <div><span className="sala-overline">Help build a trustworthy spring record</span><h3>Document a migration night. Keep sensitive places protected.</h3><p>Conservation groups and field observers can submit a dated public institutional source that explicitly documents actual movement. The source enters a review queue; no submission changes the tracker automatically.</p></div>
+    <a className="sala-field-submit" href="https://form.jotform.com/262884591479072" target="_blank" rel="noreferrer">Submit source evidence <span aria-hidden="true">↗</span></a>
+   </div>
+   <div className="sala-field-steps">
+    <div><span>01 · SUBMIT</span><strong>Broad region and date</strong><p>Supply a public source link. No GPS, crossing directions, photo upload, or contact details needed.</p></div>
+    <div><span>02 · REVIEW</span><strong>Human source verification</strong><p>An editor checks actual movement, independent event date, authoritative sourcing, and habitat privacy.</p></div>
+    <div><span>03 · PUBLISH</span><strong>Dated evidence, not a prediction</strong><p>Approved reports enter a region-level historical archive after automated integrity tests.</p></div>
+   </div>
+   <div className="sala-calibration-panel">
+    <div><span className="sala-overline">Long-term research quality</span><h4>Are there enough observations to validate the predictor?</h4><p>{readiness?.explanation||'Historical event coverage and monitored non-movement nights must be recorded before any claim of statistically validated migration probability.'}</p></div>
+    <div className="sala-calibration-stats">
+     <div><strong>{readiness?progress:'—'}</strong><span>Reviewed movement reports</span></div>
+     <div><strong>{readiness?readiness.years:'—'}</strong><span>Spring seasons covered</span></div>
+     <div><strong>{readiness?readiness.regions:'—'}</strong><span>Broad regions covered</span></div>
+    </div>
+    <p className="sala-calibration-status">{readiness?.calibrationReady?'Coverage prerequisites met; held-out model evaluation still required.':'Calibration status: evidence collection. No validated migration probabilities claimed.'}</p>
+   </div>
+   {history.length>0?<div className="sala-historical-reports"><h4>Source-reviewed migration archive</h4><p>These are historical dated reports, not claims about tonight.</p><div className="sala-reviewed-list">{history.map((r,i)=><div key={r.sourceUrl+i}><span>{period(r.observedOn)} {r.observedOn.slice(0,4)} · {REGIONS.find(x=>x.id===r.regionId)?.name||'Michigan'}</span><strong>{r.organization}</strong><p>{r.summary}</p><a href={r.sourceUrl} target="_blank" rel="noreferrer">View original institutional evidence →</a></div>)}</div></div>
+   :<p className="sala-history-empty">Historical archive: no independently reviewed movement records yet. An empty record is not evidence that salamanders did not migrate in earlier years.</p>}
+   <p className="sala-field-independence">This is an independent educational tool, not an official reporting program of the Michigan Vernal Pools Partnership or participating organizations. For formal vernal-pool research and monitoring, use the <a href="https://mivernalpools.com/" target="_blank" rel="noreferrer">Michigan Vernal Pools Partnership</a>.</p>
   </div>
   <div className="sala-evidence-privacy">
    <div><strong>Privacy first</strong><p>No individual observation pins, locations, crossing coordinates, photo metadata or observer identities are returned by this tool. Regional summaries hide small samples, and protected/obscured observations are not used to assign a region.</p></div>
