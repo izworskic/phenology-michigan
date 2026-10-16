@@ -105,6 +105,15 @@ assert.match(comp,/prefers-reduced-motion: reduce/);
 assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{\.wsx-wing/);
 assert.match(comp,/allaboutbirds\.org\/guide\/American_Woodcock\/sounds/,'Cornell reference stays linked');
 for(const label of ['Peent','Twitter','Chirp','On the ground','Spiraling into the sky','Descending home','Made by wing feathers','Experience the full sky dance','What am I hearing in the woods?'])assert.ok(comp.includes(label),label);
-assert.ok(page.includes('<WoodcockSoundExperience/>'));
-for(const keep of ['<WoodcockCartoMap','<WoodcockViewingFinder','/api/woodcock','NightChart','https://phenology.chrisizworski.com/woodcock-sky-dance','application/ld+json','FlightArt'])assert.ok(page.includes(keep),'existing page feature intact: '+keep);
+// Layout: the interactive sky dance leads the page, the forecast follows directly,
+// then the map and atlas, the ear test and one merged field guide. No duplicate sections.
+for(const part of ['<WoodcockAudioProvider>','<SkyDanceStage/>','<StageCards/>','<JumpNav/>','<SoundQuiz/>','<WoodcockFieldGuide>','<ForecastTeaser'])assert.ok(page.includes(part),'page uses '+part);
+const at=x=>{const i=page.indexOf(x);assert.ok(i>=0,x);return i;};
+assert.ok(at('<SkyDanceStage/>')<at('id="forecast"')&&at('id="forecast"')<at('id="seven-nights"')&&at('id="seven-nights"')<at('id="map"')&&at('id="map"')<at('<SoundQuiz/>')&&at('<SoundQuiz/>')<at('<WoodcockFieldGuide>')&&at('<WoodcockFieldGuide>')<at('id="faq"'),'section order');
+assert.doesNotMatch(page,/FlightArt|woodcock-habitat-grid/,'the static hero illustration and the separate habitat cards are replaced');
+for(const once of ['Small grassy clearings','Arrive 15–20 minutes','id="where"','id="how-to"'])assert.equal(page.split(once).length,2,'appears once: '+once);
+assert.equal((comp.match(/What am I hearing in the woods\?/g)||[]).length,1);
+assert.match(comp,/role="button" tabIndex=\{0\}/,'flight-path stage markers are keyboard-operable buttons');
+assert.match(comp,/Name that sound/);assert.match(comp,/return \{stage:null,p:0\}/,'quiz snippets never reveal the stage in the diagram');
+for(const keep of ['<WoodcockCartoMap','<WoodcockViewingFinder','/api/woodcock','NightChart','https://phenology.chrisizworski.com/woodcock-sky-dance','application/ld+json','id="woodcock-region"','woodcock-access-atlas'])assert.ok(page.includes(keep),'existing page feature intact: '+keep);
 console.log('Woodcock media: 4 recordings ('+(ffmpeg?'decoded, stage-checked':'structure only')+'), 2 photos, licences, annotations and page integration verified.');
