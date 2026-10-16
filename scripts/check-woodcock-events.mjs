@@ -46,7 +46,7 @@ const list='<html><a href="https://ruffedgrousesociety.org/events/woodcock-walk-
   '<a href="https://ruffedgrousesociety.org/events/woodcock-hunt/">Woodcock Hunting Trip 2027</a>'+
   '<a href="https://evil.example.com/fake/">Michigan Woodcock Walk</a></html>';
 assert.deepEqual(findWoodcockDetailLinks(list,'https://ruffedgrousesociety.org/events/',rgs),['https://ruffedgrousesociety.org/events/woodcock-walk-2027/']);
-const other=fromTecEvent({...good,title:'Northern Michigan Woodcock Sky Dance',venue:{venue:'New preserve',city:'Grayling',stateprovince:'Michigan'}},rgs,2027,at);
+const other=fromTecEvent({...good,title:'Northern Michigan Woodcock Sky Dance',url:'https://ruffedgrousesociety.org/events/northern-michigan-sky-dance-2027/',venue:{venue:'New preserve',city:'Grayling',stateprovince:'Michigan'}},rgs,2027,at);
 assert.equal(other.siteId,null,'Do not invent pin locations');
 const feed=mergeEvents({year:2027,events:[valid]},[valid,other],2027,[{id:'rgs',name:rgs.name,status:'checked',eventCount:2}],at);
 assert.equal(feed.events.length,2);
