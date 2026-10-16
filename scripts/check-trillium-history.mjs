@@ -13,7 +13,7 @@ assert.equal(ARCHIVE.interval,'week');
 assert.equal(ARCHIVE.date_field,'observed');
 assert.deepEqual([...ALLOWED_REGION_IDS].sort(),REGIONS.map(x=>x.id).sort(),'Archive regions must cover every tracked region');
 assert.equal(Object.keys(ARCHIVE.regions).length,7);
-assert.equal(Object.values(ARCHIVE.regions).reduce((n,x)=>n+x.weekly.reduce((s,row)=>s+row[1],0),0),1885,'Provenance-check baseline counts from 2019–2026 actual archive');
+assert.equal(Object.values(ARCHIVE.regions).reduce((n,x)=>n+x.weekly.filter(([date])=>date.slice(0,4)<='2026').reduce((s,row)=>s+row[1],0),0),1885,'The original 2019–2026 provenance snapshot must not change on future annual refreshes');
 assert.equal(dateToDoy('2020-05-01'),dateToDoy('2025-05-01'),'Leap-year normalization must not shift May');
 assert.equal(dateToDoy('2020-02-29'),null,'Leap day is not comparable across years');
 assert.equal(doyLabel(dateToDoy('2024-05-12')),'May 12');
