@@ -1,0 +1,47 @@
+name: Woodcock Sound Experience
+on:
+  pull_request:
+    paths:
+      - 'components/WoodcockSoundExperience.js'
+      - 'pages/woodcock-sky-dance.js'
+      - 'public/woodcock.css'
+      - 'public/woodcock-media/**'
+      - 'data/woodcock-media.json'
+      - 'scripts/check-woodcock-media.mjs'
+      - 'scripts/woodcock-sound-browser.cjs'
+      - '.github/workflows/woodcock-media-verify.yml'
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  media:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Recordings, stage labels, licences, photos, page integration
+        run: node scripts/check-woodcock-media.mjs
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm install --prefix /tmp/wc-browser --no-save --ignore-scripts playwright-core@1.56.1
+      - name: Playback, single player, sync, keyboard, reduced motion, phone layout
+        env:
+          NODE_PATH: /tmp/wc-browser/node_modules
+          CHROME_BIN: /usr/bin/google-chrome
+          BASE: http://localhost:3000
+        run: |
+          npx next start -p 3000 > /tmp/next.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:3000/woodcock-sky-dance > /dev/null && break; sleep 1; done
+          node scripts/woodcock-sound-browser.cjs

@@ -1,0 +1,220 @@
+{
+ "version": 1,
+ "generated": "2026-10-16",
+ "species": "American woodcock (Scolopax minor)",
+ "note": "Every Play control in components/WoodcockSoundExperience.js uses a file listed here. See docs/WOODCOCK_MEDIA.md for how stages were identified.",
+ "reference": {
+  "name": "Cornell Lab of Ornithology, All About Birds: American Woodcock sounds",
+  "url": "https://www.allaboutbirds.org/guide/American_Woodcock/sounds",
+  "hosted": false
+ },
+ "excluded": [
+  {
+   "source": "Macaulay Library / All About Birds",
+   "reason": "Recordings are publicly playable but not licensed for re-hosting; kept as an external reference link."
+  },
+  {
+   "source": "xeno-canto",
+   "reason": "Not used. The site blocked automated review on 2026-10-16, and its uploads default to CC BY-NC-SA (non-commercial), which is incompatible with this ad-supported page unless a recordist chose otherwise. Openly licensed iNaturalist recordings covered all three stages instead."
+  }
+ ],
+ "audio": {
+  "peent": {
+   "file": "peent.mp3",
+   "stage": "peent",
+   "voice": "vocal",
+   "recordist": "steve b",
+   "credit": "steve b, CC0",
+   "sourceUrl": "https://www.inaturalist.org/observations/198609239",
+   "originalUrl": "https://static.inaturalist.org/sounds/891151",
+   "recorded": "2024-02-06 18:14, Orange County, North Carolina",
+   "identification": "iNaturalist research grade, 3 identifications, none dissenting",
+   "excerpt": "0:00–0:14 of the original",
+   "peentOnsets": [
+    0.7,
+    3.59,
+    6.1,
+    8.3,
+    10.39,
+    12.52
+   ],
+   "license": "cc0",
+   "licenseName": "CC0 1.0 (public domain dedication)",
+   "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "src": "/woodcock-media/peent.mp3",
+   "format": "audio/mpeg",
+   "durationSec": 14.03,
+   "bytes": 196798,
+   "sha256": "8a8cb9a04481252ede3f3689d1fe78d8b4e4461374342f4e35295be4569dcab0",
+   "modified": "Excerpted; low-frequency noise below 800 Hz filtered, loudness-levelled to about -19 LUFS, mono 112 kbps MP3; 0.15 s fade at the edges"
+  },
+  "twitter": {
+   "file": "twitter.mp3",
+   "stage": "twitter",
+   "voice": "wing",
+   "excerpt": "0:19.6–0:27.2 of the original (ascending flight)",
+   "recordist": "Evan M. Raskin",
+   "credit": "© Evan Raskin, CC BY 4.0",
+   "sourceUrl": "https://www.inaturalist.org/observations/1303476",
+   "originalUrl": "https://static.inaturalist.org/sounds/2415",
+   "recorded": "2015-03-18, Haywood County, North Carolina",
+   "identification": "iNaturalist research grade, 2 identifications, none dissenting",
+   "recordistNote": "The recordist removed about 40 seconds of blank audio (bird out of microphone range) between the ascending and descending flight, and reduced wind noise. Audio is from a small digital camera.",
+   "license": "cc-by",
+   "licenseName": "CC BY 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "src": "/woodcock-media/twitter.mp3",
+   "format": "audio/mpeg",
+   "durationSec": 7.63,
+   "bytes": 107198,
+   "sha256": "3fd6d802e9923719b1734bea029bb20a07bdd0e70b56f9af4afdbb9bf1fbe28e",
+   "modified": "Excerpted; low-frequency noise below 800 Hz filtered, loudness-levelled to about -19 LUFS, mono 112 kbps MP3; 0.15 s fade at the edges"
+  },
+  "chirp": {
+   "file": "chirp.mp3",
+   "stage": "chirp",
+   "voice": "vocal-with-wing",
+   "excerpt": "0:35.0–0:44.8 of the original (descent)",
+   "recordist": "Evan M. Raskin",
+   "credit": "© Evan Raskin, CC BY 4.0",
+   "sourceUrl": "https://www.inaturalist.org/observations/1303476",
+   "originalUrl": "https://static.inaturalist.org/sounds/2415",
+   "recorded": "2015-03-18, Haywood County, North Carolina",
+   "identification": "iNaturalist research grade, 2 identifications, none dissenting",
+   "recordistNote": "The recordist removed about 40 seconds of blank audio (bird out of microphone range) between the ascending and descending flight, and reduced wind noise. Audio is from a small digital camera.",
+   "license": "cc-by",
+   "licenseName": "CC BY 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "src": "/woodcock-media/chirp.mp3",
+   "format": "audio/mpeg",
+   "durationSec": 9.82,
+   "bytes": 137918,
+   "sha256": "7a49a6119b7c31347281fa0127279dfdad5be4549291b18c728dc6f0405493b8",
+   "modified": "Excerpted; low-frequency noise below 800 Hz filtered, loudness-levelled to about -19 LUFS, mono 112 kbps MP3; 0.15 s fade at the edges"
+  },
+  "full": {
+   "file": "sky-dance-full.mp3",
+   "stage": "full",
+   "voice": "mixed",
+   "excerpt": "Complete original as published (0:00–0:44.8)",
+   "recordist": "Evan M. Raskin",
+   "credit": "© Evan Raskin, CC BY 4.0",
+   "sourceUrl": "https://www.inaturalist.org/observations/1303476",
+   "originalUrl": "https://static.inaturalist.org/sounds/2415",
+   "recorded": "2015-03-18, Haywood County, North Carolina",
+   "identification": "iNaturalist research grade, 2 identifications, none dissenting",
+   "recordistNote": "The recordist removed about 40 seconds of blank audio (bird out of microphone range) between the ascending and descending flight, and reduced wind noise. Audio is from a small digital camera.",
+   "license": "cc-by",
+   "licenseName": "CC BY 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "segments": [
+    {
+     "stage": "peent",
+     "start": 0,
+     "end": 19.6,
+     "label": "Peents on the ground"
+    },
+    {
+     "stage": "twitter",
+     "start": 19.6,
+     "end": 27.27,
+     "label": "Wing twitter, spiraling up"
+    },
+    {
+     "stage": "gap",
+     "start": 27.27,
+     "end": 28.27,
+     "label": "About 40 s of silence removed by the recordist"
+    },
+    {
+     "stage": "chirp",
+     "start": 28.27,
+     "end": 44.81,
+     "label": "Descent: chirps with wing twitter"
+    }
+   ],
+   "peentOnsets": [
+    0.51,
+    5.14,
+    9.47,
+    13.08,
+    17.72
+   ],
+   "src": "/woodcock-media/sky-dance-full.mp3",
+   "format": "audio/mpeg",
+   "durationSec": 44.83,
+   "bytes": 627975,
+   "sha256": "09086855bf978b4517b187ae0e7a3e2340a1c98b25ec8f5af9e252d1c9a282fc",
+   "modified": "low-frequency noise below 800 Hz filtered, loudness-levelled to about -19 LUFS, mono 112 kbps MP3"
+  }
+ },
+ "photos": {
+  "ground": {
+   "file": "woodcock-ground.webp",
+   "small": "woodcock-ground-sm.webp",
+   "photographer": "Rev. Lee A. Payne, Jr.",
+   "credit": "© Rev. Lee A. Payne, Jr., CC BY 4.0",
+   "sourceUrl": "https://www.inaturalist.org/observations/108886506",
+   "originalUrl": "https://www.inaturalist.org/photos/183416565",
+   "taken": "2022-03-14, Louisville, Kentucky",
+   "identification": "iNaturalist research grade, 4 identifications, none dissenting",
+   "alt": "American woodcock standing in pine-needle litter: a plump, short-legged bird with a very long straight bill, large dark eye set high and far back on the head, and mottled brown, gray and black plumage that matches the leaves",
+   "license": "cc-by",
+   "licenseName": "CC BY 4.0",
+   "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+   "src": "/woodcock-media/woodcock-ground.webp",
+   "srcSize": [
+    1400,
+    933
+   ],
+   "sha256": {
+    "src": "7ac4418df377152fe81961cf5bd537f97f6dba7e5124bde0cbcc5d164ab3115a",
+    "srcSmall": "37f8f602146e47e37d4b4f85dc6680984a04323c5f3a02b3f0937ee441d47d69"
+   },
+   "bytes": {
+    "src": 182738,
+    "srcSmall": 79096
+   },
+   "srcSmall": "/woodcock-media/woodcock-ground-sm.webp",
+   "srcSmallSize": [
+    800,
+    533
+   ],
+   "modified": "resized; saved as WebP"
+  },
+  "flight": {
+   "file": "woodcock-flight.webp",
+   "small": "woodcock-flight-sm.webp",
+   "photographer": "Adam Jackson",
+   "credit": "Adam Jackson, CC0",
+   "sourceUrl": "https://www.inaturalist.org/observations/195811353",
+   "originalUrl": "https://www.inaturalist.org/photos/344580602",
+   "taken": "2022-03-07 18:42, Ohio",
+   "identification": "iNaturalist research grade, 4 identifications, none dissenting; observer also identified it by the buzzy call",
+   "alt": "Dark silhouette of an American woodcock flying against a dusky gray sky, long bill pointing forward and rounded wings blurred by motion",
+   "captionNote": "Photographed in flight at dusk in March. It is not documented as a display flight, so it is shown as the silhouette to expect, not as a sky-dance photo.",
+   "license": "cc0",
+   "licenseName": "CC0 1.0 (public domain dedication)",
+   "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "src": "/woodcock-media/woodcock-flight.webp",
+   "srcSize": [
+    1000,
+    667
+   ],
+   "sha256": {
+    "src": "82454342fd82f950d6fdea8b7ecd8d030d277b7c2d6407ec447debf61c432e63",
+    "srcSmall": "8acd4503d3aed6044791ac6fe03629d165fe07dfbeac7b7f92ca82db9e12c4fd"
+   },
+   "bytes": {
+    "src": 62890,
+    "srcSmall": 12258
+   },
+   "srcSmall": "/woodcock-media/woodcock-flight-sm.webp",
+   "srcSmallSize": [
+    600,
+    400
+   ],
+   "modified": "Cropped and resized; saved as WebP"
+  }
+ }
+}
