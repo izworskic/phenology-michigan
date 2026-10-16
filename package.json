@@ -6,8 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "node scripts/check-creator-entity.mjs && node scripts/check-fireflies.mjs && node scripts/check-hummingbirds.mjs && node scripts/check-hummingbird-calibration.mjs && node scripts/check-firefly-map.mjs && node scripts/check-bloom-core.mjs && node scripts/check-bloom-ingestion.mjs && node scripts/check-bloom-model.mjs && node scripts/check-bloom-history.mjs && node scripts/check-bloom-source-operator.mjs && node scripts/check-bloom-verified-provenance.mjs && node scripts/check-bloom-public-presentation.mjs && node scripts/check-bloom-tracker-product.mjs && node scripts/check-bloom-jev-auth.mjs && node scripts/check-bloom-map-v2.mjs && node scripts/check-bloom-social-card.mjs && node scripts/check-wisconsin-bloom.mjs && node scripts/check-trillium.mjs && node scripts/check-trillium-sites.mjs && node scripts/check-trillium-history.mjs",
-    "history:trillium-refresh": "node scripts/refresh-trillium-history.mjs"
+    "test": "node scripts/check-creator-entity.mjs && node scripts/check-fireflies.mjs && node scripts/check-hummingbirds.mjs && node scripts/check-hummingbird-calibration.mjs && node scripts/check-firefly-map.mjs && node scripts/check-bloom-core.mjs && node scripts/check-bloom-ingestion.mjs && node scripts/check-bloom-model.mjs && node scripts/check-bloom-history.mjs && node scripts/check-bloom-source-operator.mjs && node scripts/check-bloom-verified-provenance.mjs && node scripts/check-bloom-public-presentation.mjs && node scripts/check-bloom-tracker-product.mjs && node scripts/check-bloom-jev-auth.mjs && node scripts/check-bloom-map-v2.mjs && node scripts/check-bloom-social-card.mjs && node scripts/check-wisconsin-bloom.mjs && node scripts/check-trillium.mjs && node scripts/check-trillium-sites.mjs && node scripts/check-trillium-history.mjs && node scripts/check-trillium-thermal.mjs",
+    "history:trillium-refresh": "node scripts/refresh-trillium-history.mjs",
+    "history:trillium-thermal": "node scripts/refresh-trillium-thermal.mjs"
   },
   "dependencies": {
     "@vercel/oidc": "3.8.8",
