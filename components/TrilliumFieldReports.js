@@ -1,5 +1,5 @@
 import {Flower2,ClipboardCheck,CalendarDays,ExternalLink,BookOpen} from 'lucide-react';
-export const PUBLIC_REPORT_URL='https://github.com/izworskic/phenology-michigan/issues/new?template=trillium-field-report.yml';
+export const PUBLIC_REPORT_URL='https://form.jotform.com/262882681844066';
 const fmt=s=>new Date(s+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
 const STAGE={BUDDING:'Buds',FLOWERING:'Open flowers',FADING:'Flowers fading',DONE:'Finished',NEAR_PEAK:'Near peak, reviewed',PEAK:'Peak, reviewed'};
 export function SiteReportHistory({site,history}){
@@ -23,6 +23,6 @@ export default function TrilliumReportProgram({total=0,sitesWithReports=0,multiY
  <a className='tri-report-program-cta' href={PUBLIC_REPORT_URL} target='_blank' rel='noopener noreferrer'>Share a field report <ExternalLink size={16}/></a></div>
  <div className='tri-report-program-stats'><div><strong>{total}</strong><span>independently reviewed reports</span></div><div><strong>{sitesWithReports} / 10</strong><span>destinations with evidence</span></div><div><strong>{multiYearSites}</strong><span>destinations with multiple observed years</span></div></div>
  <div className='tri-report-program-method'><span><CalendarDays size={16}/> Include the actual observation date</span><span><Flower2 size={16}/> Identify buds, open flowers or fading</span><span><ClipboardCheck size={16}/> Editor checks that the source identifies the preserve</span></div>
- <p className='tri-report-program-fine'>Submission opens a public GitHub issue and requires a free GitHub account. Share a public iNaturalist observation or dated land-manager report, not private plant coordinates or sensitive locations. Submissions are candidates only; an editor must review them before any bloom status or historical count changes. Multiple reports do not automatically establish a peak or a calibrated prediction.</p>
+ <p className='tri-report-program-fine'>Submission opens a visitor-friendly form. Share a public iNaturalist observation or dated land-manager report, not private plant coordinates or sensitive locations. Submissions are candidates only; an editor must review them before any bloom status or historical count changes. Multiple reports do not automatically establish a peak or a calibrated prediction.</p>
  </section>;
 }
