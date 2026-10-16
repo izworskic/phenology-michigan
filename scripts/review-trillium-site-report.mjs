@@ -52,11 +52,30 @@ export async function verifyPublicObservation(record,request=fetch){
 }
 async function main(){
  const file=process.env.TRILLIUM_ISSUE_JSON,actor=process.env.GITHUB_ACTOR,owner=process.env.GITHUB_REPOSITORY_OWNER;
- if(!file||!actor||actor!==owner)throw Error('Only repository owner may publish on-site bloom evidence');
- const issue=JSON.parse(await fs.readFile(file,'utf8'));
+ if(!actor||actor!==owner)throw Error('Only repository owner may publish on-site bloom evidence');
  const inputs={reviewer:actor,stage:process.env.REVIEWED_STAGE,siteEvidenceNote:process.env.ON_SITE_REVIEW_NOTE,
    peakEvidenceNote:process.env.PEAK_REVIEW_NOTE,observationFloweringReviewed:process.env.OBSERVATION_FLOWERING_REVIEWED==='true'};
- const record=candidateFromIssue(issue,inputs,STOPS);
+ let record;
+ if(process.env.REVIEW_SOURCE==='jotform'){
+   // The owner independently reviews the received Jotform submission.
+   // The numeric external reference is internal provenance, never displayed as a person.
+   const number=Number(process.env.REVIEW_EXTERNAL_ID);
+   const site=STOPS.find(s=>s.id===process.env.REVIEW_SITE_ID);
+   const current=new Intl.DateTimeFormat('en-US',{timeZone:'America/Detroit',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+   const get=k=>current.find(p=>p.type===k)?.value;
+   const nowDate=get('year')+'-'+get('month')+'-'+get('day');
+   if(!site||!Number.isSafeInteger(number)||number<1)throw Error('Valid approved form ID and exact preserve required');
+   const url=process.env.REVIEW_EVIDENCE_URL;
+   const kind=/^https:\/\/(www\.)?inaturalist\.org\/observations\/\d+/.test(url||'')?'reviewed_observation':'land_manager';
+   record=validateSiteRecord({siteId:site.id,siteName:site.name,observedAt:process.env.REVIEW_OBSERVED_AT,reviewedAt:nowDate,
+      reviewedBy:actor,stage:inputs.stage,sourceKind:kind,sourceUrl:url,issueNumber:number,
+      siteEvidenceNote:inputs.siteEvidenceNote,peakEvidenceNote:inputs.peakEvidenceNote,
+      sourceExcerpt:process.env.REVIEW_SOURCE_EXCERPT,observationFloweringReviewed:inputs.observationFloweringReviewed},STOPS);
+ }else{
+   if(!file)throw Error('Existing GitHub issue input required');
+   const issue=JSON.parse(await fs.readFile(file,'utf8'));
+   record=candidateFromIssue(issue,inputs,STOPS);
+ }
  await verifyPublicObservation(record);
  const existing=JSON.parse(await fs.readFile(path,'utf8')),rows=readArchive(existing,STOPS);
  if(rows.some(r=>r.issueNumber===record.issueNumber||r.siteId===record.siteId&&r.sourceUrl===record.sourceUrl))
