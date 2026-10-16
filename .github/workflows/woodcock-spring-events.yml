@@ -1,0 +1,61 @@
+name: Refresh Michigan Woodcock Spring Walks
+on:
+  schedule:
+    # Every Tuesday January–June, 13:27 UTC (~8:27–9:27 a.m. Michigan time).
+    # Start ahead of spring announcements. Not a continuous or real-time monitoring claim.
+    - cron: '27 13 * 1-6 2'
+  workflow_dispatch:
+    inputs:
+      target_year:
+        description: 'Optional inspection year for dry runs; leave blank for coming spring'
+        required: false
+        type: string
+      dry_run:
+        description: 'Inspect sources without committing anything'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: woodcock-spring-events-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Check official organizer calendars for dated Michigan spring walks
+        env:
+          WOODCOCK_YEAR: ${{ github.event.inputs.target_year }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            node scripts/refresh-woodcock-events.mjs --dry-run
+          else
+            node scripts/refresh-woodcock-events.mjs
+          fi
+      - name: Check publishing integrity and rebuild
+        run: npm test && npm run build
+      - name: Commit refreshed listings (only on scheduled or non-dry-run dispatch)
+        if: ${{ github.event_name == 'schedule' || github.event.inputs.dry_run != 'true' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/woodcock-spring-events.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Refresh Michigan woodcock spring walk organizer listings"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
