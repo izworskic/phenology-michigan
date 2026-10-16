@@ -26,6 +26,22 @@ export default function FrogMap({selected,onSelect,rows}){
     map.current=m;
     L.control.zoom({position:'bottomright'}).addTo(m);
     m.fitBounds(BOUNDS,{padding:[18,18],animate:false});
+    // Geographic fallback ensures Michigan is still visible when a raster tile
+    // provider or browser network fails. This is a simplified U.S. Census
+    // landmass boundary shipped with our existing Phenology project.
+    const fallbackPane=m.createPane('frog-geography');
+    fallbackPane.style.zIndex='180';
+    fallbackPane.style.pointerEvents='none';
+    let geography=null,alive=true;
+    fetch('/maps/great-lakes-context.geojson').then(res=>{
+      if(!res.ok)throw Error('Outline unavailable');
+      return res.json();
+    }).then(data=>{
+      if(!alive)return;
+      geography=L.geoJSON(data,{pane:'frog-geography',interactive:false,
+        style:()=>({color:'#6d957d',weight:1.5,opacity:1,fillColor:'#a9cfb2',fillOpacity:.85})}).addTo(m);
+    }).catch(()=>{});
+
     REGIONS.forEach((r,i)=>{
       const pin=L.marker([r.lat,r.lon],{title:r.name,keyboard:true,alt:r.name+' forecast point',icon:markerIcon(L,i+1,r.id===selected,'quiet')}).addTo(m);
       pin.bindTooltip(r.name,{direction:'top'});
@@ -37,7 +53,7 @@ export default function FrogMap({selected,onSelect,rows}){
     observer?.observe(node.current);
     const frame=requestAnimationFrame(resize);
     window.addEventListener('resize',resize);
-    return ()=>{cancelAnimationFrame(frame);observer?.disconnect();window.removeEventListener('resize',resize);pins.current.clear();tiles.current=null;m.remove();map.current=null;};
+    return ()=>{alive=false;cancelAnimationFrame(frame);observer?.disconnect();window.removeEventListener('resize',resize);pins.current.clear();tiles.current=null;m.remove();map.current=null;};
   },[ready]);
   useEffect(()=>{
     if(!map.current||!window.L)return;
@@ -47,7 +63,7 @@ export default function FrogMap({selected,onSelect,rows}){
     let count=0,fail=0;
     const ok=()=>{count++;setError('');};
     const bad=()=>{fail++;};
-    const done=()=>{if(!count&&fail)setError('CARTO tiles are unavailable. Use the regional buttons below.');};
+    const done=()=>{if(!count&&fail)setError('CARTO tiles are unavailable. A simplified Michigan outline is shown; regional buttons still work.');};
     layer.on('tileload',ok);layer.on('tileerror',bad);layer.on('load',done);
     layer.addTo(map.current);tiles.current=layer;
     return ()=>{layer.off('tileload',ok);layer.off('tileerror',bad);layer.off('load',done);};
