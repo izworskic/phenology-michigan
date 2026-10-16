@@ -9,7 +9,7 @@ export default function handler(req,res){
   const rows=safeCandidateArchive(ARCHIVE).filter(r=>!site||r.siteId===site);
   const counts={sourceChecked:rows.filter(r=>r.checkStatus==='species_date_flowering_checked').length,
     linkOnly:rows.filter(r=>r.checkStatus==='link_only').length};
-  res.setHeader('Cache-Control','public, s-maxage=21600, stale-while-revalidate=21600');
+  res.setHeader('Cache-Control','public, s-maxage=300, stale-while-revalidate=300');
   return res.status(200).json({state:'ready',counts,records:rows.slice(-35).reverse().map(publicCandidate),
     source:'Automated source screening from the on-page iNaturalist form or a configured Jotform webhook; not preserve-boundary confirmation',
     policy:'These are visitor-selected preserve references. Publicly sourced species/flowering may pass automatic checks, but preserve membership is NOT independently established. None counts as an editor-reviewed site bloom, peak or site-specific training truth.'});
