@@ -1,0 +1,61 @@
+name: Document a Great Lakes lake-smoke sighting
+description: Submit time- and location-specific evidence for independent editorial review. Submission is NOT automatic confirmation.
+title: "Lake smoke observation: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please submit only sightings you personally witnessed or can document with a public, original, dated camera or official source. Do not upload private-property coordinates or identifying details. The publisher reviews reports manually; a report will NOT become a confirmed sighting merely because it was submitted.
+  - type: dropdown
+    id: site
+    attributes:
+      label: Nearest tracked shoreline location
+      options:
+        - Marquette Lower Harbor
+        - Munising / Sand Point
+        - Grand Marais
+        - Whitefish Point
+        - Frankfort Beach
+        - Ludington Waterfront
+        - Grand Haven
+        - St. Joseph
+        - Mackinaw City / Straits
+        - Alpena
+        - Tawas Point
+        - Saginaw Bay / Bay City
+        - Lexington
+        - Monroe / Sterling State Park
+        - Oswego
+    validations:
+      required: true
+  - type: input
+    id: observed
+    attributes:
+      label: Date, local time, and time zone
+      placeholder: "2026-11-19, 7:15 AM ET"
+      description: The observation time, not the upload or posting time.
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: Original evidence link (public HTTPS URL)
+      placeholder: "https://..."
+      description: Link to the original time-stamped image, camera archive, video, or official field observation. A general webcam homepage alone is not evidence of a particular sighting.
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What did you observe?
+      description: Describe visible wisps over exposed water, viewing direction, and any reasons the phenomenon might instead have been ordinary fog. Do not include identifying or private information.
+      placeholder: "Thin white plumes rising from open water, drifting along shore..."
+    validations:
+      required: true
+  - type: checkboxes
+    id: attestation
+    attributes:
+      label: Evidence status
+      options:
+        - label: I understand that this submission is public, requires independent review, and is not automatically a confirmed sighting.
+          required: true

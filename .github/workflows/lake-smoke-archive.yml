@@ -1,0 +1,50 @@
+name: Archive lake-smoke morning forecasts
+
+on:
+  schedule:
+    # Once per morning before most 5–10 AM Eastern viewing hours.
+    # UTC timing shifts with daylight saving time. GitHub schedules can be delayed.
+    - cron: '23 11 * * *'
+  workflow_dispatch: {}
+  # Bootstrap the first forecast issue on initial release; does not rerun on daily data pushes.
+  push:
+    branches: [main]
+    paths:
+      - 'pages/api/lake-smoke-history.js'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: lake-smoke-daily-archive
+  cancel-in-progress: false
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout current production branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Capture one-day-ahead NOAA and NWS forecast
+        run: node scripts/record-lake-smoke.mjs
+      - name: Commit only if a genuinely new issue was recorded
+        run: |
+          git add data/lake-smoke-forecast-issues.json
+          if git diff --cached --quiet; then
+            echo "Already archived or no change; nothing to commit."
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          # Historical data is read at request time; avoid deploying a new build daily.
+          git commit -m "Archive one-day-ahead lake smoke forecast [skip deploy]"
+          git pull --rebase origin main
+          git push origin HEAD:main
