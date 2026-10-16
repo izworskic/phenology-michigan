@@ -21,14 +21,24 @@ async function run(browser,label,opts){
   await page.waitForTimeout(1200);
   assert.equal(audioReq.length,0,label+': nothing loads or plays before Play');
   assert.equal(await page.locator('audio').count(),1,label+': one shared audio element');
-  const section=page.locator('#listen');await section.scrollIntoViewIfNeeded();
+  const section=page.locator('#listen');
+  // Layout: the sky dance is the hero, the forecast follows, the jump nav reaches every section.
+  const top=id=>page.evaluate(i=>document.getElementById(i).getBoundingClientRect().top+scrollY,id);
+  assert.ok(await top('listen')<await top('forecast'),label+': sky dance leads the page');
+  assert.ok(await top('forecast')<await top('map')&&await top('map')<await top('name-that-sound')&&await top('name-that-sound')<await top('field-guide'),label+': section order');
+  assert.equal(await page.locator('#listen .wsx-diagram').count(),1);assert.equal(await page.locator('.woodcock-flight').count(),0,label+': old static illustration removed');
+  assert.equal(await page.locator('.wsx-jump a').count(),7);
+  for(const href of await page.locator('.wsx-jump a').evaluateAll(a=>a.map(x=>x.getAttribute('href'))))assert.equal(await page.locator(href).count(),1,label+': jump target '+href);
+  assert.equal(await page.locator('#where').count(),1);assert.equal(await page.locator('#how-to').count(),1);
+  assert.match(await page.locator('.wsx-teaser').textContent(),/Plan your evening/);
   // Stage labels and sources
   for(const [id,src] of [['peent','Vocal'],['twitter','Made by wing feathers'],['chirp','Vocal']])
     assert.match(await page.locator('#wsx-'+id+' .wsx-source').textContent(),new RegExp(src),label+': '+id+' source label');
   // Photos load
-  for(const img of await page.locator('#listen img').all()){await img.scrollIntoViewIfNeeded();}
+  for(const img of await page.locator('#field-guide img').all()){await img.scrollIntoViewIfNeeded();}
   await page.waitForTimeout(800);
-  const broken=await page.evaluate(()=>[...document.querySelectorAll('#listen img')].filter(i=>!(i.complete&&i.naturalWidth>0)).map(i=>i.src));
+  assert.equal(await page.locator('#field-guide img').count(),2);
+  const broken=await page.evaluate(()=>[...document.querySelectorAll('#field-guide img')].filter(i=>!(i.complete&&i.naturalWidth>0)).map(i=>i.src));
   assert.deepEqual(broken,[],label+': photos load');
   // 1. Peent plays; the ground marker is active.
   const peentBtn=page.locator('#wsx-peent .wsx-play');
@@ -67,6 +77,30 @@ async function run(browser,label,opts){
   assert.equal((await audio(page)).paused,true,label+': keyboard pause');
   assert.equal(await page.evaluate(()=>document.activeElement&&document.activeElement.classList.contains('wsx-play')),true,label+': focus kept on the control');
   await page.keyboard.press('Enter');await playingSrc(page,'sky-dance-full\\.mp3$',0);
+  // 5b. Tapping a numbered marker on the flight path plays that stage.
+  const mk=page.locator('.wsx-marker[data-stage=chirp]');await mk.scrollIntoViewIfNeeded();await mk.click();
+  await playingSrc(page,'chirp\\.mp3$');
+  assert.match(await page.locator('#wsx-chirp').getAttribute('class'),/\bon\b/,label+': marker plays its stage');
+  await page.locator('.wsx-marker[data-stage=peent]').focus();await page.keyboard.press('Enter');
+  await playingSrc(page,'peent\\.mp3$',0.1);
+  // 5c. Field guide "Hear it" buttons share the player.
+  const hear=page.locator('#what-am-i-hearing .wsx-play').nth(1);await hear.scrollIntoViewIfNeeded();await hear.click();
+  await playingSrc(page,'twitter\\.mp3$',0.1);
+  // 5d. Name that sound: a snippet plays without revealing its stage, stops on its own, answers are graded.
+  await page.locator('.wsx-quiz-start').scrollIntoViewIfNeeded();await page.locator('.wsx-quiz-start').click();
+  assert.match(await page.locator('.wsx-quiz-meta').textContent(),/Sound 1 of 5/);
+  await page.locator('.wsx-mystery .wsx-play').click();
+  await page.waitForFunction(()=>{const a=document.querySelector('audio.wsx-engine');return !a.paused&&a.currentTime>0;},null,{timeout:15000});
+  assert.equal(await page.locator('.wsx-card.on').count(),0,label+': quiz does not give away the stage');
+  await page.waitForFunction(()=>document.querySelector('audio.wsx-engine').paused,null,{timeout:15000});
+  assert.match(await page.locator('.wsx-mystery .wsx-play').textContent(),/Hear it again/,label+': snippet stops by itself');
+  const truth=await page.evaluate(()=>{const a=document.querySelector('audio.wsx-engine'),s=a.getAttribute('src'),t=a.currentTime;
+    if(/peent/.test(s))return 'peent';if(/twitter/.test(s))return 'twitter';if(/chirp/.test(s))return 'chirp';return t<19.6?'peent':t<28.3?'twitter':'chirp';});
+  await page.locator('.wsx-choice[data-answer='+truth+']').click();
+  assert.match(await page.locator('.wsx-quiz-feedback').textContent(),/Yes!/,label+': correct answer graded');
+  assert.match(await page.locator('.wsx-quiz-meta').textContent(),/Score 1/);
+  await page.locator('.wsx-quiz-next').click();
+  assert.match(await page.locator('.wsx-quiz-meta').textContent(),/Sound 2 of 5/);
   // 6. Visible error when a recording cannot load.
   await page.route('**/woodcock-media/chirp.mp3',r=>r.fulfill({status:404,body:'missing'}));
   await page.locator('#wsx-chirp .wsx-play').scrollIntoViewIfNeeded();await page.locator('#wsx-chirp .wsx-play').click();

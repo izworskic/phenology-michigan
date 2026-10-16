@@ -3,7 +3,7 @@ import {useEffect,useMemo,useState} from 'react';
 import {ArrowUpRight,Cloud,CloudRain,Clock,Compass,Feather,MapPin,Wind,Volume2,CalendarDays,Info,CheckCircle2} from 'lucide-react';
 import WoodcockCartoMap from '../components/WoodcockCartoMap';
 import WoodcockViewingFinder from '../components/WoodcockViewingFinder';
-import WoodcockSoundExperience from '../components/WoodcockSoundExperience';
+import {WoodcockAudioProvider,SkyDanceStage,StageCards,SoundQuiz,WoodcockFieldGuide} from '../components/WoodcockSoundExperience';
 import {WOODCOCK_SITES,distanceMiles} from '../lib/woodcock-sites';
 import {REGIONS} from '../lib/woodcock';
 
@@ -13,7 +13,7 @@ const DESCRIPTION='When does the American woodcock sky dance happen in Michigan?
 const FAQ=[
   ['When do woodcocks perform their sky dance in Michigan?','Primarily in spring, often beginning as thaw and northbound migration progress in March or April. Displays can continue into May and later in northern areas. Local arrival and habitat matter more than any single statewide date.'],
   ['What time does the American woodcock sky dance start?','USFWS singing-ground surveys start about 22 minutes after sunset with 75% or less cloud cover, or 15 minutes after sunset when more than 75% overcast. Arrive before sunset and listen through twilight. The display may begin earlier or last longer.'],
-  ['What does a woodcock sound like?','Listen for a buzzy, nasal peent repeated from the ground. A male then spirals upward, making twittering wing sounds, and descends with melodic chirps. Press play in the sky dance guide on this page, or use Cornell’s recordings, to learn them before you go.'],
+  ['What does a woodcock sound like?','Listen for a buzzy, nasal peent repeated from the ground. A male then spirals upward, making twittering wing sounds, and descends with melodic chirps. Press play on the sky dance at the top of this page, try the Name that sound ear test, or use Cornell’s recordings to learn them before you go.'],
   ['What weather is best for a woodcock sky dance?','For listening, prefer evenings at or above 40°F with light wind and little precipitation. The U.S. Fish and Wildlife Service avoids surveys below 40°F, in strong wind or heavy precipitation. Weather suitability is not a guarantee that birds are present.'],
   ['Where can I see woodcocks in Michigan?','Scout small grassy openings next to damp young woods, alders, aspen, shrubs or forest edges. Use official DNR state game area maps to identify permitted public access. A weather region marker on this page is not a known display location.'],
   ['Can I watch a woodcock sky dance in October?','A fall courtship forecast would be misleading. This page treats autumn and winter as off season and shows broad upcoming spring planning windows, not a fabricated live activity score.']
@@ -27,27 +27,29 @@ const LD={'@context':'https://schema.org','@graph':[
 const monthName=md=>new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',timeZone:'UTC'}).format(new Date('2027-'+md+'T12:00:00Z'));
 const formatDate=date=>new Intl.DateTimeFormat('en-US',{weekday:'short',month:'short',day:'numeric',timeZone:'UTC'}).format(new Date(date+'T12:00:00Z'));
 const fmtYearDate=date=>date?formatDate(date):'—';
-function FlightArt(){
-  return <div className="woodcock-flight" role="img" aria-label="Illustrated spiral flight path: peent from the grass, twittering ascent, then chirping descent">
-    <div className="woodcock-flight-title">An evening in three acts <span>THE SKY DANCE</span></div>
-    <svg viewBox="0 0 560 330" aria-hidden="true">
-      <defs><linearGradient id="woodcock-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#182941"/><stop offset="60%" stopColor="#845363"/><stop offset="100%" stopColor="#e4a06f"/></linearGradient></defs>
-      <rect width="560" height="330" rx="10" fill="url(#woodcock-sky)"/>
-      <circle cx="455" cy="200" r="57" fill="#ffc9a0" opacity=".4"/>
-      <path d="M0 280 Q85 254 155 279 T325 275 T560 277 L560 330 H0 Z" fill="#162b29"/>
-      <path d="M0 291 Q140 270 265 292 T560 281 V330 H0 Z" fill="#0c211d"/>
-      <g stroke="#baad7c" strokeWidth="2" opacity=".6">
-        <path d="M40 310l-4-36m4 18l-12-10M100 315l8-43m-8 20l-16-9M180 313l4-44m-4 20l14-8M496 312l6-41m-6 15l-12-8"/>
-      </g>
-      <path className="woodcock-trail" d="M105 275 C155 250 205 242 212 191 C216 160 162 150 176 119 C195 81 278 142 305 104 C337 59 244 62 253 38 C271 17 350 29 379 63 C438 129 325 176 366 220 C390 248 444 257 466 283" fill="none" stroke="#fff0c4" strokeWidth="2.4" strokeDasharray="3 8" strokeLinecap="round"/>
-      <g fill="#ffebd0" fontFamily="system-ui,sans-serif" fontSize="13" fontWeight="600">
-        <text x="42" y="261">01 · PEENT</text><text x="173" y="31">02 · TWITTER</text><text x="385" y="248">03 · DESCEND</text>
-      </g>
-      <g transform="translate(255 46) rotate(-18)" fill="#132c30"><path d="M0 0 C-18-8-30-5-44-21 C-30 4-17 13-6 14 L4 15 C20 8 32-4 48-7 C33 20 21 26 2 22 L-3 26 L-8 18Z"/></g>
-      <circle cx="105" cy="275" r="5" fill="#ffedb7"/><circle cx="466" cy="283" r="5" fill="#ffedb7"/>
-    </svg>
-    <div className="woodcock-flight-footer"><span>Listen for the nasal call</span><span>Scan the last light in the western sky</span></div>
-  </div>;
+const JUMP=[['listen','Sky dance'],['forecast','Forecast'],['seven-nights','7 nights'],['map','Map & places'],['name-that-sound','Ear test'],['field-guide','Field guide'],['faq','FAQ']];
+// Sticky in-page navigation; highlights the section on screen.
+function JumpNav(){
+  const [active,setActive]=useState('listen');
+  useEffect(()=>{
+    if(typeof IntersectionObserver==='undefined')return;
+    const seen=new Map();
+    const io=new IntersectionObserver(es=>{for(const e of es)seen.set(e.target.id,e.isIntersecting?e.boundingClientRect.top:null);
+      const vis=JUMP.map(([id])=>id).filter(id=>seen.get(id)!=null);if(vis.length)setActive(vis[0]);},{rootMargin:'-80px 0px -55% 0px'});
+    JUMP.forEach(([id])=>{const el=document.getElementById(id);if(el)io.observe(el);});
+    return()=>io.disconnect();
+  },[]);
+  return <nav className="wsx-jump" aria-label="On this page"><div className="woodcock-container">{JUMP.map(([id,label])=><a key={id} href={'#'+id} className={active===id?'on':''} aria-current={active===id?'location':undefined}>{label}</a>)}</div></nav>;
+}
+// The forecast's answer, surfaced at the top of the page.
+function ForecastTeaser({loading,offSeason,region,best,selectedNight,hasWeather,opening}){
+  const night=best||selectedNight;
+  let k,main,sub;
+  if(loading){k='YOUR FORECAST';main='Checking '+region.name+'…';sub='Sunset timing and NWS evening weather';}
+  else if(offSeason){k='OFF SEASON · '+region.name.toUpperCase();main='Next spring, from about '+opening;sub='Typical window '+monthName(region.window[0])+' – '+monthName(region.window[1])+'. Learn the sounds now.';}
+  else if(night&&hasWeather){k='BEST EVENING · '+region.name.toUpperCase();main=formatDate(night.date)+(night.startLabel?' · listen from '+night.startLabel:'');sub=(night.label||'')+(night.score!=null?' · weather fit '+night.score+'/100':'');}
+  else{k='YOUR FORECAST · '+region.name.toUpperCase();main=night?.startLabel?'Listen from '+night.startLabel:'Sunset listening window';sub='Seven-night weather outlook below';}
+  return <a className="wsx-teaser" href="#forecast"><span className="wsx-teaser-k"><CalendarDays size={14}/> {k}</span><strong>{main}</strong><small>{sub}</small><span className="wsx-teaser-go">Plan your evening ↓</span></a>;
 }
 function Rating({tone,children}){return <span className={'woodcock-status '+(tone||'unknown')}>{children}</span>;}
 function NightChart({nights,choice,onSelect,best}){
@@ -88,7 +90,7 @@ export default function WoodcockPage(){
   const offSeason=current?.season?.inSeason===false;
   const hasWeather=nights.some(n=>Number.isFinite(n.score));
   const opening=spring?.opens?fmtYearDate(spring.opens):monthName(region.window[0]);
-  return <div className="woodcock-tool">
+  return <WoodcockAudioProvider><div className="woodcock-tool">
     <Head>
       <title>{TITLE}</title><meta name="description" content={DESCRIPTION}/><link rel="canonical" href={URL}/>
       <meta property="og:type" content="website"/><meta property="og:title" content={TITLE}/><meta property="og:description" content={DESCRIPTION}/><meta property="og:url" content={URL}/>
@@ -102,18 +104,21 @@ export default function WoodcockPage(){
       <nav aria-label="Related tools"><a href="/hummingbird-tracker">Hummingbirds</a><a href="/firefly-tracker">Fireflies</a><a href="/bloom-tracker">Bloom Tracker</a></nav>
     </header>
     <main>
-      <section className="woodcock-hero">
+      <section className="woodcock-hero" id="listen" aria-labelledby="woodcock-title">
         <div className="woodcock-container woodcock-hero-grid">
           <div className="woodcock-intro">
             <div className="woodcock-kicker"><Feather size={16}/> GREAT LAKES · SPRING FIELD GUIDE</div>
-            <h1>When the woods <i>begin to dance.</i></h1>
+            <h1 id="woodcock-title">When the woods <i>begin to dance.</i></h1>
             <p className="woodcock-subtitle">Michigan Woodcock Sky Dance Forecast</p>
-            <p className="woodcock-description">Find the spring evening, the right twilight moment, and the right edge of the woods to hear the timberdoodle’s unmistakable <em>peent</em> — then watch its spiraling courtship flight.</p>
-            <div className="woodcock-hero-tags"><span><Clock size={15}/> Sunset-timed</span><span><Wind size={15}/> NWS evening weather</span><span><Compass size={15}/> Nine Michigan regions</span></div><a className="woodcock-hero-location-link" href="#woodcock-access-atlas">Explore six documented viewing areas <ArrowUpRight size={16}/></a>
+            <p className="woodcock-description">Hear the timberdoodle’s <em>peent</em>, twittering climb and chirping fall, then find the spring evening, the twilight moment and the edge of the woods to hear it yourself.</p>
+            <ForecastTeaser loading={loading} offSeason={offSeason} region={region} best={current?.best} selectedNight={selectedNight} hasWeather={hasWeather} opening={opening}/>
+            <div className="woodcock-hero-tags"><span><Clock size={15}/> Sunset-timed</span><span><Wind size={15}/> NWS evening weather</span><span><Compass size={15}/> Nine Michigan regions</span><span><Volume2 size={15}/> Real recordings</span></div><a className="woodcock-hero-location-link" href="#woodcock-access-atlas">Explore six documented viewing areas <ArrowUpRight size={16}/></a>
           </div>
-          <FlightArt/>
+          <SkyDanceStage/>
         </div>
+        <div className="woodcock-container wsx-hero-cards"><StageCards/></div>
       </section>
+      <JumpNav/>
       <section className="woodcock-container woodcock-decision" id="forecast">
         <div className="woodcock-section-head"><div><span className="woodcock-eyebrow">YOUR EVENING PLAN</span><h2>When should you go?</h2></div><p>Choose a Michigan region. The tool measures conditions for listening, not the probability of a woodcock sighting.</p></div>
         <div className="woodcock-select-row">
@@ -171,29 +176,29 @@ export default function WoodcockPage(){
         </div>
         <WoodcockViewingFinder regionId={selection} selectedSite={selectedSite} onPickSite={chooseSite}/>
       </section>
-      <section className="woodcock-container woodcock-section" id="where">
-        <div className="woodcock-section-head"><div><span className="woodcock-eyebrow">FIND THE RIGHT HABITAT</span><h2>Think openings beside young woods.</h2></div><p>A good evening forecast means little without the right habitat. Woodcocks display over modest openings near moist, shrubby forest.</p></div>
-        <div className="woodcock-habitat-grid">
-          <article><span className="woodcock-habitat-no">01</span><h3>Small grassy clearings</h3><p>Old fields, two-track openings, utility corridors or lightly vegetated gaps. Look along the edge, not the middle of a huge bare farm field.</p></article>
-          <article><span className="woodcock-habitat-no">02</span><h3>Young, damp forest edges</h3><p>Nearby alder, poplar, aspen and other early-growth shrubs, with moist soils that support earthworms.</p></article>
-          <article><span className="woodcock-habitat-no">03</span><h3>Dark, quiet access</h3><p>Scout parking and legal access during daylight. Keep to approved roads or trails, observe from the perimeter and avoid bright lights.</p></article>
+      <section className="woodcock-container woodcock-section wsx-quiz-section"><SoundQuiz/></section>
+      <WoodcockFieldGuide>
+        <div className="wsx-where-grid">
+          <div id="where"><h3>Where to stand: openings beside young woods</h3>
+            <ol className="wsx-habitat">
+              <li><b>Small grassy clearings.</b> Old fields, two-track openings, utility corridors or lightly vegetated gaps. Look along the edge, not the middle of a huge bare farm field.</li>
+              <li><b>Young, damp forest edges.</b> Nearby alder, poplar, aspen and other early-growth shrubs, with moist soils that support earthworms.</li>
+              <li><b>Dark, quiet access.</b> Scout parking and legal access during daylight. Keep to approved roads or trails, observe from the perimeter and avoid bright lights.</li>
+            </ol></div>
+          <div id="how-to"><h3>Make your evening count</h3>
+            <ul className="woodcock-fieldgrid">
+              <li><CheckCircle2 size={18}/><span>Arrive 15–20 minutes <strong>before sunset</strong>. Check the trail and exit while it is light.</span></li>
+              <li><CheckCircle2 size={18}/><span>Stand or sit on the eastern side of a clearing when possible, so birds silhouette against the western sky.</span></li>
+              <li><CheckCircle2 size={18}/><span>Bring a light for safe departure; keep it off the birds and nesting areas.</span></li>
+              <li><CheckCircle2 size={18}/><span>Avoid playback, flash photography and approaching a peenting male. Remain outside the display ground.</span></li>
+            </ul></div>
         </div>
-      </section>
-      <WoodcockSoundExperience/>
-      <section className="woodcock-container woodcock-section" id="how-to">
-        <div className="woodcock-section-head"><div><span className="woodcock-eyebrow">FIELD NOTES</span><h2>How to make your evening count.</h2></div></div>
-        <div className="woodcock-fieldgrid">
-          <p><CheckCircle2 size={18}/> Arrive 15–20 minutes <strong>before sunset</strong>. Check the trail and exit while it is light.</p>
-          <p><CheckCircle2 size={18}/> Stand or sit on the eastern side of a clearing when possible, so birds silhouette against the western sky.</p>
-          <p><CheckCircle2 size={18}/> Bring a light for safe departure; keep it off the birds and nesting areas.</p>
-          <p><CheckCircle2 size={18}/> Avoid playback, flash photography and approaching a peenting male. Remain outside the display ground.</p>
-        </div>
-      </section>
+      </WoodcockFieldGuide>
       <section className="woodcock-container woodcock-section woodcock-faq" id="faq"><span className="woodcock-eyebrow">QUESTIONS FROM THE FIELD</span><h2>Woodcock sky dance FAQ</h2>{FAQ.map(([q,a])=><details key={q}><summary>{q}</summary><p>{a}</p></details>)}</section>
       <section className="woodcock-container woodcock-sources"><h2>Sources & forecast integrity</h2><p>Woodcock calls, courtship habitat and observation guidance are from the USFWS, Michigan DNR, Audubon and Cornell. Forecast weather comes from the National Weather Service. The season ranges and 0–100 weather-fit index are this tool’s explicitly non-validated planning heuristics. No real-time woodcock observation feed is connected.</p>
         <div><a href="https://migbirdapps.fws.gov/woodcock/survey_instructions.htm" target="_blank" rel="noopener noreferrer">USFWS survey timing and weather rules ↗</a><a href="https://www.dnr.state.mi.us/publications/pdfs/huntingwildlifehabitat/landowners_guide/Resource_Dir/Acrobat/Woodcock.PDF" target="_blank" rel="noopener noreferrer">Michigan DNR woodcock habitat guidance ↗</a><a href="https://www.weather.gov/documentation/services-web-api" target="_blank" rel="noopener noreferrer">NWS forecast API ↗</a><a href="https://www.audubon.org/magazine/do-yourself-favor-spring-go-see-american-woodcocks-sky-dance" target="_blank" rel="noopener noreferrer">Audubon viewing guide ↗</a></div>
       </section>
     </main>
     <footer className="woodcock-footer woodcock-container"><span>Field guide by <a href="https://chrisizworski.com/chris-izworski/">Chris Izworski</a> · Michigan Phenology</span><span>Plan thoughtfully. Keep singing grounds undisturbed.</span></footer>
-  </div>;
+  </div></WoodcockAudioProvider>;
 }
