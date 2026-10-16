@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {SITES,SOURCE_LINKS} from '../lib/lakeSmoke.mjs';
+import {rankShorelineViews,compass} from '../lib/lakeSmokeWind.mjs';
 const BASE='https://phenology.chrisizworski.com';
 const CANONICAL=BASE+'/lake-smoke';
 const TITLE='Great Lakes Lake Smoke Forecast: Where & When to See Steam Fog';
@@ -13,6 +14,7 @@ const QUESTIONS=[
   ['Does a high setup score mean I will see fog?','No. Scores only describe a simple combination of temperature contrast, wind and weather. They are not observed fog, a probability, or a forecast of visibility.'],
   ['How do ice conditions affect the lake smoke forecast?','Lake smoke requires exposed liquid water. From November through May, the tool uses NOAA GLSEA/National Ice Center local ice concentration to prevent false strong ratings. If the data are stale or missing, no score is shown. Patchy ice can limit a rating even where nearby open water remains.'],
   ['Can a shoreline webcam confirm lake smoke?','A camera can help a person check for moving wisps above exposed water, but video may be dark, unavailable or pointed toward the harbor rather than open lake. We link to original camera operators; no automated camera analysis or confirmed sightings are claimed.'],
+  ['How does wind direction affect where lake smoke is visible?','A National Weather Service wind direction names the direction the wind comes from. By comparing that with an approximate bearing from the selected shore toward open lake water, the planner describes whether fog wisps may move along the shore, toward the shore, or out over the lake. These are qualitative clues, not measured fog motion or visibility guarantees.'],
   ['Is it safe to watch lake smoke from a pier or boat?','Cold air outbreaks can bring dangerous waves, ice and reduced visibility. Watch from designated, open shoreline areas and always follow National Weather Service marine advisories. Avoid exposed piers and boating in hazardous conditions.']
 ];
 const dt=(value,zone='America/Detroit')=>value?new Intl.DateTimeFormat('en-US',{timeZone:zone,month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'}).format(new Date(value)):'—';
@@ -85,6 +87,62 @@ function MapPanel({results,selected,onChoose}){
     <div className='smoke-map-legend'><span><i className='strong'/> Strong setup</span><span><i className='possible'/> Possible</span><span><i className='unknown'/> Data unavailable</span></div>
   </div>;
 }
+
+function WindCompass({view}){
+  if(!view||!Number.isFinite(view.lakewardDeg)||!Number.isFinite(view.driftTowardDeg))return <div className='smoke-wind-unknown'>Wind direction unavailable. No plume movement is assumed.</div>;
+  // Both arrows are diagrammatic bearings, not a GPS plume track.
+  const point=(angle,r)=>{
+    const a=angle*Math.PI/180;
+    return {x:110+Math.sin(a)*r,y:110-Math.cos(a)*r};
+  };
+  const water=point(view.lakewardDeg,69),drift=point(view.driftTowardDeg,70);
+  return <svg className='smoke-wind-rose' viewBox='0 0 220 220' role='img' aria-label={'Illustrative compass. Open water roughly '+view.lakeward+'. Forecast drift '+compass(view.driftTowardDeg)+'.'}>
+    <defs><marker id='smoke-wind-tip' viewBox='0 0 10 10' refX='8' refY='5' markerWidth='6' markerHeight='6' orient='auto-start-reverse'><path d='M 0 0 L 10 5 L 0 10 z' fill='#25859a'/></marker></defs>
+    <circle cx='110' cy='110' r='78' fill='#e4f1f4' stroke='#cbdfe4' strokeWidth='1.5'/>
+    <circle cx='110' cy='110' r='34' fill='#ffffff' stroke='#c5d6dc' strokeDasharray='4 4'/>
+    <text x='110' y='22' textAnchor='middle' className='smoke-compass-cardinal'>N</text>
+    <text x='198' y='115' textAnchor='middle' className='smoke-compass-cardinal'>E</text>
+    <text x='110' y='212' textAnchor='middle' className='smoke-compass-cardinal'>S</text>
+    <text x='23' y='115' textAnchor='middle' className='smoke-compass-cardinal'>W</text>
+    <line x1='110' y1='110' x2={water.x} y2={water.y} stroke='#517d8c' strokeWidth='6' strokeLinecap='round' opacity='.55'/>
+    <circle cx={water.x} cy={water.y} r='5' fill='#477d90'/>
+    <line x1='110' y1='110' x2={drift.x} y2={drift.y} stroke='#25859a' strokeWidth='4' strokeLinecap='round' markerEnd='url(#smoke-wind-tip)'/>
+    <circle cx='110' cy='110' r='7' fill='#193e4b' stroke='#ffffff' strokeWidth='3'/>
+    <text x='110' y='130' textAnchor='middle' className='smoke-compass-shore'>Shore</text>
+  </svg>;
+}
+function ShorelineViewing({site}){
+  const best=site?.outlook?.bestView||null;
+  const outlook=site?.outlook;
+  const sampled=best?.viewing||outlook?.best?.viewing||null;
+  return <section className='smoke-view-section' id='wind-view'>
+    <div className='smoke-section-line'><div><div className='smoke-overline dark'>Different from fog formation</div><h2>Which way will the wisps drift?</h2></div><p>A directional view guide, not a live fog observation or navigation forecast.</p></div>
+    <div className='smoke-view-grid'>
+      <article className='smoke-wind-card'>
+        <div className='smoke-wind-card-head'><div><small className='smoke-label'>Forecast shoreline drift</small><h3>{best?best.viewing.label:'No ranked viewing window'}</h3></div><WindCompass view={sampled}/></div>
+        <p>{best?best.viewing.explanation:outlook?.best?'A lake-smoke setup exists, but no forecast morning hour has both adequate weather conditions and usable wind direction for a shoreline-view recommendation.':'An ice-safe water/air setup must be available before wind is ranked.'}</p>
+        <div className='smoke-wind-facts'>
+          <div><small>Wind from</small><strong>{best?.viewing?.windFrom||'—'}</strong></div>
+          <div><small>Approx. open water</small><strong>{sampled?.lakeward||'—'}</strong></div>
+          <div><small>Wisps could move</small><strong>{best?.viewing?.driftTowardDeg!=null?compass(best.viewing.driftTowardDeg):'—'}</strong></div>
+        </div>
+        <p className='smoke-wind-caveat'>Bearing to open water uses the mapped offshore sample point. Shoreline curves, harbors and winds over the lake may differ from the NWS shoreline forecast.</p>
+      </article>
+      <article className='smoke-wind-card'>
+        <small className='smoke-label'>Best forecast viewing hours · 5–10 a.m.</small>
+        <h3>Three-morning drift outlook</h3>
+        {outlook?.viewWindows?.length?<div className='smoke-view-days'>
+          {outlook.viewWindows.map(w=><div key={w.date} className='smoke-view-day'>
+            <div><strong>{shortDay(w.time,site.tz)}</strong><small>{dt(w.time,site.tz)}</small></div>
+            <div><span className={'smoke-drift-label '+w.viewing.status}>{w.viewing.label}</span><small>Wind from {w.viewing.windFrom} · {w.windMph} mph · setup {w.score}/100</small></div>
+          </div>)}
+        </div>:<div className='smoke-empty'>No direction-qualified morning is available. This may mean no strong enough lake-smoke setup, missing wind directions, very light or strong winds, or the existing winter ice gate. An unavailable view is not a poor view.</div>}
+        <p className='smoke-chart-foot'>View hours require setup score at least 50 and within 15 points of that morning’s best setup. Among those hours, along-shore drift comes first, then shoreward, then lakeward. This is a qualitative photography preference, not scientifically calibrated sighting probability.</p>
+      </article>
+    </div>
+  </section>;
+}
+
 function MorningChart({site}){
   const windows=site?.outlook?.windows||[];
   return <div className='smoke-chart'>
@@ -92,7 +150,7 @@ function MorningChart({site}){
       <div className='smoke-chart-label'><strong>{shortDay(w.time,site.tz)}</strong><span>{new Intl.DateTimeFormat('en-US',{timeZone:site.tz,hour:'numeric'}).format(new Date(w.time))} local</span></div>
       <div className='smoke-chart-track'><div style={{width:w.score+'%'}} className={'smoke-chart-fill '+(w.score>=75?'strong':w.score>=50?'possible':'low')}/></div>
       <div className='smoke-chart-number'>{w.score}<small>/100</small></div>
-      <div className='smoke-chart-note'>{w.spreadC>0?'+':''}{w.spreadC}°C water–air · {w.windMph} mph wind</div>
+      <div className='smoke-chart-note'>{w.spreadC>0?'+':''}{w.spreadC}°C water–air · {w.windMph} mph wind · {w.viewing?.windFrom?'from '+w.viewing.windFrom:'direction unavailable'}</div>
     </div>):<div className='smoke-empty'>The morning outlook will appear when both recent local water temperature and hourly weather forecasts are available. No estimated scores are shown without those sources.</div>}
     <p className='smoke-chart-foot'>Highest-scoring forecast hour between 5–10 a.m. each morning; no claim of observed fog. This index is experimental and is not a probability.</p>
   </div>;
@@ -114,6 +172,7 @@ function SpreadGraph({site}){
 export default function LakeSmoke(){
   const [selected,setSelected]=useState('saginaw-bay');
   const [filter,setFilter]=useState('All lakes');
+  const [ranking,setRanking]=useState('views');
   const [data,setData]=useState(null),[loading,setLoading]=useState(true),[error,setError]=useState('');
   useEffect(()=>{
     const fromUrl=new URLSearchParams(window.location.search).get('location');
@@ -134,6 +193,9 @@ export default function LakeSmoke(){
   const picked=locations.find(site=>site.id===selected)||locations[0];
   const best=picked?.outlook?.best;
   const top=useMemo(()=>locations.filter(x=>x.outlook?.best&&x.outlook.best.score>=30).sort((a,b)=>b.outlook.best.score-a.outlook.best.score).slice(0,3),[locations]);
+  const viewTop=useMemo(()=>rankShorelineViews(locations).slice(0,3),[locations]);
+  const rankedBy=ranking==='views'&&viewTop.length>0?'views':'setup';
+  const featured=rankedBy==='views'?viewTop:top;
   const filtered=locations.filter(x=>filter==='All lakes'||x.lake===filter);
   const anyForecast=data&&data.activeLocations>0;
   const schema={'@context':'https://schema.org','@graph':[
@@ -146,11 +208,11 @@ export default function LakeSmoke(){
       <meta property='og:type' content='website'/><meta property='og:title' content={TITLE}/><meta property='og:description' content={DESCRIPTION}/><meta property='og:url' content={CANONICAL}/>
       <meta name='twitter:card' content='summary'/><link rel='stylesheet' href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'/><link rel='stylesheet' href='/lake-smoke.css'/>
       <script type='application/ld+json' dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}}/></Head>
-    <header className='smoke-header smoke-wrap'><a className='smoke-brand' href='/'>MICHIGAN PHENOLOGY <span> / GREAT LAKES</span></a><nav aria-label='Lake smoke navigation'><a href='#places'>Locations</a><a href='#forecast'>Forecast</a><a href='#cameras'>Cameras</a><a href='#science'>How it works</a></nav></header>
+    <header className='smoke-header smoke-wrap'><a className='smoke-brand' href='/'>MICHIGAN PHENOLOGY <span> / GREAT LAKES</span></a><nav aria-label='Lake smoke navigation'><a href='#places'>Locations</a><a href='#forecast'>Forecast</a><a href='#wind-view'>Wind direction</a><a href='#cameras'>Cameras</a><a href='#science'>How it works</a></nav></header>
     <main>
       <section className='smoke-hero'><div className='smoke-hero-art' aria-hidden='true'><div className='smoke-sun'/><div className='smoke-horizon'/><div className='smoke-mist one'/><div className='smoke-mist two'/><div className='smoke-mist three'/></div>
         <div className='smoke-wrap smoke-hero-content'><div className='smoke-overline'>A living calendar of Great Lakes weather</div><h1>Where will the lakes <em>smoke?</em></h1><p>Cold air. Relatively warm water. A fleeting morning when the Great Lakes appear to breathe. Find the most promising conditions and know when to look.</p>
-          <div className='smoke-hero-pills'><span>15 shoreline locations</span><span>NOAA lake temperatures</span><span>NWS hourly forecasts</span><span>Seasonal ice screening</span></div>
+          <div className='smoke-hero-pills'><span>15 shoreline locations</span><span>NOAA lake temperatures</span><span>NWS hourly forecasts</span><span>Seasonal ice screening</span><span>Shoreline wind direction</span></div>
         </div>
       </section>
       <div className='smoke-wrap'>
@@ -158,13 +220,25 @@ export default function LakeSmoke(){
           <div><small>Lake smoke outlook</small><h2>{loading?'Checking lake and air temperatures…':error?'Forecast connection unavailable':anyForecast?(top.length?'Current cold-air setup outlook':'Few lake smoke conditions in the forecast'):'Local water readings unavailable'}</h2><p>{loading?'Gathering NOAA and NWS conditions across five Great Lakes.':error?error:anyForecast?'Compare the strongest upcoming morning setups below. A strong setup is not a confirmed sighting.':'There are currently no reliable combined water-and-air forecasts to rank. The map and viewing guide remain available.'}</p></div>
           <div className='smoke-updated'><span>{data?.activeLocations??'—'} / {SITES.length}</span><small>sites with comparable data</small><small>{data?.generatedAt?'Updated '+dt(data.generatedAt):'Live update pending'}</small></div>
         </section>
-        {top.length>0&&<section className='smoke-top' aria-label='Top forecast locations'><div className='smoke-section-line'><h2>Best upcoming morning setups</h2><p>Ranked by temperature contrast and forecast wind, not reported visibility.</p></div><div className='smoke-top-grid'>{top.map((s,i)=><button key={s.id} type='button' className='smoke-top-card' onClick={()=>{choose(s.id);document.getElementById('forecast')?.scrollIntoView({behavior:'smooth'});}}><span className='smoke-top-kicker'>#{i+1} · Lake {s.lake}</span><strong>{s.name}</strong><div><Score value={s.outlook.best.score}/><Tone status={s.status}/></div><small>{shortDay(s.outlook.best.time,s.tz)} · {s.outlook.best.spreadC>0?'+':''}{s.outlook.best.spreadC}°C water–air gap {s.iceCheck?.state==='patchy'?'· possible ice':''}</small></button>)}</div></section>}
+        {(featured.length>0||!loading)&&<section className='smoke-top' aria-label='Top forecast and shoreline viewing locations'>
+          <div className='smoke-section-line'><div><div className='smoke-overline dark'>Plan your shoreline visit</div><h2>{rankedBy==='views'?'Best shoreline viewing setups':'Strongest lake-smoke setups'}</h2></div><p>{rankedBy==='views'?'Ranked by approximate wind drift and qualifying atmospheric setup. An across-shore drift is often easier to watch from land.':'Ranked only by water/air contrast, forecast wind speed and existing ice safeguards.'}</p></div>
+          <div className='smoke-rank-tabs' role='group' aria-label='Choose ranking focus'><button type='button' aria-pressed={ranking==='views'} className={ranking==='views'?'active':''} onClick={()=>setRanking('views')}>Best shoreline views</button><button type='button' aria-pressed={ranking==='setup'} className={ranking==='setup'?'active':''} onClick={()=>setRanking('setup')}>Strongest fog setup</button></div>
+          {ranking==='views'&&viewTop.length===0&&!loading&&<p className='smoke-rank-note'>No direction-qualified shoreline viewing forecast is available. Showing the underlying atmospheric setups instead; wind direction has not been guessed.</p>}
+          {featured.length>0?<div className='smoke-top-grid'>{featured.map((s,i)=>{
+            const window=rankedBy==='views'?s.outlook.bestView:s.outlook.best;
+            return <button key={s.id} type='button' className='smoke-top-card' onClick={()=>{choose(s.id);document.getElementById('forecast')?.scrollIntoView({behavior:'smooth'});}}>
+              <span className='smoke-top-kicker'>#{i+1} · Lake {s.lake}</span><strong>{s.name}</strong>
+              <div><Score value={window.score}/>{rankedBy==='views'?<span className={'smoke-drift-label '+window.viewing.status}>{window.viewing.label}</span>:<Tone status={s.status}/>}</div>
+              <small>{shortDay(window.time,s.tz)} · {window.viewing?.windFrom?'wind from '+window.viewing.windFrom+' · ':''}{window.spreadC>0?'+':''}{window.spreadC}°C water–air</small>
+            </button>})}</div>:<div className='smoke-empty'>No qualifying location has enough current data for a credible forecast ranking.</div>}
+          <p className='smoke-rank-foot'>The shoreline-view ranking does not change the 0–100 lake-smoke setup index. Neither ranking verifies actual fog, visibility, nor safe access.</p>
+        </section>}
         <section id='places' className='smoke-explore'>
           <div className='smoke-section-line'><div><div className='smoke-overline dark'>Explore the shore</div><h2>Choose a place to watch</h2></div><p>Click a map marker or select a shoreline below. Each score requires a recent offshore water-temperature grid cell and an hourly forecast. During ice season it also requires a recent local ice analysis.</p></div>
           <div className='smoke-explore-grid'>
             <MapPanel results={locations} selected={selected} onChoose={choose}/>
             <div className='smoke-sidebar'><div className='smoke-sidebar-heading'><h3>15 Great Lakes lookouts</h3><label htmlFor='lake-filter'>Filter by lake</label><select id='lake-filter' value={filter} onChange={e=>setFilter(e.target.value)}>{['All lakes','Superior','Michigan','Huron','Erie','Ontario'].map(x=><option key={x}>{x}</option>)}</select></div>
-              <div className='smoke-location-list'>{filtered.map(s=><button type='button' className={'smoke-location '+(selected===s.id?'selected':'')} key={s.id} onClick={()=>choose(s.id)} aria-pressed={selected===s.id}><span><strong>{s.name}</strong><small>Lake {s.lake} · {s.status?.label}</small></span><span className='smoke-location-score'>{s.outlook?.best?.score??'—'}</span></button>)}</div>
+              <div className='smoke-location-list'>{filtered.map(s=><button type='button' className={'smoke-location '+(selected===s.id?'selected':'')} key={s.id} onClick={()=>choose(s.id)} aria-pressed={selected===s.id}><span><strong>{s.name}</strong><small>Lake {s.lake} · {s.status?.label}{s.outlook?.bestView?' · '+s.outlook.bestView.viewing.label:''}</small></span><span className='smoke-location-score'>{s.outlook?.best?.score??'—'}</span></button>)}</div>
             </div>
           </div>
         </section>
@@ -174,6 +248,7 @@ export default function LakeSmoke(){
             <article className='smoke-panel'><small className='smoke-label'>Best upcoming morning</small><div className='smoke-result'><Score value={best?.score}/><span>{best?shortDay(best.time,picked.tz):'Awaiting trustworthy inputs'}<small>{best?dt(best.time,picked.tz):'No viewing prediction available'}</small></span></div>
               <p>{best?best.signal+' conditions in the selected morning forecast window. This is a planning index, not a fog probability.':'A lake smoke outlook requires recent NOAA lake-water temperatures, an NWS hourly forecast and, during November–May, recent local ice concentration.'}</p>
               <div className='smoke-metrics'><div><small>Lake surface</small><strong>{picked.water?fmtTemp(picked.outlook?.best?.waterF??picked.water.c*9/5+32):'—'}</strong></div><div><small>Forecast air</small><strong>{fmtTemp(best?.airF)}</strong></div><div><small>Water warmer by</small><strong>{best?best.spreadC+'°C':'—'}</strong></div><div><small>Wind at best hour</small><strong>{best?best.windMph+' mph':'—'}</strong></div></div>
+              {best&&<p className='smoke-small'>Weather setup at {dt(best.time,picked.tz)}; {best.viewing?.windFrom?'forecast wind from '+best.viewing.windFrom+' ('+best.viewing.label+')':'forecast wind direction unavailable'}. A better visual-drift hour may be shown below.</p>}
               {picked.water&&<p className='smoke-small'>Water: {picked.water.kind}, analyzed {dt(picked.water.time,picked.tz)}. Offshore grid estimate, not a shoreline thermometer.</p>}
               <div className='smoke-ice-readout' aria-label='NOAA ice coverage check'>
                 <div><small>Open-water check</small><strong>{picked.iceCheck?.label||'Waiting for ice status'}</strong></div>
@@ -188,6 +263,7 @@ export default function LakeSmoke(){
             <article className='smoke-panel'><div className='smoke-overline dark'>Next 72 hours</div><h3>Morning-by-morning comparison</h3><MorningChart site={picked}/><SpreadGraph site={picked}/></article>
           </div>
         </section>
+        <ShorelineViewing site={picked}/>
         <section id='cameras' className='smoke-cameras' aria-label='Shoreline camera verification'>
           <div className='smoke-section-line'><div><div className='smoke-overline dark'>Before you make the drive</div><h2>Check a real shoreline view</h2></div><p>Camera sources are independently operated. They may be dark, seasonal, offline, or aimed away from open water.</p></div>
           <div className='smoke-cameras-grid'>
@@ -213,7 +289,7 @@ export default function LakeSmoke(){
           <div className='smoke-caution'><strong>Safety before photography.</strong> Lake smoke can coincide with cold outbreaks, waves, ice and rapidly changing visibility. Do not use this viewing index for boating or navigation. Check <a href='https://www.weather.gov/marine/' target='_blank' rel='noreferrer'>NWS marine forecasts</a> and local advisories.</div>
         </section>
         <section className='smoke-faq'><h2>Lake smoke questions</h2>{QUESTIONS.map(([q,a])=><details key={q}><summary>{q}</summary><p>{a}</p></details>)}</section>
-        <footer className='smoke-footer'><div><strong>Methods & data</strong><p>A transparent, experimental planning heuristic. Scores are not observed sightings or probabilities. NOAA GLSEA analyzed temperatures can be smoothed or missing under clouds; coastal readings are approximations. The engine refuses to score when water or hourly weather is missing or stale, and in November–May when local ice data are missing. A grid cell showing ice limits or blocks scores; the sampled condition may differ at the shoreline and may change over the 72-hour forecast.</p><div className='smoke-sources'>{SOURCE_LINKS.map(s=><a key={s.url} href={s.url} target='_blank' rel='noreferrer'>{s.name} ↗</a>)}</div></div><p>Built by <a href='https://chrisizworski.com/chris-izworski/'>Chris Izworski</a> · <a href='/'>Michigan Phenology</a> · <a href='/bloom-tracker'>Michigan Bloom Tracker</a></p></footer>
+        <footer className='smoke-footer'><div><strong>Methods & data</strong><p>A transparent, experimental planning heuristic. Scores are not observed sightings or probabilities. NOAA GLSEA analyzed temperatures can be smoothed or missing under clouds; coastal readings are approximations. The engine refuses to score when water or hourly weather is missing or stale, and in November–May when local ice data are missing. NWS wind directions are interpreted as where the air comes from, and the open-water bearing is approximated from the original onshore/offshore coordinate pair. The qualitative shoreline viewing rank is separate from the atmospheric score and requires known direction and appropriate wind speed. A grid cell showing ice limits or blocks scores; the sampled condition may differ at the shoreline and may change over the 72-hour forecast.</p><div className='smoke-sources'>{SOURCE_LINKS.map(s=><a key={s.url} href={s.url} target='_blank' rel='noreferrer'>{s.name} ↗</a>)}</div></div><p>Built by <a href='https://chrisizworski.com/chris-izworski/'>Chris Izworski</a> · <a href='/'>Michigan Phenology</a> · <a href='/bloom-tracker'>Michigan Bloom Tracker</a></p></footer>
       </div>
     </main>
   </div>;
