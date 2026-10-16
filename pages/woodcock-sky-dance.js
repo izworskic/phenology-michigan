@@ -2,6 +2,8 @@ import Head from 'next/head';
 import {useEffect,useMemo,useState} from 'react';
 import {ArrowUpRight,Cloud,CloudRain,Clock,Compass,Feather,MapPin,Wind,Volume2,CalendarDays,Info,CheckCircle2} from 'lucide-react';
 import WoodcockCartoMap from '../components/WoodcockCartoMap';
+import WoodcockViewingFinder from '../components/WoodcockViewingFinder';
+import {WOODCOCK_SITES,distanceMiles} from '../lib/woodcock-sites';
 import {REGIONS} from '../lib/woodcock';
 
 const URL='https://phenology.chrisizworski.com/woodcock-sky-dance';
@@ -64,6 +66,9 @@ function SoundStep({number,title,description}){
 }
 export default function WoodcockPage(){
   const [selection,setSelection]=useState('saginaw-bay');
+  const [selectedSite,setSelectedSite]=useState('lame-duck');
+  const setForecastRegion=id=>{setSelection(id);const next=REGIONS.find(r=>r.id===id);if(next){const nearest=[...WOODCOCK_SITES].sort((a,b)=>distanceMiles(next,a)-distanceMiles(next,b))[0];if(nearest)setSelectedSite(nearest.id);}};
+  const chooseSite=id=>{const site=WOODCOCK_SITES.find(s=>s.id===id);if(site){setSelectedSite(id);setSelection(site.regionId);}};
   const [result,setResult]=useState(null);
   const [loading,setLoading]=useState(true);
   const [requestError,setRequestError]=useState('');
@@ -106,7 +111,7 @@ export default function WoodcockPage(){
             <h1>When the woods <i>begin to dance.</i></h1>
             <p className="woodcock-subtitle">Michigan Woodcock Sky Dance Forecast</p>
             <p className="woodcock-description">Find the spring evening, the right twilight moment, and the right edge of the woods to hear the timberdoodle’s unmistakable <em>peent</em> — then watch its spiraling courtship flight.</p>
-            <div className="woodcock-hero-tags"><span><Clock size={15}/> Sunset-timed</span><span><Wind size={15}/> NWS evening weather</span><span><Compass size={15}/> Nine Michigan regions</span></div>
+            <div className="woodcock-hero-tags"><span><Clock size={15}/> Sunset-timed</span><span><Wind size={15}/> NWS evening weather</span><span><Compass size={15}/> Nine Michigan regions</span></div><a className="woodcock-hero-location-link" href="#woodcock-access-atlas">Explore six documented viewing areas <ArrowUpRight size={16}/></a>
           </div>
           <FlightArt/>
         </div>
@@ -115,7 +120,7 @@ export default function WoodcockPage(){
         <div className="woodcock-section-head"><div><span className="woodcock-eyebrow">YOUR EVENING PLAN</span><h2>When should you go?</h2></div><p>Choose a Michigan region. The tool measures conditions for listening, not the probability of a woodcock sighting.</p></div>
         <div className="woodcock-select-row">
           <label htmlFor="woodcock-region">Forecast region</label>
-          <select id="woodcock-region" value={selection} onChange={e=>setSelection(e.target.value)}>{REGIONS.map(r=><option key={r.id} value={r.id}>{r.name}</option>)}</select>
+          <select id="woodcock-region" value={selection} onChange={e=>setForecastRegion(e.target.value)}>{REGIONS.map(r=><option key={r.id} value={r.id}>{r.name}</option>)}</select>
           <span className="woodcock-data-status">{loading?'Checking seasonal outlook…':result?'Forecast checked '+new Date(result.generatedAt).toLocaleDateString('en-US',{timeZone:'America/Detroit',month:'short',day:'numeric'}):'Historical seasonal guidance'}</span>
         </div>
         <div className="woodcock-answer-grid">
@@ -154,18 +159,19 @@ export default function WoodcockPage(){
           </div>:<div className="woodcock-empty">The seven-evening NWS forecast is currently incomplete. The sunset timing and field guide remain available; no substitute weather scores are shown.</div>}
       </section>
       <section className="woodcock-container woodcock-section" id="map">
-        <div className="woodcock-section-head"><div><span className="woodcock-eyebrow">EXPLORE MICHIGAN</span><h2>Follow spring north.</h2></div><p>Choose a forecast point. These are regional weather reference locations, not woodcock nesting or courtship-site markers.</p></div>
+        <div className="woodcock-section-head"><div><span className="woodcock-eyebrow">EXPLORE MICHIGAN</span><h2>Find the woods where people watched.</h2></div><p>Switch between six documented historical walk venues and nine regional weather points. Venue pins show an approach or approximate property point, never the birds’ exact display ground.</p></div>
         <div className="woodcock-map-layout">
-          <WoodcockCartoMap selected={selection} onSelect={setSelection}/>
+          <WoodcockCartoMap selected={selection} onSelect={setForecastRegion} selectedSite={selectedSite} onPickSite={chooseSite}/>
           <div className="woodcock-region-sidebar">
             <div className="woodcock-sidebar-heading">REGIONAL SPRING WINDOWS <small>Approximate, habitat-dependent</small></div>
-            {REGIONS.map((r,i)=><button type="button" className={'woodcock-region-choice '+(selection===r.id?'active':'')} key={r.id} aria-pressed={selection===r.id} onClick={()=>setSelection(r.id)}>
+            {REGIONS.map((r,i)=><button type="button" className={'woodcock-region-choice '+(selection===r.id?'active':'')} key={r.id} aria-pressed={selection===r.id} onClick={()=>setForecastRegion(r.id)}>
               <span className="woodcock-region-index">{String(i+1).padStart(2,'0')}</span>
               <span><strong>{r.name}</strong><small>{monthName(r.window[0])} – {monthName(r.window[1])}</small></span>
               <span className="woodcock-region-arrow">↗</span>
             </button>)}
           </div>
         </div>
+        <WoodcockViewingFinder regionId={selection} selectedSite={selectedSite} onPickSite={chooseSite}/>
       </section>
       <section className="woodcock-container woodcock-section" id="where">
         <div className="woodcock-section-head"><div><span className="woodcock-eyebrow">FIND THE RIGHT HABITAT</span><h2>Think openings beside young woods.</h2></div><p>A good evening forecast means little without the right habitat. Woodcocks display over modest openings near moist, shrubby forest.</p></div>
@@ -173,15 +179,6 @@ export default function WoodcockPage(){
           <article><span className="woodcock-habitat-no">01</span><h3>Small grassy clearings</h3><p>Old fields, two-track openings, utility corridors or lightly vegetated gaps. Look along the edge, not the middle of a huge bare farm field.</p></article>
           <article><span className="woodcock-habitat-no">02</span><h3>Young, damp forest edges</h3><p>Nearby alder, poplar, aspen and other early-growth shrubs, with moist soils that support earthworms.</p></article>
           <article><span className="woodcock-habitat-no">03</span><h3>Dark, quiet access</h3><p>Scout parking and legal access during daylight. Keep to approved roads or trails, observe from the perimeter and avoid bright lights.</p></article>
-        </div>
-        <div className="woodcock-places">
-          <h3>Documented Michigan viewing leads</h3>
-          <p>These places have hosted Michigan DNR-associated woodcock walks, but that is <strong>not</strong> a current sighting report or an assurance of after-dark access. Verify area rules and the exact entrance before visiting.</p>
-          <div className="woodcock-place-links">
-            <a href="https://content.govdelivery.com/accounts/MIDNR/bulletins/3da3944" target="_blank" rel="noopener noreferrer"><MapPin size={17}/><span><strong>Lame Duck Foot Access Area · Gladwin County</strong><small>DNR woodcock walk documented April 2025</small></span><ArrowUpRight size={17}/></a>
-            <a href="https://www.portagemi.gov/DocumentCenter/View/14370/ONLINE-2026-Spring-Summer-Rec-Guide-PDF" target="_blank" rel="noopener noreferrer"><MapPin size={17}/><span><strong>Gourdneck State Game Area · Kalamazoo area</strong><small>Woodcock walk in Portage’s 2026 recreation guide</small></span><ArrowUpRight size={17}/></a>
-            <a href="https://www.michigan.gov/en/dnr/things-to-do/hunting/where/state-wildlife-game-areas-list" target="_blank" rel="noopener noreferrer"><Compass size={17}/><span><strong>Michigan DNR game-area directory</strong><small>Official area maps and relevant restrictions</small></span><ArrowUpRight size={17}/></a>
-          </div>
         </div>
       </section>
       <section className="woodcock-container woodcock-section" id="listen">

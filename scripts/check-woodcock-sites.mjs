@@ -1,0 +1,42 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const lib=readFileSync(new URL('../lib/woodcock-sites.js',import.meta.url),'utf8');
+const {WOODCOCK_SITES,ACCESS_LABELS,PIN_LABELS,viewingSitesForRegion,distanceMiles,siteCanBeCalledOpenAfterDark}=
+  await import('data:text/javascript;base64,'+Buffer.from(lib).toString('base64'));
+assert.equal(WOODCOCK_SITES.length,6);
+assert.equal(new Set(WOODCOCK_SITES.map(s=>s.id)).size,WOODCOCK_SITES.length);
+assert.equal(viewingSitesForRegion('saginaw-bay')[0].id,'lame-duck');
+assert.equal(viewingSitesForRegion('kalamazoo')[0].id,'gourdneck');
+assert.equal(viewingSitesForRegion('detroit')[0].id,'belle-isle');
+assert.equal(viewingSitesForRegion('saginaw-bay',2).length,2);
+assert.ok(distanceMiles({lat:44.1,lon:-84.2},WOODCOCK_SITES[0])<5);
+assert.equal(distanceMiles(null,WOODCOCK_SITES[0]),null);
+for (const s of WOODCOCK_SITES) {
+  assert.ok(s.id&&s.name&&s.county&&s.region&&s.directions);
+  assert.ok(Number.isFinite(s.lat)&&Number.isFinite(s.lon)&&s.lat>41&&s.lat<49&&s.lon> -91&&s.lon< -82);
+  assert.ok(s.evidence&&s.evidenceYear===2026&&s.eventDate.startsWith('2026-'));
+  assert.ok(['event-only','verify'].includes(s.accessType));
+  assert.ok(ACCESS_LABELS[s.accessType]&&PIN_LABELS[s.pointType]);
+  assert.ok(s.parking&&s.accessWarning&&s.where&&s.walk);
+  assert.equal(siteCanBeCalledOpenAfterDark(s),false);
+  assert.ok(/after.dark|dusk|night|sunset|clos/i.test(s.accessWarning),'Access warning should discuss night constraints: '+s.id);
+  for (const key of ['eventSource','accessSource','mapSource']) assert.ok(/^https:\/\//.test(s[key]),'Valid source URL '+key+' for '+s.id);
+  assert.notEqual(s.eventSource,s.accessSource,'Independent access and event evidence for '+s.id);
+}
+assert.equal(WOODCOCK_SITES.find(s=>s.id==='lame-duck').pointType,'published-meeting');
+assert.equal(WOODCOCK_SITES.find(s=>s.id==='luton').accessType,'event-only');
+assert.equal(WOODCOCK_SITES.find(s=>s.id==='gourdneck').accessType,'verify');
+const view=readFileSync(new URL('../components/WoodcockViewingFinder.js',import.meta.url),'utf8');
+const map=readFileSync(new URL('../components/WoodcockCartoMap.js',import.meta.url),'utf8');
+const page=readFileSync(new URL('../pages/woodcock-sky-dance.js',import.meta.url),'utf8');
+const css=readFileSync(new URL('../public/woodcock.css',import.meta.url),'utf8');
+assert.ok(page.includes('<WoodcockViewingFinder')&&page.includes('onPickSite={chooseSite}'));
+assert.ok(page.includes('setSelection(site.regionId)'),'Selecting a viewing venue must update weather region');
+assert.ok(map.includes("setLayer('venues')")&&map.includes("setLayer('weather')"));
+assert.ok(map.includes('WOODCOCK_SITES.forEach')&&map.includes('woodcock-venue-pin'));
+assert.ok(map.includes('CARTO')&&map.includes('Map library unavailable'));
+assert.ok(view.includes('None are certified as independently open after sunset'));
+assert.ok(view.includes('Read the original event source')&&view.includes('Verify current access & hours'));
+assert.ok(view.includes('no after-dark access')||view.includes('No after-dark access'));
+assert.ok(css.includes('woodcock-access-layout')&&css.includes('@media(max-width:700px)'));
+console.log('Woodcock viewing atlas checks passed: six dated sources, access gating, unique IDs, map/finder sync and responsive styling.');
