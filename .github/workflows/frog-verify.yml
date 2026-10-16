@@ -1,0 +1,30 @@
+name: Frog Chorus Model
+on:
+  pull_request:
+    paths:
+      - 'lib/frogs.js'
+      - 'pages/api/frogs.js'
+      - 'pages/frog-chorus.js'
+      - 'components/FrogMap.js'
+      - 'public/frog-chorus.css'
+      - 'scripts/check-frogs.mjs'
+      - '.github/workflows/frog-verify.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'lib/frogs.js'
+      - 'scripts/check-frogs.mjs'
+      - '.github/workflows/frog-verify.yml'
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  model:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/check-frogs.mjs
