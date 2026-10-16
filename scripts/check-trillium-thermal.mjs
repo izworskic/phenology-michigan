@@ -53,7 +53,7 @@ const comp=fs.readFileSync(new URL('../components/TrilliumThermal.js',import.met
 const api=fs.readFileSync(new URL('../pages/api/trillium-thermal.js',import.meta.url),'utf8');
 const styles=fs.readFileSync(new URL('../public/trillium.css',import.meta.url),'utf8');
 assert.ok(page.includes('initialThermalModels')&&page.includes('<TrilliumThermal regionId={selected}'),'Page SSR includes historical heat evidence');
-assert.ok(api.includes('currentSeasonDays(')&&api.includes('models:\'era5\'')===false);
+assert.ok(api.includes('currentSeasonDays('),'Weather data must be fetched on demand during spring');
 assert.ok(api.includes('forecast_days:8')&&api.includes('past_days:16')&&api.includes("models:'era5'"));
 assert.ok(api.includes('s-maxage=21600')&&api.includes("local.month<3||local.month>6"));
 assert.ok(comp.includes('ThermalCurve')&&comp.includes('tri-heat-chart')&&comp.includes('thermalSignal'));
