@@ -1,0 +1,34 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {REGIONS,STOPS,outlook,bucket,normalizeSightings} from '../lib/trillium.mjs';
+assert.equal(REGIONS.length,7,'Seven regional planning areas are required');
+assert.equal(STOPS.length,10,'Ten sourced public-access stops are required');
+assert.equal(new Set(STOPS.map(s=>s.id)).size,STOPS.length,'Destination IDs must be unique');
+assert.ok(STOPS.every(s=>REGIONS.some(r=>r.id===s.region)&&/^https:\/\//.test(s.url)&&Number.isFinite(s.lat)&&Number.isFinite(s.lon)),'Sites need sourced URLs and finite region pins');
+assert.ok(REGIONS.every(r=>/^0[456]-\d\d$/.test(r.start)&&/^0[456]-\d\d$/.test(r.end)&&r.start<r.end),'Seasonal windows must be valid April-to-June ranges');
+const october=new Date('2026-10-15T18:00:00Z');
+for(const region of REGIONS) {
+ const value=outlook(region,october,{days:[{maxF:85,minF:65}]},[]);
+ assert.equal(value.state,'off','Warm autumn cannot create active flowering claims');
+ assert.equal(value.floweringCount,0);
+}
+const may=new Date('2027-05-15T18:00:00Z');
+assert.equal(outlook(REGIONS[0],may,null,[]).state,'window');
+const flowers=normalizeSightings([{id:42,quality_grade:'research',observed_on:'2027-05-14',geojson:{coordinates:[-86.4,42.2]}}],may);
+assert.equal(flowers.length,1);
+assert.equal(flowers[0].region,'southwest');
+assert.equal(outlook(REGIONS[0],may,null,flowers).state,'sighting');
+assert.equal(bucket(46.6,-87.5),'westup');
+const wrong=normalizeSightings([{id:43,quality_grade:'casual',observed_on:'2027-05-14',geojson:{coordinates:[-86.4,42.2]}}],may);
+assert.equal(wrong.length,0,'Only vetted research-grade observations count');
+const page=fs.readFileSync(new URL('../pages/michigan-trillium.js',import.meta.url),'utf8');
+const api=fs.readFileSync(new URL('../pages/api/trillium.js',import.meta.url),'utf8');
+const css=fs.readFileSync(new URL('../public/trillium.css',import.meta.url),'utf8');
+const site=fs.readFileSync(new URL('../pages/sitemap.xml.js',import.meta.url),'utf8');
+assert.ok(page.includes('TrilliumMap')&&page.includes('WeatherGraph')&&page.includes('canonical'),'Page must include decision, chart, map and canonical');
+assert.ok(page.includes('Wikimedia Commons, CC BY-SA 3.0'),'Image attribution required');
+assert.ok(api.includes('term_id:12')&&api.includes('term_value_id:13')&&api.includes('quality_grade:\'research\''),'Only flowering annotated research-grade records');
+assert.ok(api.includes('Promise.all')&&api.includes('s-maxage=21600'),'Bounded, cached regional forecast requests');
+assert.ok(css.includes('@media(max-width:740px)'),'Must work on mobile');
+assert.ok(site.includes('/michigan-trillium'),'Must be discoverable from sitemap');
+console.log('Trillium acceptance gate: 7 regions, 10 sourced sites, off-season honesty, verified-only evidence, responsive chart and map, sitemap OK.');
