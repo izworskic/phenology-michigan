@@ -156,3 +156,57 @@
 .tri-thermal-foot a svg{display:inline-block;vertical-align:middle}
 @media(max-width:900px){.tri-thermal-panels{grid-template-columns:1fr}}
 @media(max-width:740px){.tri-thermal-section{margin-top:38px}.tri-thermal-insight,.tri-thermal-graph{padding:16px}.tri-thermal-large{font-size:41px}.tri-heat-chart{margin:18px -7px 8px}.tri-thermal-graph-head h3{font-size:20px}.tri-heat-facts strong{font-size:20px}}
+
+
+/* Local-condition comparisons: destination grids vs regions, never bloom rankings. */
+.tri-local-section{margin:26px 0 20px;scroll-margin-top:18px}
+.tri-local-section .tri-section-heading{margin:0 0 16px}
+.tri-local-board{border:1px solid #d6e3d7;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 6px 24px rgba(23,64,36,.035)}
+.tri-local-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:11px;padding:16px 20px;background:#edf4ed;border-bottom:1px solid #dbe5dc}
+.tri-local-head>div{display:flex;align-items:center;gap:9px;color:#2e6846}
+.tri-local-head strong{font:700 14px Arial,sans-serif}
+.tri-local-head span{font:11px Arial,sans-serif;color:#657869}
+.tri-local-off{padding:13px 20px;margin:0;border-bottom:1px solid #ebefeb;font:12px/1.55 Arial,sans-serif;color:#6c7f70}
+.tri-local-list{display:flex;flex-direction:column}
+.tri-local-row{width:100%;display:grid;grid-template-columns:minmax(170px,1.5fr) minmax(110px,1fr) 85px 120px 16px;gap:14px;align-items:center;text-align:left;padding:13px 20px;background:#fff;border:0;border-bottom:1px solid #edf0e9;color:inherit;cursor:pointer;font-family:Arial,sans-serif;transition:background .15s ease}
+.tri-local-row:hover,.tri-local-row:focus-visible{background:#f3f8f0;outline-offset:-3px;outline-color:#73a981}
+.tri-local-row:last-child{border-bottom:0}
+.tri-local-identity{min-width:0;display:flex;flex-direction:column;gap:3px}
+.tri-local-identity b{font:700 12px/1.35 Arial,sans-serif;color:#315442}
+.tri-local-identity small{font:10px/1.45 Arial,sans-serif;color:#758675}
+.tri-local-bar-block{display:flex;flex-direction:column;gap:5px;min-width:0}
+.tri-local-bar-bg{background:#e9f0e9;position:relative;height:8px;border-radius:6px}
+.tri-local-bar-bg>span{position:absolute;top:0;height:8px;width:9px;border-radius:6px;background:#4e9463}
+.tri-local-bar-block small,.tri-local-bar-empty{font:10px Arial,sans-serif;color:#698473}
+.tri-local-delta{display:flex;flex-direction:column;gap:2px;align-items:flex-start}
+.tri-local-delta b{font:700 15px Arial,sans-serif;color:#326746}
+.tri-local-delta small{font:9px Arial,sans-serif;color:#758578}
+.tri-local-snow{display:flex;align-items:center;gap:5px;color:#5e7a68;font:10px/1.35 Arial,sans-serif}
+.tri-local-snow svg{flex:none}
+.tri-local-go{color:#749780}
+.tri-local-foot{display:flex;align-items:flex-start;gap:9px;background:#f0f4ee;border-top:1px solid #e4ebe0;padding:12px 17px;font:11px/1.6 Arial,sans-serif;color:#627766}
+.tri-local-foot svg{flex:none;margin-top:1px}
+.tri-local-note{background:#f2f6ef;border-left:3px solid #85a78c;border-radius:7px;padding:11px 13px;margin:13px 0 15px}
+.tri-local-label{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;color:#3a6a47}
+.tri-local-label b{font:700 12px Arial,sans-serif}
+.tri-local-label span{font:11px Arial,sans-serif;color:#6d7f6e}
+.tri-local-note p{font:11px/1.6 Arial,sans-serif;color:#657968;margin:7px 0 0!important}
+.tri-local-statline{display:flex;flex-wrap:wrap;align-items:baseline;gap:7px 12px;margin-top:10px;font:11px Arial,sans-serif;color:#56705c}
+.tri-local-statline strong{font:700 17px Arial,sans-serif;color:#345c43}
+.tri-local-statline strong small{font:10px Arial,sans-serif;color:#78897b}
+.tri-local-note p.tri-local-disclaimer{font-size:10px;color:#788779}
+@media(max-width:900px){.tri-local-row{grid-template-columns:minmax(140px,1.4fr) minmax(90px,1fr) 76px 94px 16px;gap:9px;padding:13px 15px}}
+@media(max-width:680px){
+ .tri-local-head{padding:13px 15px}
+ .tri-local-row{grid-template-columns:minmax(130px,1fr) 73px 15px;gap:9px;padding:13px}
+ .tri-local-identity{grid-column:1;grid-row:1 / span 2}
+ .tri-local-delta{grid-column:2;grid-row:1}
+ .tri-local-bar-block,.tri-local-bar-empty{grid-column:2;grid-row:2}
+ .tri-local-snow{grid-column:1;grid-row:3}
+ .tri-local-go{grid-column:3;grid-row:1}
+ .tri-local-delta b{font-size:14px}
+ .tri-local-bar-bg{display:none}
+ .tri-local-snow{font-size:10px}
+ .tri-local-identity b{font-size:12px}
+ .tri-local-foot{padding:12px}
+}
