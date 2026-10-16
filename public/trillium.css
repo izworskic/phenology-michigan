@@ -241,3 +241,27 @@
 .tri-evidence-submit{display:inline-flex;align-items:center;gap:6px;margin-top:11px;color:#326a48!important;font:700 11px Arial,sans-serif;text-decoration:underline}
 .tri-evidence-submit svg{flex:none}
 @media(max-width:740px){.tri-report-program{padding:17px}.tri-report-program-top{align-items:flex-start;flex-direction:column;gap:12px}.tri-report-program-cta{width:100%;padding:13px}.tri-report-program-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.tri-report-program-stats>div{padding:11px 9px}.tri-report-program-stats strong{font-size:20px}.tri-report-program-stats span{font-size:10px}.tri-report-program h3{font-size:22px}.tri-report-program-method{gap:10px}}
+
+
+.tri-direct-form{margin:16px 0;padding:18px;border:1px solid #cfded0;border-radius:9px;background:#fff;scroll-margin-top:22px}
+.tri-direct-heading{display:flex;justify-content:space-between;gap:13px;flex-wrap:wrap}
+.tri-direct-heading strong{font:700 17px Arial,sans-serif;color:#2d5d40}
+.tri-direct-heading p{font:12px/1.6 Arial,sans-serif;color:#667a6d}
+.tri-direct-heading>span{font:700 10px Arial,sans-serif;color:#376b49;background:#e6f0e5;padding:7px;border-radius:5px}
+.tri-direct-fields{display:grid;grid-template-columns:1fr 1.2fr;gap:13px;margin:16px 0}
+.tri-direct-fields label{display:flex;flex-direction:column;gap:6px;font:700 11px Arial,sans-serif;color:#436a50;min-width:0}
+.tri-direct-fields input,.tri-direct-fields select{min-width:0;max-width:100%;height:43px;padding:9px;border:1px solid #b2cab6;border-radius:6px;background:#fff;font:13px Arial,sans-serif;color:#344b3a}
+.tri-direct-consent{display:flex;align-items:flex-start;gap:8px;font:11px/1.5 Arial,sans-serif;color:#6c806d}
+.tri-direct-consent input{flex:none;margin-top:2px;accent-color:#31764b}
+.tri-direct-submit{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:7px;background:#2d714c;color:#fff;font:700 12px Arial,sans-serif;padding:13px 17px;margin-top:12px;cursor:pointer}
+.tri-direct-submit:disabled{opacity:.5;cursor:not-allowed}
+.tri-direct-result{display:flex;gap:9px;padding:11px;margin-top:12px;border-radius:6px;font:12px/1.5 Arial,sans-serif}
+.tri-direct-result.success{background:#e7f2e5;color:#225d36}
+.tri-direct-result.error{background:#fcf0e8;color:#8c4a32}
+.tri-direct-form p.tri-direct-small{font:10px/1.6 Arial,sans-serif;color:#728474;margin-top:12px}
+.tri-direct-small a{color:#2e6746;text-decoration:underline}
+.tri-automatic-stats{display:flex;align-items:center;gap:8px;background:#f8faf6;border:1px solid #e0e9de;padding:12px;margin:13px 0;border-radius:6px;font:11px/1.5 Arial,sans-serif;color:#667d6d}
+.tri-auto-evidence{margin-top:12px;border-top:1px solid #e1eae0;padding-top:12px}
+.tri-auto-evidence>strong{font:700 11px Arial,sans-serif;color:#436c51}
+.tri-auto-evidence>p{font:10px/1.55 Arial,sans-serif;color:#728575}
+@media(max-width:740px){.tri-direct-fields{grid-template-columns:1fr}.tri-direct-form{padding:14px}.tri-direct-submit{width:100%}}
