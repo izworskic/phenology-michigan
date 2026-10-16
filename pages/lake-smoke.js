@@ -2,6 +2,7 @@ import Head from 'next/head';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {SITES,SOURCE_LINKS} from '../lib/lakeSmoke.mjs';
 import {rankShorelineViews,compass} from '../lib/lakeSmokeWind.mjs';
+import {GREAT_LAKES} from '../lib/lakeSmokeGeography.mjs';
 import {historyForSite,easternDay} from '../lib/lakeSmokeArchive.mjs';
 const BASE='https://phenology.chrisizworski.com';
 const CANONICAL=BASE+'/lake-smoke';
@@ -24,69 +25,138 @@ const shortDay=(value,zone='America/Detroit')=>new Intl.DateTimeFormat('en-US',{
 const fmtTemp=n=>Number.isFinite(n)?Math.round(n)+'°F':'—';
 function Tone({status}){return <span className={'smoke-tone '+(status?.tone||'unknown')}>{status?.label||'Checking data'}</span>;}
 function Score({value}){return <strong className='smoke-score'>{value==null?'—':value}<small>{value==null?'':' / 100'}</small></strong>;}
+const staticX=lon=>(lon+92)*900/17;
+const staticY=lat=>(49.8-lat)*560/8.8;
+const staticPath=lake=>lake.rings.map(ring=>ring.map(([lon,lat],i)=>
+  (i?'L':'M')+staticX(lon).toFixed(1)+','+staticY(lat).toFixed(1)).join(' ')+' Z').join(' ');
+function GreatLakesStaticMap({results,selected,onChoose}){
+  const labels=[
+    {name:'SUPERIOR',lat:47.75,lon:-87.6},
+    {name:'MICHIGAN',lat:44.3,lon:-87.25},
+    {name:'HURON',lat:45.15,lon:-82.9},
+    {name:'ERIE',lat:42.2,lon:-80.8},
+    {name:'ONTARIO',lat:43.55,lon:-78.1}
+  ];
+  return <div className='smoke-static-wrap' aria-label='Keyless geographic map of the five Great Lakes'>
+    <svg className='smoke-static-geography' viewBox='0 0 900 560' preserveAspectRatio='none' role='img' aria-label='Natural Earth shorelines of Lakes Superior, Michigan, Huron, Erie and Ontario'>
+      <defs><linearGradient id='smoke-map-land' x1='0' y1='0' x2='0' y2='1'><stop stopColor='#e9efe9'/><stop offset='1' stopColor='#f8f8ed'/></linearGradient></defs>
+      <rect width='900' height='560' fill='url(#smoke-map-land)'/>
+      {[42,44,46,48].map(lat=><line key={lat} x1='0' x2='900' y1={staticY(lat)} y2={staticY(lat)} stroke='#cbd9d3' strokeWidth='.8' strokeDasharray='3 7'/>)}
+      {[-90,-87,-84,-81,-78].map(lon=><line key={lon} y1='0' y2='560' x1={staticX(lon)} x2={staticX(lon)} stroke='#cbd9d3' strokeWidth='.8' strokeDasharray='3 7'/>)}
+      {GREAT_LAKES.map(lake=><path key={lake.name} d={staticPath(lake)} fill='#b5dbe8' stroke='#579caf' strokeWidth='1.6'/>)}
+      {labels.map(l=><text key={l.name} x={staticX(l.lon)} y={staticY(l.lat)} className='smoke-static-label' textAnchor='middle'>{l.name}</text>)}
+      <text x='30' y='35' className='smoke-static-north'>N ↑</text>
+    </svg>
+    <div className='smoke-static-pins'>
+      {SITES.map(site=>{
+        const row=results?.find(s=>s.id===site.id);
+        const tone=row?.status?.tone||'unknown';
+        return <button type='button' key={site.id} title={site.name+' · '+(row?.status?.label||'Checking conditions')}
+          aria-label={'Select '+site.name} aria-pressed={selected===site.id}
+          className='smoke-map-marker smoke-static-pin'
+          style={{left:(staticX(site.lon)/900*100)+'%',top:(staticY(site.lat)/560*100)+'%'}}
+          onClick={()=>onChoose(site.id)}><span className={'smoke-map-pin '+tone+(selected===site.id?' active':'')}/></button>;
+      })}
+    </div>
+    <div className='smoke-static-credit'>Great Lakes shoreline geometry: Natural Earth (public domain)</div>
+  </div>;
+}
 function MapPanel({results,selected,onChoose}){
-  const target=useRef(null),map=useRef(null),markers=useRef({}),onChooseRef=useRef(onChoose);
-  const [ready,setReady]=useState(false),[mapError,setMapError]=useState(false);
-  onChooseRef.current=onChoose;
+  const target=useRef(null),map=useRef(null),pins=useRef({}),chooseRef=useRef(onChoose);
+  const [mapMode,setMapMode]=useState('loading');
+  chooseRef.current=onChoose;
   useEffect(()=>{
-    let canceled=false;
-    const initialize=()=>{
-      if(canceled||!target.current||!window.L||map.current)return;
-      const L=window.L;
-      const instance=L.map(target.current,{scrollWheelZoom:false,zoomControl:true}).setView([45.0,-85.7],5);
-      let tile=L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:18,attribution:'&copy; OpenStreetMap &copy; CARTO'});
-      let triedFallback=false;
-      tile.on('tileerror',()=>{
-        if(triedFallback)return;
-        triedFallback=true;
-        instance.removeLayer(tile);
-        tile=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap contributors'});
-        tile.on('tileerror',()=>setMapError(true));
-        tile.addTo(instance);
-      });
-      tile.addTo(instance);
-      const pins={};
-      SITES.forEach(site=>{
-        const pin=L.marker([site.lat,site.lon],{title:site.name}).addTo(instance);
-        pin.on('click',()=>onChooseRef.current(site.id));
-        pins[site.id]=pin;
-      });
-      map.current=instance;
-      markers.current=pins;
-      setReady(true);
-      setTimeout(()=>{if(!canceled&&map.current)map.current.invalidateSize();},200);
+    let disposed=false,timeout=null,failed=false;
+    const useGeographicFallback=()=>{
+      if(disposed||failed)return;
+      failed=true;
+      clearTimeout(timeout);
+      Object.values(pins.current).forEach(pin=>pin.remove?.());
+      pins.current={};
+      if(map.current){try{map.current.remove();}catch{}map.current=null;}
+      if(target.current)target.current.innerHTML='';
+      setMapMode('static');
     };
-    if(window.L){initialize();}
-    else{
-      const old=document.querySelector('script[data-lake-smoke-leaflet]');
-      if(old){old.addEventListener('load',initialize);}
-      else{
-        const script=document.createElement('script');
-        script.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-        script.crossOrigin='anonymous';
-        script.dataset.lakeSmokeLeaflet='1';
-        script.onload=initialize;
-        script.onerror=()=>setMapError(true);
-        document.body.appendChild(script);
-      }
-    }
-    return()=>{canceled=true;if(map.current){map.current.remove();map.current=null;markers.current={};}};
+    const initialize=async ()=>{
+      try{
+        if(!target.current)return;
+        if(!window.maplibregl){
+          await new Promise((resolve,reject)=>{
+            let script=document.querySelector('script[data-lake-smoke-maplibre]');
+            if(script?.dataset.failed==='true')return reject(Error('Map library not available'));
+            const loaded=()=>{script.removeEventListener('load',loaded);script.removeEventListener('error',error);window.maplibregl?resolve():reject(Error('No MapLibre available'));};
+            const error=()=>{script.dataset.failed='true';script.removeEventListener('load',loaded);script.removeEventListener('error',error);reject(Error('Map library failed'));};
+            if(!script){
+              script=document.createElement('script');
+              script.src='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js';
+              script.crossOrigin='anonymous';script.dataset.lakeSmokeMaplibre='1';
+              script.addEventListener('load',loaded);script.addEventListener('error',error);
+              document.body.appendChild(script);
+            }else{script.addEventListener('load',loaded);script.addEventListener('error',error);}
+          });
+        }
+        if(disposed||!target.current)return;
+        const ml=window.maplibregl;
+        if(!ml?.supported())throw Error('WebGL unavailable');
+        const instance=new ml.Map({
+          container:target.current,style:'https://tiles.openfreemap.org/styles/positron',
+          center:[-85.6,45.0],zoom:4.3,minZoom:3,maxZoom:17,
+          attributionControl:true,renderWorldCopies:false
+        });
+        map.current=instance;
+        instance.scrollZoom.disable();
+        instance.addControl(new ml.NavigationControl({showCompass:false}),'top-left');
+        SITES.forEach(site=>{
+          const button=document.createElement('button');
+          button.type='button';button.className='smoke-map-marker';
+          button.title='Select '+site.name;
+          button.setAttribute('aria-label','Select '+site.name);
+          const dot=document.createElement('span');dot.className='smoke-map-pin unknown';
+          button.appendChild(dot);
+          const click=()=>chooseRef.current(site.id);
+          button.addEventListener('click',click);
+          const marker=new ml.Marker({element:button,anchor:'center'})
+            .setLngLat([site.lon,site.lat])
+            .setPopup(new ml.Popup({offset:17}).setText(site.name)).addTo(instance);
+          pins.current[site.id]={button,dot,marker,remove:()=>button.removeEventListener('click',click)};
+        });
+        let loaded=false,errors=0;
+        instance.on('load',()=>{
+          if(disposed||failed)return;
+          loaded=true;clearTimeout(timeout);
+          instance.fitBounds([[-92,41.0],[-76,49.5]],{padding:30,maxZoom:5,duration:0});
+          setMapMode('vector');
+        });
+        instance.on('error',()=>{
+          if(disposed||failed)return;
+          errors++;
+          if((!loaded&&errors>=2)||(loaded&&errors>=5))useGeographicFallback();
+        });
+        timeout=setTimeout(()=>{if(!loaded)useGeographicFallback();},10500);
+      }catch{useGeographicFallback();}
+    };
+    initialize();
+    return()=>{
+      disposed=true;clearTimeout(timeout);
+      Object.values(pins.current).forEach(pin=>pin.remove?.());
+      if(map.current){try{map.current.remove();}catch{}}
+      map.current=null;pins.current={};
+    };
   },[]);
   useEffect(()=>{
-    if(!ready||!window.L||!map.current)return;
+    if(mapMode!=='vector')return;
     SITES.forEach(site=>{
-      const row=results?.find(r=>r.id===site.id), active=selected===site.id;
+      const row=results?.find(r=>r.id===site.id),active=selected===site.id;
       const tone=row?.status?.tone||'unknown';
-      const icon=window.L.divIcon({className:'smoke-map-marker',html:'<span class="smoke-map-pin '+tone+(active?' active':'')+'"></span>',iconSize:[28,28],iconAnchor:[14,14]});
-      markers.current[site.id]?.setIcon(icon);
-      markers.current[site.id]?.bindTooltip(site.name,{direction:'top',offset:[0,-10]});
+      const pin=pins.current[site.id];
+      if(pin?.dot)pin.dot.className='smoke-map-pin '+tone+(active?' active':'');
     });
-  },[results,selected,ready]);
+  },[results,selected,mapMode]);
   return <div className='smoke-map-wrap'>
-    <div ref={target} className='smoke-map' role='application' aria-label='Interactive Great Lakes shoreline viewing locations'/>
-    {!ready&&!mapError&&<div className='smoke-map-loading'>Preparing the Great Lakes map…</div>}
-    {mapError&&<div className='smoke-map-error'>Basemap temporarily unavailable. Select a place in the location list.</div>}
+    <div ref={target} className='smoke-map' role='application' aria-label='Interactive Great Lakes shoreline viewing locations' style={{visibility:mapMode==='vector'?'visible':'hidden'}}/>
+    {mapMode!=='vector'&&<GreatLakesStaticMap results={results} selected={selected} onChoose={onChoose}/>}
     <div className='smoke-map-legend'><span><i className='strong'/> Strong setup</span><span><i className='possible'/> Possible</span><span><i className='unknown'/> Data unavailable</span></div>
+    <div className='smoke-map-source'>{mapMode==='vector'?'OpenFreeMap vector map':'Keyless Great Lakes shoreline map'}</div>
   </div>;
 }
 
@@ -279,7 +349,7 @@ export default function LakeSmoke(){
   return <div className='smoke-tool'>
     <Head><title>{TITLE} | Chris Izworski</title><meta name='description' content={DESCRIPTION}/><link rel='canonical' href={CANONICAL}/><meta name='robots' content='index,follow,max-image-preview:large'/>
       <meta property='og:type' content='website'/><meta property='og:title' content={TITLE}/><meta property='og:description' content={DESCRIPTION}/><meta property='og:url' content={CANONICAL}/>
-      <meta name='twitter:card' content='summary'/><link rel='stylesheet' href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'/><link rel='stylesheet' href='/lake-smoke.css'/>
+      <meta name='twitter:card' content='summary'/><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css'/><link rel='stylesheet' href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'/><link rel='stylesheet' href='/lake-smoke.css'/>
       <script type='application/ld+json' dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}}/></Head>
     <header className='smoke-header smoke-wrap'><a className='smoke-brand' href='/'>MICHIGAN PHENOLOGY <span> / GREAT LAKES</span></a><nav aria-label='Lake smoke navigation'><a href='#places'>Locations</a><a href='#forecast'>Forecast</a><a href='#wind-view'>Wind direction</a><a href='#smoke-history'>History</a><a href='#cameras'>Cameras</a><a href='#science'>How it works</a></nav></header>
     <main>
