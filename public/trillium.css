@@ -101,3 +101,10 @@
 .tri-history-wait{background:#f2f6ee;border:1px dashed #c6d8c8;border-radius:10px;padding:26px;font:14px Arial,sans-serif;color:#64806b}
 @media(max-width:880px){.tri-history-layout{grid-template-columns:1fr}.tri-history-months{margin-right:77px}}
 @media(max-width:740px){.tri-history-section{margin-top:38px}.tri-history-summary,.tri-history-plot{padding:17px}.tri-history-count{grid-template-columns:auto 1fr auto 1fr}.tri-history-year{grid-template-columns:36px minmax(0,1fr) 64px;gap:6px}.tri-history-year>small{font-size:9px}.tri-history-months{margin:10px 58px 9px 36px;font-size:9px}.tri-history-plot-heading h3{font-size:20px}}
+
+/* Accurate time-axis alignment with plotted dates (same 74–196 day-of-year domain). */
+.tri-history-months{display:block;position:relative;height:27px;margin:10px 87px 10px 49px;font:10px Arial,sans-serif;color:#7b8d80}
+.tri-history-months>span{position:absolute;top:5px;white-space:nowrap;transform:translateX(-50%)}
+.tri-history-months>span.first{transform:none}
+.tri-history-months>span.last{transform:translateX(-100%)}
+@media(max-width:740px){.tri-history-months{margin-left:42px;margin-right:70px;font-size:9px}}
