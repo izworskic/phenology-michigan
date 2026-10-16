@@ -126,3 +126,26 @@
 .woodcock-venue-pin.active{background:#ffdaa9;color:#182f35;box-shadow:0 0 0 5px #f3c48477,0 3px 20px #051b20ee}
 @media(max-width:1050px){.woodcock-access-layout{grid-template-columns:1fr}.woodcock-access-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.woodcock-access-detail{padding:18px}}
 @media(max-width:700px){.woodcock-access-head{display:block}.woodcock-review-date{margin-top:10px}.woodcock-access-key>div{flex-basis:100%}.woodcock-access-toolbar{display:block}.woodcock-access-toolbar>span{margin-top:10px}.woodcock-access-list{grid-template-columns:1fr}.woodcock-access-details-grid{grid-template-columns:1fr}.woodcock-access-detail-heading{display:block}.woodcock-access-tag{margin:4px 0 9px}.woodcock-map-controls{right:10px;gap:3px}.woodcock-map-controls button{font-size:10px;padding:7px}.woodcock-map-caption{font-size:9px;right:12px;bottom:35px}}
+
+
+/* Spring auto-refresh: organizer-confirmed walks, no fake future dates. */
+.woodcock-2027-events{margin:22px 0 25px;background:#edf2ee;border:1px solid #cdded2;border-radius:12px;padding:22px 23px}
+.woodcock-2027-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.woodcock-2027-head h4{font:500 clamp(24px,2.6vw,32px)/1.2 Fraunces,Georgia,serif;letter-spacing:-.025em;margin:8px 0 0;color:#284b45}
+.woodcock-2027-checked{font:700 11px/1.5 system-ui,sans-serif;color:#658078}
+.woodcock-2027-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:17px}
+.woodcock-2027-list article{background:white;border:1px solid #cddcd4;border-radius:9px;padding:17px;min-width:0}
+.woodcock-2027-list article>div{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.woodcock-2027-list article>div strong{font:700 13px system-ui,sans-serif;color:#315a50}
+.woodcock-2027-label{font:700 9px system-ui,sans-serif;letter-spacing:.04em;background:#e0efe5;color:#376f50;padding:5px 7px;border-radius:6px}
+.woodcock-2027-list h5{font:500 20px/1.22 Fraunces,Georgia,serif;margin:12px 0 6px;color:#314d56}
+.woodcock-2027-list p{font:12px/1.65 system-ui,sans-serif;color:#748388;margin:0 0 13px}
+.woodcock-2027-list a,.woodcock-current-event a{font:700 11px/1.5 system-ui,sans-serif;display:inline-flex;gap:5px;align-items:center;text-underline-offset:3px;color:#355e51}
+.woodcock-2027-none{font:13px/1.65 system-ui,sans-serif;color:#607b72;margin:18px 0 8px;display:flex;align-items:flex-start;gap:10px}
+.woodcock-2027-none svg{flex:none;margin-top:2px}
+.woodcock-2027-warning{color:#965b3d;background:#f9ebe1;border:1px solid #e5c5ab;padding:10px 12px;font:12px/1.5 system-ui,sans-serif;border-radius:7px}
+.woodcock-2027-disclosure{font:11px/1.6 system-ui,sans-serif;color:#71847d;margin:14px 0 0}
+.woodcock-current-event{background:#e7f1e8;border:1px solid #b8d4c3;padding:14px 15px;border-radius:8px;margin:9px 0 14px}
+.woodcock-current-event strong{display:flex;gap:7px;align-items:center;color:#326647;font:750 12px/1.5 system-ui,sans-serif}
+.woodcock-current-event p{font:12px/1.6 system-ui,sans-serif;color:#547363;margin:9px 0}
+@media(max-width:700px){.woodcock-2027-events{padding:17px 14px}.woodcock-2027-head{display:block}.woodcock-2027-checked{display:block;margin-top:7px}.woodcock-2027-list{grid-template-columns:1fr}}
