@@ -36,7 +36,7 @@ assert.equal(summaries.multiYearSites,0);
 assert.equal(summaries.sites.find(s=>s.siteId===stop.id).firstFloweringDateByYear[0].date,'2027-05-14');
 assert.equal(summaries.sites.find(s=>s.siteId===stop.id).eligibleForFutureValidation,false);
 assert.ok(!JSON.stringify(summaries).includes('siteEvidenceNote'),'Reviewer proof notes must not leak in public API');
-assert.ok(!JSON.stringify(summaries).includes('lat'),'No raw lat/longitude in public historical archive');
+assert.ok(!/\"(?:lat|lon|latitude|longitude)\"\s*:/.test(JSON.stringify(summaries)),'No raw lat/longitude in public historical archive');
 assert.throws(()=>readArchive({schemaVersion:1,records:[record,{...record,issueNumber:2}]},STOPS,now),'Duplicate source links cannot double count');
 assert.throws(()=>readArchive({schemaVersion:1,records:[record,{...record,sourceUrl:'https://www.michigan.gov/dnr/places/natural-areas/warren-woods-nature-study-area',issueNumber:1}]},STOPS,now),'Duplicate intake issues cannot double count');
 const issueBody=`### Preserve
