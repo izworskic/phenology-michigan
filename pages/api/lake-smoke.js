@@ -13,7 +13,7 @@ function parseGlsea(json,now){
   if(!Array.isArray(columns)||!Array.isArray(row))throw Error('Invalid NOAA grid response');
   const value=Number(row[columns.indexOf('sst')]);
   const time=row[columns.indexOf('time')];
-  if(!Number.isFinite(value)||value< -2||value>35||!time)throw Error('NOAA water pixel missing');
+  if(!Number.isFinite(value)||value<=0.5||value>35||!time)throw Error('NOAA water pixel missing or at freezing/possible ice state');
   const parsed=Date.parse(time);
   if(!Number.isFinite(parsed)||parsed>now.getTime()+6*3600000||now.getTime()-parsed>96*3600000)throw Error('NOAA grid is outdated');
   return {c:Math.round(value*10)/10,time:new Date(parsed).toISOString(),kind:'GLSEA satellite analysis',scope:'Local offshore grid cell (not a direct measurement)',source:'NOAA CoastWatch'};
