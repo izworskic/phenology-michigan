@@ -1,7 +1,7 @@
 import {STOPS} from '../../lib/trillium.mjs';
 import HISTORY from '../../data/trillium-site-history.json';
 import {readArchive,summarizeSiteEvidence} from '../../lib/trillium-site-history.mjs';
-const ISSUE_URL='https://github.com/izworskic/phenology-michigan/issues/new?template=trillium-field-report.yml';
+const ISSUE_URL='https://form.jotform.com/262882681844066';
 export default function handler(req,res){
  if(req.method!=='GET'){res.setHeader('Allow','GET');return res.status(405).json({error:'GET only'});}
  const requested=req.query.site;
