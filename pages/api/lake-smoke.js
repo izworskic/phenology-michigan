@@ -1,4 +1,6 @@
 import {SITES,SOURCE_LINKS,morningOutlook,siteStatus,periodAirF} from '../../lib/lakeSmoke.mjs';
+import {ICE_DATASET,iceSeason,parseIceGrid,iceAssessment,iceAdjustedOutlook,iceAwareStatus} from '../../lib/lakeSmokeIce.mjs';
+import {cameraFor} from '../../lib/lakeSmokeCameras.mjs';
 
 const UA='GreatLakesLakeSmoke/1.0 (https://phenology.chrisizworski.com/lake-smoke; public outdoor planning)';
 async function getJson(url,timeout=3800){
@@ -26,6 +28,11 @@ async function waterFor(site,now){
   const json=await getJson(url,4500);
   return parseGlsea(json,now);
 }
+async function iceFor(site,now){
+  const subset='ice_concentration[last][('+site.waterLat+')][('+site.waterLon+')]';
+  const url='https://apps.glerl.noaa.gov/erddap/griddap/'+ICE_DATASET+'.json?'+encodeURIComponent(subset);
+  return parseIceGrid(await getJson(url,4800),now);
+}
 async function forecastFor(site){
   const points=await getJson('https://api.weather.gov/points/'+site.lat+','+site.lon);
   const hourly=points?.properties?.forecastHourly;
@@ -35,21 +42,27 @@ async function forecastFor(site){
   return {periods:response.properties.periods,updatedAt:response.properties.updateTime||null};
 }
 async function snapshot(site,now){
-  const [waterResult,weatherResult]=await Promise.allSettled([waterFor(site,now),forecastFor(site)]);
+  const [waterResult,weatherResult,iceResult]=await Promise.allSettled([waterFor(site,now),forecastFor(site),iceSeason(now)?iceFor(site,now):Promise.resolve(null)]);
   const water=waterResult.status==='fulfilled'?waterResult.value:null;
   const wx=weatherResult.status==='fulfilled'?weatherResult.value:null;
-  const outlook=morningOutlook(site,water,wx?.periods||[],now);
+  const ice=iceResult.status==='fulfilled'?iceResult.value:null;
+  const iceCheck=iceAssessment(ice,now);
+  const outlook=iceAdjustedOutlook(morningOutlook(site,water,wx?.periods||[],now),iceCheck);
   const current=wx?.periods?.find(p=>new Date(p.startTime).getTime()>=now.getTime()-3600000);
   return {
     ...site,
     water,
+    ice,
+    iceCheck,
+    camera:cameraFor(site.id),
     forecastUpdatedAt:wx?.updatedAt||null,
     airForecastF:current?periodAirF(current):null,
     outlook,
-    status:siteStatus(outlook,water),
+    status:iceAwareStatus(outlook,water,iceCheck,siteStatus(outlook,water)),
     unavailable:{
       water:!water?'Recent local NOAA lake-surface temperature could not be retrieved.':null,
-      weather:!wx?'NWS hourly forecast could not be retrieved.':null
+      weather:!wx?'NWS hourly forecast could not be retrieved.':null,
+      ice:iceCheck.state==='unavailable'?'Recent NOAA ice concentration data are required during ice season and could not be retrieved.':null
     }
   };
 }
@@ -67,6 +80,6 @@ export default async function handler(req,res){
     activeLocations:ranked.length,
     locations:results,
     sources:SOURCE_LINKS,
-    notes:['NOAA GLSEA temperature is a satellite-derived analyzed grid, not a live thermometer or a precise nearshore reading.','NWS forecasts describe hourly atmospheric conditions near each viewing location.','Ratings require recent local water temperature and usable hourly forecast data; missing data produce no ranking.','Wind, local geography, ice, and turbulence can change actual visibility; consult NWS marine forecasts and advisories for safety.']
+    notes:['NOAA GLSEA temperature is a satellite-derived analyzed grid, not a live thermometer or a precise nearshore reading. Ice assessments are sampled from a separate GLSEA/NIC analysis in November–May. A current grid cell does not predict ice formation over the following days.','NWS forecasts describe hourly atmospheric conditions near each viewing location.','Ratings require recent local water temperature and usable hourly forecast data, plus recent local ice coverage in November–May; missing data produce no ranking. A patchy ice signal caps scores at 45, and 15% or greater ice cover suppresses scores.','Wind, local geography, ice, and turbulence can change actual visibility; consult NWS marine forecasts and advisories for safety.']
   });
 }
