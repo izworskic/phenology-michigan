@@ -25,68 +25,152 @@ const fmtTemp=n=>Number.isFinite(n)?Math.round(n)+'°F':'—';
 function Tone({status}){return <span className={'smoke-tone '+(status?.tone||'unknown')}>{status?.label||'Checking data'}</span>;}
 function Score({value}){return <strong className='smoke-score'>{value==null?'—':value}<small>{value==null?'':' / 100'}</small></strong>;}
 function MapPanel({results,selected,onChoose}){
-  const target=useRef(null),map=useRef(null),markers=useRef({}),onChooseRef=useRef(onChoose);
-  const [ready,setReady]=useState(false),[mapError,setMapError]=useState(false);
-  onChooseRef.current=onChoose;
+  const target=useRef(null),map=useRef(null),pins=useRef({}),chooseRef=useRef(onChoose);
+  const [ready,setReady]=useState(false),[mapError,setMapError]=useState(false),[provider,setProvider]=useState('');
+  chooseRef.current=onChoose;
   useEffect(()=>{
-    let canceled=false;
-    const initialize=()=>{
-      if(canceled||!target.current||!window.L||map.current)return;
-      const L=window.L;
-      const instance=L.map(target.current,{scrollWheelZoom:false,zoomControl:true}).setView([45.0,-85.7],5);
-      let tile=L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:18,attribution:'&copy; OpenStreetMap &copy; CARTO'});
-      let triedFallback=false;
-      tile.on('tileerror',()=>{
-        if(triedFallback)return;
-        triedFallback=true;
-        instance.removeLayer(tile);
-        tile=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'&copy; OpenStreetMap contributors'});
-        tile.on('tileerror',()=>setMapError(true));
-        tile.addTo(instance);
-      });
-      tile.addTo(instance);
-      const pins={};
-      SITES.forEach(site=>{
-        const pin=L.marker([site.lat,site.lon],{title:site.name}).addTo(instance);
-        pin.on('click',()=>onChooseRef.current(site.id));
-        pins[site.id]=pin;
-      });
-      map.current=instance;
-      markers.current=pins;
-      setReady(true);
-      setTimeout(()=>{if(!canceled&&map.current)map.current.invalidateSize();},200);
+    let disposed=false,timeout=null,handlerCleanup=null;
+    const addMarker=(site)=>{
+      const button=document.createElement('button');
+      button.type='button';
+      button.className='smoke-map-marker';
+      button.title='Select '+site.name;
+      button.setAttribute('aria-label','Select '+site.name);
+      const dot=document.createElement('span');
+      dot.className='smoke-map-pin unknown';
+      button.appendChild(dot);
+      const click=()=>chooseRef.current(site.id);
+      button.addEventListener('click',click);
+      return {button,dot,remove:()=>button.removeEventListener('click',click)};
     };
-    if(window.L){initialize();}
-    else{
-      const old=document.querySelector('script[data-lake-smoke-leaflet]');
-      if(old){old.addEventListener('load',initialize);}
-      else{
-        const script=document.createElement('script');
-        script.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-        script.crossOrigin='anonymous';
-        script.dataset.lakeSmokeLeaflet='1';
-        script.onload=initialize;
-        script.onerror=()=>setMapError(true);
+    const loadScript=(url,selector,id,readyCheck)=>new Promise((resolve,reject)=>{
+      if(readyCheck())return resolve();
+      let script=document.querySelector(selector);
+      if(script?.dataset.failed==='true')return reject(Error('Map library previously unavailable'));
+      const clean=()=>{script.removeEventListener('load',success);script.removeEventListener('error',failure);};
+      const success=()=>{clean();readyCheck()?resolve():reject(Error('Map library missing after script load'));};
+      const failure=()=>{script.dataset.failed='true';clean();reject(Error('Unable to load map library'));};
+      if(!script){
+        script=document.createElement('script');
+        script.src=url;script.dataset[id]='1';script.crossOrigin='anonymous';
+        script.addEventListener('load',success);script.addEventListener('error',failure);
         document.body.appendChild(script);
+      }else{
+        script.addEventListener('load',success);script.addEventListener('error',failure);
       }
-    }
-    return()=>{canceled=true;if(map.current){map.current.remove();map.current=null;markers.current={};}};
+    });
+    const fallback=async ()=>{
+      if(disposed||map.current?.kind==='raster')return;
+      if(map.current?.kind==='vector'){
+        try{map.current.instance.remove();}catch{}
+        map.current=null;
+        pins.current={};
+        if(target.current)target.current.innerHTML='';
+      }
+      if(!target.current||disposed)return;
+      try{
+        await loadScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js','script[data-lake-smoke-leaflet]','lakeSmokeLeaflet',()=>Boolean(window.L));
+        if(disposed||!target.current)return;
+        const L=window.L;
+        const instance=L.map(target.current,{scrollWheelZoom:false,zoomControl:true}).setView([45.0,-85.7],5);
+        const latLonPoints=SITES.map(x=>[x.lat,x.lon]);
+        instance.fitBounds(L.latLngBounds(latLonPoints),{padding:[28,28],maxZoom:6});
+        const layer=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+          subdomains:'abc',maxZoom:17,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        });
+        let errors=0;
+        layer.on('tileerror',()=>{if(++errors>=4&&!disposed)setMapError(true);});
+        layer.addTo(instance);
+        const out={};
+        SITES.forEach(site=>{
+          const point=L.marker([site.lat,site.lon],{title:site.name}).addTo(instance);
+          point.on('click',()=>chooseRef.current(site.id));
+          out[site.id]={leaflet:point};
+        });
+        map.current={kind:'raster',instance};
+        pins.current=out;
+        setReady(true);setProvider('OpenStreetMap backup');
+        timeout=setTimeout(()=>{if(!disposed&&map.current?.kind==='raster')instance.invalidateSize();},250);
+      }catch{
+        if(!disposed){setMapError(true);setReady(false);}
+      }
+    };
+    const initialize=async ()=>{
+      try{
+        if(!target.current)return;
+        await loadScript('https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js',
+          'script[data-lake-smoke-maplibre]','lakeSmokeMaplibre',()=>Boolean(window.maplibregl));
+        if(disposed||!target.current)return;
+        const ml=window.maplibregl;
+        if(!ml.supported())throw Error('WebGL mapping unavailable');
+        const instance=new ml.Map({
+          container:target.current,
+          style:'https://tiles.openfreemap.org/styles/positron',
+          center:[-85.6,45.0],zoom:4.3,minZoom:3,maxZoom:17,
+          attributionControl:true,renderWorldCopies:false
+        });
+        map.current={kind:'vector',instance};
+        instance.scrollZoom.disable();
+        instance.addControl(new ml.NavigationControl({showCompass:false}),'top-left');
+        const out={};
+        SITES.forEach(site=>{
+          const pin=addMarker(site);
+          const marker=new ml.Marker({element:pin.button,anchor:'center'})
+            .setLngLat([site.lon,site.lat])
+            .setPopup(new ml.Popup({offset:17}).setText(site.name))
+            .addTo(instance);
+          out[site.id]={...pin,marker};
+        });
+        pins.current=out;
+        let loaded=false,failures=0;
+        instance.on('load',()=>{
+          if(disposed)return;
+          loaded=true;
+          clearTimeout(timeout);
+          instance.fitBounds([[-90.0,41.0],[-76.0,48.4]],{padding:32,maxZoom:5,duration:0});
+          setReady(true);setProvider('OpenFreeMap');
+        });
+        instance.on('error',()=>{
+          if(disposed)return;
+          failures++;
+          if(!loaded && failures>=2)fallback();
+          else if(loaded&&failures>=6)fallback();
+        });
+        timeout=setTimeout(()=>{if(!loaded&&!disposed)fallback();},11500);
+      }catch{fallback();}
+    };
+    initialize();
+    return()=>{
+      disposed=true;
+      clearTimeout(timeout);
+      if(handlerCleanup)handlerCleanup();
+      Object.values(pins.current).forEach(m=>m.remove?.());
+      if(map.current){try{map.current.instance.remove();}catch{}}
+      map.current=null;pins.current={};
+    };
   },[]);
   useEffect(()=>{
-    if(!ready||!window.L||!map.current)return;
+    if(!ready||!map.current)return;
     SITES.forEach(site=>{
-      const row=results?.find(r=>r.id===site.id), active=selected===site.id;
+      const row=results?.find(r=>r.id===site.id),active=selected===site.id;
       const tone=row?.status?.tone||'unknown';
-      const icon=window.L.divIcon({className:'smoke-map-marker',html:'<span class="smoke-map-pin '+tone+(active?' active':'')+'"></span>',iconSize:[28,28],iconAnchor:[14,14]});
-      markers.current[site.id]?.setIcon(icon);
-      markers.current[site.id]?.bindTooltip(site.name,{direction:'top',offset:[0,-10]});
+      const pin=pins.current[site.id];
+      if(pin?.dot)pin.dot.className='smoke-map-pin '+tone+(active?' active':'');
+      else if(pin?.leaflet&&window.L){
+        pin.leaflet.setIcon(window.L.divIcon({
+          className:'smoke-map-marker',
+          html:'<span class="smoke-map-pin '+tone+(active?' active':'')+'"></span>',
+          iconSize:[28,28],iconAnchor:[14,14]
+        }));
+      }
     });
   },[results,selected,ready]);
   return <div className='smoke-map-wrap'>
     <div ref={target} className='smoke-map' role='application' aria-label='Interactive Great Lakes shoreline viewing locations'/>
     {!ready&&!mapError&&<div className='smoke-map-loading'>Preparing the Great Lakes map…</div>}
-    {mapError&&<div className='smoke-map-error'>Basemap temporarily unavailable. Select a place in the location list.</div>}
+    {mapError&&<div className='smoke-map-error'>Map tiles are temporarily unavailable. All 15 shoreline locations remain selectable in the list.</div>}
     <div className='smoke-map-legend'><span><i className='strong'/> Strong setup</span><span><i className='possible'/> Possible</span><span><i className='unknown'/> Data unavailable</span></div>
+    {ready&&<div className='smoke-map-source'>{provider} · No API key needed</div>}
   </div>;
 }
 
@@ -279,7 +363,7 @@ export default function LakeSmoke(){
   return <div className='smoke-tool'>
     <Head><title>{TITLE} | Chris Izworski</title><meta name='description' content={DESCRIPTION}/><link rel='canonical' href={CANONICAL}/><meta name='robots' content='index,follow,max-image-preview:large'/>
       <meta property='og:type' content='website'/><meta property='og:title' content={TITLE}/><meta property='og:description' content={DESCRIPTION}/><meta property='og:url' content={CANONICAL}/>
-      <meta name='twitter:card' content='summary'/><link rel='stylesheet' href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'/><link rel='stylesheet' href='/lake-smoke.css'/>
+      <meta name='twitter:card' content='summary'/><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css'/><link rel='stylesheet' href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'/><link rel='stylesheet' href='/lake-smoke.css'/>
       <script type='application/ld+json' dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}}/></Head>
     <header className='smoke-header smoke-wrap'><a className='smoke-brand' href='/'>MICHIGAN PHENOLOGY <span> / GREAT LAKES</span></a><nav aria-label='Lake smoke navigation'><a href='#places'>Locations</a><a href='#forecast'>Forecast</a><a href='#wind-view'>Wind direction</a><a href='#smoke-history'>History</a><a href='#cameras'>Cameras</a><a href='#science'>How it works</a></nav></header>
     <main>
