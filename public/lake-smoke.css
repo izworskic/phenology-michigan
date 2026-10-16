@@ -83,3 +83,43 @@
 .smoke-view-day .smoke-drift-label{font-size:12px}
 @media(max-width:850px){.smoke-view-grid{grid-template-columns:1fr}}
 @media(max-width:420px){.smoke-wind-card{padding:16px}.smoke-wind-rose{width:130px}.smoke-wind-card-head h3{font-size:20px}.smoke-view-day{align-items:flex-start}.smoke-view-day small{font-size:10px}.smoke-drift-label{font-size:10px}}
+
+
+/* V4: historical one-day-ahead forecasts, deliberately separate from sightings */
+.smoke-history{margin-bottom:55px;scroll-margin-top:20px}
+.smoke-history-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,.75fr);gap:15px}
+.smoke-history-card{min-width:0;background:#fff;border:1px solid var(--sm-line);border-radius:12px;padding:22px}
+.smoke-history-card h3{font-size:24px;margin:7px 0 13px}
+.smoke-history-toolbar{display:flex;justify-content:space-between;gap:15px;align-items:center;flex-wrap:wrap}
+.smoke-history-range{display:flex;gap:5px;flex-shrink:0;background:#f0f5f5;padding:4px;border-radius:9px}
+.smoke-history-range button{cursor:pointer;border:0;background:transparent;border-radius:6px;padding:7px 9px;font-size:12px;color:#496b75;font-weight:700}
+.smoke-history-range button.active{background:#26687c;color:#fff}
+.smoke-history-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0 18px}
+.smoke-history-stats>div{background:#f0f6f7;border:1px solid #e1ebed;border-radius:9px;padding:12px}
+.smoke-history-stats small{display:block;font-size:11px;color:#5b7a83;line-height:1.4}
+.smoke-history-stats strong{display:block;font:700 26px Georgia,serif;color:#22677b;margin-top:8px}
+.smoke-history-chart{height:200px;display:flex;align-items:stretch;gap:5px;padding:6px 0 4px;overflow-x:auto;border-bottom:1px solid #dae5e7}
+.smoke-history-entry{flex:1 0 20px;min-width:20px;display:flex;flex-direction:column;gap:5px;text-align:center}
+.smoke-history-chart-top{min-height:33px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;font-size:10px;color:#69848a}
+.smoke-history-chart-top strong{color:#295b6d;font-size:12px}
+.smoke-history-bar{height:118px;display:flex;align-items:flex-end;background:#edf2f3;border-radius:5px 5px 0 0;overflow:hidden}
+.smoke-history-bar>div{width:100%;min-height:1px;border-radius:4px 4px 0 0;background:#9cb8c0}
+.smoke-history-bar.high>div{background:#218f72}.smoke-history-bar.mid>div{background:#c0a051}.smoke-history-bar.low>div{background:#94aeb6}
+.smoke-history-bar.missing{background:repeating-linear-gradient(135deg,#f3f3f3,#f3f3f3 5px,#e1e8e9 5px,#e1e8e9 10px)}
+.smoke-history-entry>small{font-size:9px;color:#71888d;white-space:nowrap}
+.smoke-history-card .smoke-history-foot{font-size:11px;color:#688087;line-height:1.6;margin:14px 0}
+.smoke-history-method{background:#edf3f4;padding:13px 14px;font-size:12px;color:#51717a;line-height:1.7;border-radius:8px;margin-top:12px}
+.smoke-history-method strong{color:#265363}
+.smoke-evidence-card>p{font-size:13px;line-height:1.6;color:#5d7780}
+.smoke-evidence-empty{background:#f1f5f5;border:1px dashed #b9cfd5;border-radius:9px;padding:22px 17px;font-size:13px;line-height:1.7;color:#5f7981;display:flex;gap:8px;flex-direction:column}
+.smoke-evidence-empty strong{color:#245566}
+.smoke-evidence-method{border-top:1px solid #d9e5e7;margin-top:20px;padding-top:17px;font-size:12px}
+.smoke-evidence-method strong{font-size:13px;color:#234b59}
+.smoke-evidence-method p{color:#657e86;line-height:1.7;margin:10px 0}
+.smoke-evidence-method a{color:#236c82;font-weight:700;text-decoration:underline}
+.smoke-evidence-row{display:flex;flex-direction:column;gap:5px;padding:12px 0;border-bottom:1px solid #dae5e7;font-size:12px}
+.smoke-evidence-row strong{color:#244e60}
+.smoke-evidence-row a{color:#1c6680}
+.smoke-evidence-confirmed{color:#238364;font-size:11px;font-weight:800}
+@media(max-width:890px){.smoke-history-grid{grid-template-columns:1fr}}
+@media(max-width:620px){.smoke-history-card{padding:16px}.smoke-history-stats{gap:5px}.smoke-history-stats>div{padding:9px}.smoke-history-stats strong{font-size:21px}.smoke-history-entry{min-width:27px}.smoke-history-chart{height:205px}}

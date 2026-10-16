@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "kind": "forecast_issues_not_observations",
+  "issues": [
+    {
+      "date": "2026-10-16",
+      "issuedAt": "2026-10-16T15:22:31.959Z",
+      "targetDay": "2026-10-17",
+      "sites": [
+        {
+          "id": "marquette",
+          "iceState": "not-checked",
+          "waterAt": null,
+          "forecastAt": "2026-10-16T14:12:59.000Z",
+          "next": null,
+          "view": null
+        },
+        {
+          "id": "munising",
+          "iceState": "not-checked",
+          "waterAt": null,
+          "forecastAt": "2026-10-16T14:12:59.000Z",
+          "next": null,
+          "view": null
+        },
+        {
+          "id": "grand-marais",
+          "iceState": "not-checked",
+          "waterAt": null,
+          "forecastAt": "2026-10-16T14:12:59.000Z",
+          "next": null,
+          "view": null
+        },
+        {
+          "id": "whitefish-point",
+          "iceState": "not-checked",
+          "waterAt": null,
+          "forecastAt": "2026-10-16T14:11:44.000Z",
+          "next": null,
+          "view": null
+        },
+        {
+          "id": "frankfort",
+          "iceState": "not-checked",
+          "waterAt": null,
+          "forecastAt": "2026-10-16T14:11:44.000Z",
+          "next": null,
+          "view": null
+        },
+        {
+          "id": "ludington",
+          "iceState": "not-checked",
+          "waterAt": null,
+          "forecastAt": "2026-10-16T14:11:22.000Z",
+          "next": null,
+          "view": null
+        },
+        {
+          "id": "grand-haven",
+          "iceState": "not-checked",
+          "waterAt": null,
+          "forecastAt": "2026-10-16T14:11:22.000Z",
+          "next": null,
+          "view": null
+        },
+        {
+          "id": "st-joseph",
+          "iceState": "not-checked",
+          "waterAt": null,
+          "forecastAt": "2026-10-16T12:30:12.000Z",
+          "next": null,
+          "view": null
+        },
+        {
+          "id": "mackinaw-city",
+          "iceState": "not-checked",
+          "waterAt": null,
+          "forecastAt": "2026-10-16T14:11:44.000Z",
+          "next": null,
+          "view": null
+        },
+        {
+          "id": "alpena",
+          "iceState": "not-checked",
+          "waterAt": null,
+          "forecastAt": "2026-10-16T14:11:44.000Z",
+          "next": null,
+          "view": null
+        },
+        {
+          "id": "tawas",
+          "iceState": "not-checked",
+          "waterAt": null,
+          "forecastAt": "2026-10-16T14:11:44.000Z",
+          "next": null,
+          "view": null
+        },
+        {
+          "id": "saginaw-bay",
+          "iceState": "not-checked",
+          "waterAt": null,
+          "forecastAt": "2026-10-16T13:49:47.000Z",
+          "next": null,
+          "view": null
+        },
+        {
+          "id": "lexington",
+          "iceState": "not-checked",
+          "waterAt": null,
+          "forecastAt": "2026-10-16T13:49:47.000Z",
+          "next": null,
+          "view": null
+        },
+        {
+          "id": "monroe",
+          "iceState": "not-checked",
+          "waterAt": null,
+          "forecastAt": "2026-10-16T13:49:47.000Z",
+          "next": null,
+          "view": null
+        },
+        {
+          "id": "oswego",
+          "iceState": "not-checked",
+          "waterAt": null,
+          "forecastAt": "2026-10-16T14:33:03.000Z",
+          "next": null,
+          "view": null
+        }
+      ],
+      "available": 0,
+      "method": "one-day-ahead_hourly_nws_noaa_ice_gated"
+    }
+  ]
+}
