@@ -61,6 +61,6 @@ export default function TrilliumThermal({regionId,initialModels={}}){
       </div></div>}
    </article>
   </div>
-  <div className='tri-thermal-foot'><Info size={17}/><p>{loadState==='loading'?'Checking current conditions. ':''}The graph reflects **modeled mean air temperatures**, not plant measurements. No weather model confirms individual preserves or a bloom peak. <a href='https://open-meteo.com/en/docs/historical-weather-api' target='_blank' rel='noopener noreferrer'>ERA5 source <ExternalLink size={12}/></a> · <a href='https://open-meteo.com/en/docs' target='_blank' rel='noopener noreferrer'>Forecast source <ExternalLink size={12}/></a></p></div>
+  <div className='tri-thermal-foot'><Info size={17}/><p>{loadState==='loading'?'Checking current conditions. ':''}The graph reflects modeled mean air temperatures, not plant measurements. No weather model confirms individual preserves or a bloom peak. <a href='https://open-meteo.com/en/docs/historical-weather-api' target='_blank' rel='noopener noreferrer'>ERA5 source <ExternalLink size={12}/></a> · <a href='https://open-meteo.com/en/docs' target='_blank' rel='noopener noreferrer'>Forecast source <ExternalLink size={12}/></a></p></div>
  </section>;
 }
