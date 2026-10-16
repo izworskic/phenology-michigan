@@ -38,7 +38,7 @@ export default function TrilliumHistory({regionId,initialBenchmark=null,archiveR
  const benchmark=activeResponse?.benchmark||initialBenchmark;
  const region=REGIONS.find(r=>r.id===regionId)||REGIONS[0];
  return <section className='tri-history-section' id='tri-history' aria-labelledby='tri-history-title'>
-  <div className='tri-section-heading'><div><span className='tri-kicker'>03 / THE HISTORICAL RECORD</span>
+  <div className='tri-section-heading'><div><span className='tri-kicker'>04 / THE HISTORICAL RECORD</span>
   <h2 id='tri-history-title'>What previous springs tell us</h2>
   <p>A reporting-history benchmark for <strong>{region.name}</strong>, built from past flowering observations—not a guessed bloom percentage.</p></div></div>
   {state==='loading'&&!benchmark&&<div className='tri-history-wait'>Loading the regional flowering-history record…</div>}
