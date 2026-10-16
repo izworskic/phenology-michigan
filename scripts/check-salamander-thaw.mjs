@@ -56,7 +56,7 @@ assert.equal(trace.state,'patchy');
 assert.equal(trace.latestSnow.trace,true);
 assert.equal(trace.latestSnow.inches,null);
 assert.equal(applyThawToNight(base,trace,today,today).level,'watch');
-const frozen=summarizeThaw(parseAcisDaily({data:records({'2027-04-08':{high:'27'},'2027-04-09':{high:'31'}})},today),today),'KGRR');
+const frozen=summarizeThaw(parseAcisDaily({data:records({'2027-04-08':{high:'27',low:'12'},'2027-04-09':{high:'31',low:'15'}})},today),today),'KGRR');
 assert.equal(frozen.state,'freeze');
 assert.equal(applyThawToNight(base,frozen,today,today).level,'guarded');
 const staleSnow=summarizeThaw(parseAcisDaily({data:records({'2027-04-06':{snow:'3'},'2027-04-07':{snow:'M'},'2027-04-08':{snow:'M'},'2027-04-09':{snow:'M'}})},today),today),'KMBS');
