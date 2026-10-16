@@ -151,3 +151,95 @@
 @media(max-width:960px){.frog-hero-grid{grid-template-columns:1.5fr .7fr}.frog-map-layout{grid-template-columns:1fr}.frog-region-buttons{grid-template-columns:repeat(3,1fr);max-height:none;gap:5px}.frog-region-buttons button{border:1px solid #e3e9de;border-radius:5px}.frog-regions{padding:18px}.frog-species-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.frog-glance-main h2{font-size:22px}}
 @media(max-width:700px){.frog-shell{width:min(100% - 28px,1220px)}.frog-header{align-items:start;flex-direction:column}.frog-header nav{gap:13px;font-size:12px}.frog-hero-grid{grid-template-columns:1fr;padding:39px 0 32px;gap:20px}.frog-hero h1{font-size:clamp(39px,10vw,57px)}.frog-hero-media{display:none}.frog-at-a-glance{grid-template-columns:1fr;gap:0}.frog-at-a-glance>div{padding:16px 19px}.frog-at-a-glance>div+div{border-left:0;border-top:1px solid var(--line)}.frog-section-top{display:block}.frog-section-top>p{margin-top:12px}.frog-grid{grid-template-columns:1fr}.frog-map{height:340px}.frog-region-buttons{grid-template-columns:1fr 1fr}.frog-species-grid{grid-template-columns:1fr}.frog-tips{grid-template-columns:1fr}.frog-timeline-head{grid-template-columns:116px repeat(6,minmax(0,1fr))}.frog-time-row{grid-template-columns:116px minmax(0,1fr)}.frog-timeline{padding:13px 10px}.frog-timeline-head b{font-size:8px}.frog-time-row a{font-size:10px}.frog-bar-item{grid-template-columns:53px minmax(32px,1fr) 22px 77px;gap:6px}.frog-bar-item>small{font-size:10px}.frog-footer>.frog-shell{display:block}.frog-footer .frog-shell>div:last-child{margin-top:17px}}
 @media(max-width:390px){.frog-region-buttons{grid-template-columns:1fr}.frog-map-tools button{padding:7px 7px;font-size:10px}.frog-page h1{font-size:38px}.frog-chip-line span{padding:6px 9px;font-size:11px}}
+/* ---- Field guide v2: photographs + real calls (one shared player) ---- */
+.frog-audio-engine{display:none}
+.frog-species-grid{gap:18px}
+.frog-species{padding:0;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 6px 18px #1c3a2a0f}
+.frog-species.featured{box-shadow:0 0 0 2px #85ae81,0 6px 18px #1c3a2a14}
+.frog-species-media{position:relative;background:#dfe7da;aspect-ratio:4/3;overflow:hidden}
+.frog-photo{display:block;width:100%;height:100%;object-fit:cover}
+.frog-photo-missing{display:grid;place-items:center;background:repeating-linear-gradient(135deg,#e8eee3 0 12px,#e1e9dc 12px 24px);color:#5e7a66;font-size:12px;font-weight:700;aspect-ratio:4/3}
+.frog-species-media .frog-species-status{position:absolute;left:12px;bottom:12px;background:#fffdf6ee;backdrop-filter:blur(4px);box-shadow:0 2px 8px #10241a33}
+.frog-species-body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:12px;flex:1}
+.frog-species-body .frog-species-title{display:block}
+.frog-species-title h3{font-size:22px;margin:0;line-height:1.15}
+.frog-species-title em{display:block;font-size:12px;color:#6c8173;margin-top:3px}
+.frog-species .frog-call{margin:0;font-size:15px;font-weight:650;color:#244a36;line-height:1.45}
+.frog-species-facts{margin:0;display:grid;gap:8px;border-top:1px solid #e3eadf;padding-top:12px}
+.frog-species-facts>div{display:grid;grid-template-columns:104px 1fr;gap:10px;font-size:13px;line-height:1.45}
+.frog-species-facts dt{color:#6e8476;font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding-top:2px}
+.frog-species-facts dd{margin:0;color:#2a4536}
+.frog-species-facts dd small{color:#7a8e80}
+.frog-species-note{margin:0}
+.frog-credit{margin:auto 0 0;font-size:11px;line-height:1.6;color:#7a8e80}
+.frog-credit a{color:#5b7a66;text-decoration:none;border-bottom:1px solid #cfdccb}
+.frog-credit a:hover{color:#2d5a40;border-color:#2d5a40}
+/* Player */
+.frog-player{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.frog-play{display:inline-flex;align-items:center;gap:10px;border:0;cursor:pointer;font:inherit;font-weight:800;color:#f6f3e6;background:#1f4a3a;border-radius:999px;transition:background .15s}
+.frog-play:hover{background:#2a5d49}
+.frog-play:focus-visible,.frog-replay:focus-visible{outline:3px solid #e9c46a;outline-offset:2px}
+.frog-play.playing,.frog-play.loading{background:#e3eccb;color:#1f4a3a}
+.frog-player.lg .frog-play{min-height:52px;padding:0 22px 0 8px;font-size:16px;flex:1 1 auto;justify-content:flex-start}
+.frog-player.sm .frog-play{min-height:44px;padding:0 14px 0 6px;font-size:13px}
+.frog-play-icon{flex:0 0 auto;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#dcecb8;color:#1f4a3a;position:relative;font-size:18px;font-weight:900}
+.frog-player.sm .frog-play-icon{width:32px;height:32px}
+.frog-play.playing .frog-play-icon,.frog-play.loading .frog-play-icon{background:#1f4a3a;color:#fff}
+.frog-play-icon.play:before{content:"";margin-left:3px;border-style:solid;border-width:7px 0 7px 11px;border-color:transparent transparent transparent currentColor}
+.frog-play-icon.pause:before,.frog-play-icon.pause:after{content:"";position:absolute;top:11px;bottom:11px;width:4px;background:currentColor;border-radius:1px}
+.frog-play-icon.pause:before{left:12px}.frog-play-icon.pause:after{right:12px}
+.frog-player.sm .frog-play-icon.pause:before,.frog-player.sm .frog-play-icon.pause:after{top:10px;bottom:10px}
+.frog-play-icon.spin:before{content:"";width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:frogspin .8s linear infinite}
+@keyframes frogspin{to{transform:rotate(360deg)}}
+.frog-play-len{margin-left:auto;font-size:12px;font-weight:700;opacity:.75}
+.frog-eq{display:inline-flex;align-items:flex-end;gap:2px;height:16px;margin-left:auto}
+.frog-eq i{width:3px;background:currentColor;border-radius:2px;animation:frogeq 1s ease-in-out infinite}
+.frog-eq i:nth-child(1){animation-delay:-.2s}.frog-eq i:nth-child(2){animation-delay:-.6s}.frog-eq i:nth-child(3){animation-delay:-.4s}.frog-eq i:nth-child(4){animation-delay:-.8s}
+@keyframes frogeq{0%,100%{height:4px}50%{height:16px}}
+.frog-replay{min-height:44px;border:1px solid #b9cfb7;background:#fffdf6;color:#2d5a40;border-radius:999px;padding:0 14px;font:inherit;font-size:13px;font-weight:750;cursor:pointer}
+.frog-progress{flex-basis:100%;height:3px;background:#e2e9dc;border-radius:3px;overflow:hidden}
+.frog-progress span{display:block;height:100%;background:#4c8867;transition:width .25s linear}
+.frog-play-error{flex-basis:100%;margin:2px 0 0;font-size:12px;line-height:1.5;color:#9d4a25;background:#fbefe6;border-radius:8px;padding:8px 10px}
+.frog-play-error a{color:#7c3a1c;font-weight:700}
+.frog-play-missing{font-size:12px;color:#7a8e80;margin:0}
+/* Listen-for list inside the dark forecast panel */
+.frog-listen-lede{font-size:13px!important;line-height:1.6;color:#c9dacd!important;margin:0 0 14px}
+.frog-listen-list{display:grid;gap:10px}
+.frog-listen-card{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;background:#ffffff0d;border:1px solid #ffffff1a;border-radius:12px;padding:8px}
+.frog-listen-card .frog-photo{width:64px;height:48px;border-radius:8px}
+.frog-listen-card>div>b{display:block;font-size:14px;color:#fff}
+.frog-listen-card>div>span{display:block;font-size:12px;color:#bcd6bf;line-height:1.4}
+.frog-listen-card>div>small{display:block;font-size:11px;color:#e3cf9d;margin-top:2px}
+.frog-panel-dark .frog-player.sm .frog-play{background:#dcecb8;color:#1d3c33}
+.frog-panel-dark .frog-player.sm .frog-play .frog-play-icon{background:#1d3c33;color:#dcecb8}
+.frog-panel-dark .frog-player.sm .frog-play.playing{background:#fff}
+.frog-panel-dark .frog-replay{display:none}
+.frog-panel-dark .frog-progress{background:#ffffff22}.frog-panel-dark .frog-progress span{background:#dcecb8}
+.frog-panel-dark .frog-play-error{grid-column:1/-1}
+.frog-panel-link{display:inline-block;margin-top:16px;font-size:13px;font-weight:800;color:#dcecb8!important;text-decoration:none}
+/* What frog am I hearing */
+.frog-cues{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:22px}
+.frog-cue{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:8px}
+.frog-cue .frog-photo{width:56px;height:56px;border-radius:8px}
+.frog-cue>div>b{display:block;font-size:15px;line-height:1.25}
+.frog-cue>div>span{font-size:12px;color:var(--muted)}
+.frog-cue .frog-play-error{grid-column:1/-1}
+.frog-pairs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.frog-pair{background:#eaf0e5;border-radius:14px;padding:18px}
+.frog-pair h3{font-size:19px;margin:0 0 14px;line-height:1.25}
+.frog-pair-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.frog-pair-side{background:#fffdf8;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.frog-pair-side .frog-photo{width:100%;height:auto;aspect-ratio:4/3;border-radius:7px}
+.frog-pair-side>b{font-size:14px;line-height:1.2}
+.frog-pair-side>p{margin:0;font-size:12px;line-height:1.5;color:#4f6857;flex:1}
+.frog-pair-side .frog-player.sm .frog-play{width:100%}
+.frog-pair-tip{font-size:12px;line-height:1.6;color:#4a6555;margin:12px 0 0}
+/* Credits */
+.frog-credit-list{list-style:none;padding:0;margin:14px 0 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 24px;font-size:12px;line-height:1.55}
+.frog-credit-list li{display:grid;gap:1px;border-bottom:1px solid #e1e8dd;padding-bottom:7px}
+.frog-credit-list b{font-size:13px;color:#2a4536}
+.frog-credit-list a{font-weight:500!important;color:#4e6e59!important}
+@media(max-width:960px){.frog-cues{grid-template-columns:repeat(2,minmax(0,1fr))}.frog-pairs{grid-template-columns:1fr}}
+@media(max-width:700px){.frog-cues{grid-template-columns:1fr}.frog-credit-list{grid-template-columns:1fr}.frog-species-facts>div{grid-template-columns:92px 1fr}.frog-species-title h3{font-size:21px}}
+@media(max-width:390px){.frog-listen-card{grid-template-columns:52px 1fr;}.frog-listen-card .frog-player{grid-column:1/-1}.frog-listen-card .frog-player.sm .frog-play{width:100%}.frog-cue{grid-template-columns:48px 1fr}.frog-cue .frog-player{grid-column:1/-1}.frog-cue .frog-player.sm .frog-play{width:100%}.frog-pair-grid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.frog-eq i,.frog-play-icon.spin:before{animation:none}.frog-eq i{height:10px}}

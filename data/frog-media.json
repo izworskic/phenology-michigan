@@ -1,0 +1,606 @@
+{
+ "version": 1,
+ "generated": "2026-10-16",
+ "note": "Every Play control is backed by a file listed here. Photos and recordings were checked for species and licence before inclusion; see docs/FROG_MEDIA.md.",
+ "referenceCollections": [
+  {
+   "name": "Michigan DNR frog and toad sound samples (13 species, State of Michigan)",
+   "url": "https://www.michigan.gov/dnr/education/michigan-species/reptiles/frogs-and-toads",
+   "hosted": false
+  },
+  {
+   "name": "USGS ARMI Frog and Toad Calls (11 species, public domain)",
+   "url": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/frog_calls.html",
+   "hosted": true
+  }
+ ],
+ "species": {
+  "wood": {
+   "name": "Wood frog",
+   "photo": {
+    "src": "/frog-media/photos/wood.webp",
+    "srcSmall": "/frog-media/photos/wood-sm.webp",
+    "width": 1200,
+    "height": 900,
+    "widthSmall": 560,
+    "heightSmall": 420,
+    "alt": "Reddish-brown wood frog with a dark mask through the eye, resting on dead leaves",
+    "photographer": "askalotl",
+    "credit": "askalotl, CC0",
+    "license": "cc0",
+    "licenseName": "CC0 1.0 (public domain dedication)",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "sourceUrl": "https://www.inaturalist.org/observations/13955685",
+    "originalUrl": "https://www.inaturalist.org/photos/20628814",
+    "identification": "iNaturalist research grade, 2 identifications, none dissenting",
+    "modified": "Cropped to 4:3 and converted to WebP",
+    "sha256": {
+     "large": "d158c213bc5669ed4fa8fa89c7d6b4104b44eb6522368602a021f583c0f70714",
+     "small": "6c2804596f66d6908cee2e51d8c854016d27c30c5e2888ca8da1cfc472ae4d15"
+    },
+    "bytes": {
+     "large": 83512,
+     "small": 37046
+    }
+   },
+   "audio": {
+    "recordist": "U.S. Geological Survey",
+    "credit": "U.S. Geological Survey, Upper Midwest Environmental Sciences Center",
+    "license": "public-domain",
+    "sourceUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/frog_calls.html",
+    "originalUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/frog_calls/woodfrog.mp3",
+    "identification": "USGS ARMI reference call library",
+    "src": "/frog-media/audio/wood.mp3",
+    "format": "audio/mpeg",
+    "durationSec": 30.4,
+    "bytes": 425370,
+    "sha256": "4df1a0742ec1d0a2776c6890d420aea78300bb2f9ddb6a21df5b9eaa53d43568",
+    "licenseName": "Public domain (U.S. Government work)",
+    "licenseUrl": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+    "modified": "Loudness-levelled to about -19 LUFS, mono 112 kbps MP3; call content unchanged"
+   }
+  },
+  "chorus": {
+   "name": "Western chorus frog",
+   "photo": {
+    "src": "/frog-media/photos/chorus.webp",
+    "srcSmall": "/frog-media/photos/chorus-sm.webp",
+    "width": 638,
+    "height": 479,
+    "widthSmall": 560,
+    "heightSmall": 420,
+    "alt": "Western chorus frog calling with its throat sac inflated among dead marsh grass",
+    "photographer": "Chris McAnlis",
+    "credit": "© Chris McAnlis, CC BY 4.0",
+    "license": "cc-by",
+    "licenseName": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "sourceUrl": "https://www.inaturalist.org/observations/10421157",
+    "originalUrl": "https://www.inaturalist.org/photos/14476564",
+    "identification": "iNaturalist research grade, 3 identifications, none dissenting",
+    "modified": "Cropped to 4:3 and converted to WebP",
+    "sha256": {
+     "large": "4fb9bb5fafb3d1e8ab84e0a7f7ec195fa699cb82779e78f4bec52263e46c4fb8",
+     "small": "0ac04e983c1dc53069ba89e53c6d9a93510ef8285044e18c0caf9d120196a3da"
+    },
+    "bytes": {
+     "large": 22952,
+     "small": 19582
+    }
+   },
+   "audio": {
+    "recordist": "U.S. Geological Survey",
+    "credit": "U.S. Geological Survey, Upper Midwest Environmental Sciences Center",
+    "license": "public-domain",
+    "sourceUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/frog_calls.html",
+    "originalUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/frog_calls/chorus_frog.mp3",
+    "identification": "USGS ARMI reference call library",
+    "src": "/frog-media/audio/chorus.mp3",
+    "format": "audio/mpeg",
+    "durationSec": 24.6,
+    "bytes": 344181,
+    "sha256": "993275cd05f62b68fc138835eb344a25b7d28b97edfd2366585b2f3316b3f2f1",
+    "licenseName": "Public domain (U.S. Government work)",
+    "licenseUrl": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+    "modified": "Loudness-levelled to about -19 LUFS, mono 112 kbps MP3; call content unchanged"
+   }
+  },
+  "peeper": {
+   "name": "Northern spring peeper",
+   "photo": {
+    "src": "/frog-media/photos/peeper.webp",
+    "srcSmall": "/frog-media/photos/peeper-sm.webp",
+    "width": 1200,
+    "height": 900,
+    "widthSmall": 560,
+    "heightSmall": 420,
+    "alt": "Tan northern spring peeper perched on a broad green leaf",
+    "photographer": "Sara L Giles",
+    "credit": "Sara L Giles, CC0",
+    "license": "cc0",
+    "licenseName": "CC0 1.0 (public domain dedication)",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "sourceUrl": "https://www.inaturalist.org/observations/60547728",
+    "originalUrl": "https://www.inaturalist.org/photos/96830148",
+    "identification": "iNaturalist research grade, 3 identifications, none dissenting",
+    "modified": "Cropped to 4:3 and converted to WebP",
+    "sha256": {
+     "large": "12770214b1cd2775c0bfdf60d45a433816754e366cbd0746da2ba988b51be3b1",
+     "small": "45b070659e82b42688651a27cadac1c418e9b7c13d18938c23996b3aac43dd69"
+    },
+    "bytes": {
+     "large": 82112,
+     "small": 28740
+    }
+   },
+   "audio": {
+    "recordist": "U.S. Geological Survey",
+    "credit": "U.S. Geological Survey, Upper Midwest Environmental Sciences Center",
+    "license": "public-domain",
+    "sourceUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/frog_calls.html",
+    "originalUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/frog_calls/spring_peeper.mp3",
+    "identification": "USGS ARMI reference call library",
+    "src": "/frog-media/audio/peeper.mp3",
+    "format": "audio/mpeg",
+    "durationSec": 29.3,
+    "bytes": 411107,
+    "sha256": "ec90b41c92eb80e8010aec37b342f3d89096e483331ba55f500824e224b7aa49",
+    "licenseName": "Public domain (U.S. Government work)",
+    "licenseUrl": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+    "modified": "Loudness-levelled to about -19 LUFS, mono 112 kbps MP3; call content unchanged"
+   }
+  },
+  "leopard": {
+   "name": "Northern leopard frog",
+   "photo": {
+    "src": "/frog-media/photos/leopard.webp",
+    "srcSmall": "/frog-media/photos/leopard-sm.webp",
+    "width": 1200,
+    "height": 900,
+    "widthSmall": 560,
+    "heightSmall": 420,
+    "alt": "Green northern leopard frog with rounded dark spots climbing grass stems",
+    "photographer": "Patrick Hanly",
+    "credit": "© Patrick Hanly, CC BY 4.0",
+    "license": "cc-by",
+    "licenseName": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "sourceUrl": "https://www.inaturalist.org/observations/92494278",
+    "originalUrl": "https://www.inaturalist.org/photos/153155357",
+    "identification": "iNaturalist research grade, 2 identifications, none dissenting",
+    "modified": "Cropped to 4:3 and converted to WebP",
+    "sha256": {
+     "large": "6f50767ef00f2aec2016191afaf124307a733eed7a7a5cd51b7d3fa2cafcec22",
+     "small": "6a5e3a7acac2d8a7e92dc1385bdce53efcf6977d1076c7cf9e1a680c12cc6733"
+    },
+    "bytes": {
+     "large": 51000,
+     "small": 20116
+    }
+   },
+   "audio": {
+    "recordist": "U.S. Geological Survey",
+    "credit": "U.S. Geological Survey, Upper Midwest Environmental Sciences Center",
+    "license": "public-domain",
+    "sourceUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/frog_calls.html",
+    "originalUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/frog_calls/northern_leopard_frog.mp3",
+    "identification": "USGS ARMI reference call library",
+    "src": "/frog-media/audio/leopard.mp3",
+    "format": "audio/mpeg",
+    "durationSec": 33.8,
+    "bytes": 472913,
+    "sha256": "c476f8a8ca8a867efb05a7334177e189c1ba7e7afe234fa4854fb6768995a0ee",
+    "licenseName": "Public domain (U.S. Government work)",
+    "licenseUrl": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+    "modified": "Loudness-levelled to about -19 LUFS, mono 112 kbps MP3; call content unchanged"
+   }
+  },
+  "pickerel": {
+   "name": "Pickerel frog",
+   "photo": {
+    "src": "/frog-media/photos/pickerel.webp",
+    "srcSmall": "/frog-media/photos/pickerel-sm.webp",
+    "width": 810,
+    "height": 607,
+    "widthSmall": 560,
+    "heightSmall": 420,
+    "alt": "Pickerel frog with squarish dark spots in two rows on sandy gravel",
+    "photographer": "John G. Phillips",
+    "credit": "© John G. Phillips, CC BY 4.0",
+    "license": "cc-by",
+    "licenseName": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "sourceUrl": "https://www.inaturalist.org/observations/17700982",
+    "originalUrl": "https://www.inaturalist.org/photos/26979928",
+    "identification": "iNaturalist research grade, 3 identifications, none dissenting",
+    "modified": "Cropped to 4:3 and converted to WebP",
+    "sha256": {
+     "large": "9346a46cf663204ca812ec37587ca0c7b69b8483f711ff518d3d2fd8721de8c7",
+     "small": "33b1c3fe26ef33f91e18db21ed1e9c18a93e6aada1b2d3ffed194b113f2d118a"
+    },
+    "bytes": {
+     "large": 74576,
+     "small": 40766
+    }
+   },
+   "audio": {
+    "recordist": "Kent P. McFarland",
+    "credit": "Kent P. McFarland, CC0",
+    "license": "cc0",
+    "sourceUrl": "https://www.inaturalist.org/observations/345646982",
+    "originalUrl": "https://static.inaturalist.org/sounds/1826889",
+    "identification": "iNaturalist research grade, 2 identifications, none dissenting; call structure checked against the expected frequency band",
+    "note": "No public-domain USGS recording exists for this species; the Michigan DNR collection is State of Michigan material without a redistribution grant, so it is linked rather than hosted.",
+    "src": "/frog-media/audio/pickerel.mp3",
+    "format": "audio/mpeg",
+    "durationSec": 37.9,
+    "bytes": 530330,
+    "sha256": "d7d9e627bca5cc73a7ef11f5a187f661c71b9f8f8b3590da7618b5398b0c5599",
+    "licenseName": "CC0 1.0 (public domain dedication)",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "modified": "Loudness-levelled to about -19 LUFS, mono 112 kbps MP3; call content unchanged"
+   }
+  },
+  "toad": {
+   "name": "Eastern American toad",
+   "photo": {
+    "src": "/frog-media/photos/toad.webp",
+    "srcSmall": "/frog-media/photos/toad-sm.webp",
+    "width": 1200,
+    "height": 900,
+    "widthSmall": 560,
+    "heightSmall": 420,
+    "alt": "Brown eastern American toad with dark warty spots on pale concrete",
+    "photographer": "Donald Davesne",
+    "credit": "© Donald Davesne, CC BY 4.0",
+    "license": "cc-by",
+    "licenseName": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "sourceUrl": "https://www.inaturalist.org/observations/232786384",
+    "originalUrl": "https://www.inaturalist.org/photos/413614382",
+    "identification": "iNaturalist research grade, 2 identifications, none dissenting",
+    "modified": "Cropped to 4:3 and converted to WebP",
+    "sha256": {
+     "large": "2aae63aca2dc2b6c6d0f33d8014bd6cdde6229e8dbaf8824716e327df0e082c0",
+     "small": "43d9203a912fa3845fccfa70e4a50deb231d299de556d06ea5b0c6460b6a75c9"
+    },
+    "bytes": {
+     "large": 102360,
+     "small": 35832
+    }
+   },
+   "audio": {
+    "recordist": "U.S. Geological Survey",
+    "credit": "U.S. Geological Survey, Upper Midwest Environmental Sciences Center",
+    "license": "public-domain",
+    "sourceUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/frog_calls.html",
+    "originalUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/frog_calls/american_toad.mp3",
+    "identification": "USGS ARMI reference call library",
+    "src": "/frog-media/audio/toad.mp3",
+    "format": "audio/mpeg",
+    "durationSec": 39.1,
+    "bytes": 547153,
+    "sha256": "8a500dc5252b4cc0c5daf8e893094ce2c12073347a434256e1ecf23e535ec5f2",
+    "licenseName": "Public domain (U.S. Government work)",
+    "licenseUrl": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+    "modified": "Loudness-levelled to about -19 LUFS, mono 112 kbps MP3; call content unchanged"
+   }
+  },
+  "gray": {
+   "name": "Eastern gray treefrog",
+   "photo": {
+    "src": "/frog-media/photos/gray.webp",
+    "srcSmall": "/frog-media/photos/gray-sm.webp",
+    "width": 440,
+    "height": 330,
+    "widthSmall": 440,
+    "heightSmall": 330,
+    "alt": "Eastern gray treefrog calling at night with its throat inflated",
+    "photographer": "U.S. Geological Survey",
+    "credit": "U.S. Geological Survey, Upper Midwest Environmental Sciences Center",
+    "license": "public-domain",
+    "licenseName": "Public domain (U.S. Government work)",
+    "licenseUrl": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+    "sourceUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/species/eastern_gray_treefrog.html",
+    "originalUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/species/eastern_gray_tree_frog_440.jpg",
+    "identification": "USGS species photograph",
+    "modified": "Cropped to 4:3 and converted to WebP",
+    "sha256": {
+     "large": "f837f4249dd5b5d1b1f1c7851e41f01a611bf62d7493befde080d643b782914d",
+     "small": "f837f4249dd5b5d1b1f1c7851e41f01a611bf62d7493befde080d643b782914d"
+    },
+    "bytes": {
+     "large": 26812,
+     "small": 26812
+    }
+   },
+   "audio": {
+    "recordist": "U.S. Geological Survey",
+    "credit": "U.S. Geological Survey, Upper Midwest Environmental Sciences Center",
+    "license": "public-domain",
+    "sourceUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/frog_calls.html",
+    "originalUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/frog_calls/eastern_gray_treefrog.mp3",
+    "identification": "USGS ARMI reference call library",
+    "src": "/frog-media/audio/gray.mp3",
+    "format": "audio/mpeg",
+    "durationSec": 34.3,
+    "bytes": 480227,
+    "sha256": "f6ffe24d03846386c771d4f4706fb6d394b3394eb20e41974c3df6536d4c3051",
+    "licenseName": "Public domain (U.S. Government work)",
+    "licenseUrl": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+    "modified": "Loudness-levelled to about -19 LUFS, mono 112 kbps MP3; call content unchanged"
+   }
+  },
+  "copes": {
+   "name": "Cope's gray treefrog",
+   "photo": {
+    "src": "/frog-media/photos/copes.webp",
+    "srcSmall": "/frog-media/photos/copes-sm.webp",
+    "width": 1200,
+    "height": 900,
+    "widthSmall": 560,
+    "heightSmall": 420,
+    "alt": "Cope's gray treefrog held in a hand, showing its gray warty skin and yellow thigh",
+    "photographer": "Audrey Witherington",
+    "credit": "© Audrey Witherington, CC BY 4.0",
+    "license": "cc-by",
+    "licenseName": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "sourceUrl": "https://www.inaturalist.org/observations/212470932",
+    "originalUrl": "https://www.inaturalist.org/photos/375475844",
+    "identification": "iNaturalist research grade, 3 identifications, none dissenting",
+    "modified": "Cropped to 4:3 and converted to WebP",
+    "sha256": {
+     "large": "2a24e02cad6ea8c0ece1f00669fa04b7e4135655f06c45b0b91024aee66b7f5d",
+     "small": "2f1b9451e35ace37be98d909e71649d9646bcad0a86e9dee61a67f92e90be040"
+    },
+    "bytes": {
+     "large": 63432,
+     "small": 22924
+    }
+   },
+   "audio": {
+    "recordist": "U.S. Geological Survey",
+    "credit": "U.S. Geological Survey, Upper Midwest Environmental Sciences Center",
+    "license": "public-domain",
+    "sourceUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/frog_calls.html",
+    "originalUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/frog_calls/copes_gray_treefrog.mp3",
+    "identification": "USGS ARMI reference call library",
+    "src": "/frog-media/audio/copes.mp3",
+    "format": "audio/mpeg",
+    "durationSec": 18.5,
+    "bytes": 259335,
+    "sha256": "919d6f2d6d004b29f2777adb74b579527691f3539ada358572976b93e32c0f9c",
+    "licenseName": "Public domain (U.S. Government work)",
+    "licenseUrl": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+    "modified": "Loudness-levelled to about -19 LUFS, mono 112 kbps MP3; call content unchanged"
+   }
+  },
+  "green": {
+   "name": "Green frog",
+   "photo": {
+    "src": "/frog-media/photos/green.webp",
+    "srcSmall": "/frog-media/photos/green-sm.webp",
+    "width": 1200,
+    "height": 900,
+    "widthSmall": 560,
+    "heightSmall": 420,
+    "alt": "Green frog with a bright green face and large eardrum on a weathered log",
+    "photographer": "Steven Joyner",
+    "credit": "© Steven Joyner, CC BY 4.0",
+    "license": "cc-by",
+    "licenseName": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "sourceUrl": "https://www.inaturalist.org/observations/21209252",
+    "originalUrl": "https://www.inaturalist.org/photos/32784098",
+    "identification": "iNaturalist research grade, 3 identifications, none dissenting",
+    "modified": "Cropped to 4:3 and converted to WebP",
+    "sha256": {
+     "large": "2a83ea8285cf2f99b10248fa63fe6102a097efca19ee0a31db922e5e28b1e7ec",
+     "small": "77ec1f22493cdfb6a9f6632ac3cc3273e8ef541b4ea31cff2cc5391cdde4ece8"
+    },
+    "bytes": {
+     "large": 122428,
+     "small": 41608
+    }
+   },
+   "audio": {
+    "recordist": "U.S. Geological Survey",
+    "credit": "U.S. Geological Survey, Upper Midwest Environmental Sciences Center",
+    "license": "public-domain",
+    "sourceUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/frog_calls.html",
+    "originalUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/frog_calls/green_frog.mp3",
+    "identification": "USGS ARMI reference call library",
+    "src": "/frog-media/audio/green.mp3",
+    "format": "audio/mpeg",
+    "durationSec": 29.1,
+    "bytes": 407450,
+    "sha256": "aba3f26a051e02b61ff31531ffbd5a3d0f00e3486014d1812f090676bdbb3138",
+    "licenseName": "Public domain (U.S. Government work)",
+    "licenseUrl": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+    "modified": "Loudness-levelled to about -19 LUFS, mono 112 kbps MP3; call content unchanged"
+   }
+  },
+  "bullfrog": {
+   "name": "American bullfrog",
+   "photo": {
+    "src": "/frog-media/photos/bullfrog.webp",
+    "srcSmall": "/frog-media/photos/bullfrog-sm.webp",
+    "width": 1200,
+    "height": 900,
+    "widthSmall": 560,
+    "heightSmall": 420,
+    "alt": "Large American bullfrog sitting on a lily pad",
+    "photographer": "gpete",
+    "credit": "© gpete, CC BY 4.0",
+    "license": "cc-by",
+    "licenseName": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "sourceUrl": "https://www.inaturalist.org/observations/60659919",
+    "originalUrl": "https://www.inaturalist.org/photos/97010336",
+    "identification": "iNaturalist research grade, 3 identifications, none dissenting",
+    "modified": "Cropped to 4:3 and converted to WebP",
+    "sha256": {
+     "large": "7f2915568c03ffe4a8e13c395af8227196bd2c44833bdec6a674b2958f037b10",
+     "small": "a425484a909d6b62e9cdba58589f61535657f880ee42e05ffef225ee57723447"
+    },
+    "bytes": {
+     "large": 58492,
+     "small": 18234
+    }
+   },
+   "audio": {
+    "recordist": "U.S. Geological Survey",
+    "credit": "U.S. Geological Survey, Upper Midwest Environmental Sciences Center",
+    "license": "public-domain",
+    "sourceUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/frog_calls.html",
+    "originalUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/frog_calls/bullfrog.mp3",
+    "identification": "USGS ARMI reference call library",
+    "src": "/frog-media/audio/bullfrog.mp3",
+    "format": "audio/mpeg",
+    "durationSec": 34.4,
+    "bytes": 481690,
+    "sha256": "e6157dafe2dac4e7811d2d81e0befe0311eea55b6576a09a1a7e693182dd800c",
+    "licenseName": "Public domain (U.S. Government work)",
+    "licenseUrl": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+    "modified": "Loudness-levelled to about -19 LUFS, mono 112 kbps MP3; call content unchanged"
+   }
+  },
+  "mink": {
+   "name": "Mink frog",
+   "photo": {
+    "src": "/frog-media/photos/mink.webp",
+    "srcSmall": "/frog-media/photos/mink-sm.webp",
+    "width": 1200,
+    "height": 900,
+    "widthSmall": 560,
+    "heightSmall": 420,
+    "alt": "Mottled brown-green mink frog on a lily pad",
+    "photographer": "Matt Schultz",
+    "credit": "Matt Schultz, CC0",
+    "license": "cc0",
+    "licenseName": "CC0 1.0 (public domain dedication)",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "sourceUrl": "https://www.inaturalist.org/observations/56186362",
+    "originalUrl": "https://www.inaturalist.org/photos/89520212",
+    "identification": "iNaturalist research grade, 3 identifications, none dissenting",
+    "modified": "Cropped to 4:3 and converted to WebP",
+    "sha256": {
+     "large": "288cb5fa5a7be486de231d3977f08062ad5e118e85adee15150c97b643c4a187",
+     "small": "0e7d59f723e53a52fa259869126f0d8568b2abc7cec5805045ef9bc6684cd309"
+    },
+    "bytes": {
+     "large": 45266,
+     "small": 18830
+    }
+   },
+   "audio": {
+    "recordist": "U.S. Geological Survey",
+    "credit": "U.S. Geological Survey, Upper Midwest Environmental Sciences Center",
+    "license": "public-domain",
+    "sourceUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/frog_calls.html",
+    "originalUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/frog_calls/mink_frog.mp3",
+    "identification": "USGS ARMI reference call library",
+    "src": "/frog-media/audio/mink.mp3",
+    "format": "audio/mpeg",
+    "durationSec": 30.7,
+    "bytes": 430855,
+    "sha256": "7b1e55d225c566bea7906dca839b46dd4e96b371aa0bf641802dba9600ddd000",
+    "licenseName": "Public domain (U.S. Government work)",
+    "licenseUrl": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+    "modified": "Loudness-levelled to about -19 LUFS, mono 112 kbps MP3; call content unchanged"
+   }
+  },
+  "fowlers": {
+   "name": "Fowler's toad",
+   "photo": {
+    "src": "/frog-media/photos/fowlers.webp",
+    "srcSmall": "/frog-media/photos/fowlers-sm.webp",
+    "width": 1200,
+    "height": 900,
+    "widthSmall": 560,
+    "heightSmall": 420,
+    "alt": "Fowler's toad with dark-spotted warty skin on a stone",
+    "photographer": "Sam Kieschnick",
+    "credit": "© Sam Kieschnick, CC BY 4.0",
+    "license": "cc-by",
+    "licenseName": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "sourceUrl": "https://www.inaturalist.org/observations/186720147",
+    "originalUrl": "https://www.inaturalist.org/photos/326366329",
+    "identification": "iNaturalist research grade, 4 identifications, none dissenting",
+    "modified": "Cropped to 4:3 and converted to WebP",
+    "sha256": {
+     "large": "053b9b92a07f767aff223f4a0813349905066eca438cd6a001c92d7091932bc0",
+     "small": "4f3dcfd4c855dc515f77ca9dcdcf9f3ed921fc8a7b329ab24e7874a5e064f869"
+    },
+    "bytes": {
+     "large": 104822,
+     "small": 36416
+    }
+   },
+   "audio": {
+    "recordist": "Moxie C.",
+    "credit": "© Moxie C., CC BY 4.0",
+    "license": "cc-by",
+    "sourceUrl": "https://www.inaturalist.org/observations/278385516",
+    "originalUrl": "https://static.inaturalist.org/sounds/1440363",
+    "identification": "iNaturalist research grade, 4 identifications, none dissenting; call structure checked against the expected frequency band",
+    "note": "No public-domain USGS recording exists for this species; the Michigan DNR collection is State of Michigan material without a redistribution grant, so it is linked rather than hosted.",
+    "src": "/frog-media/audio/fowlers.mp3",
+    "format": "audio/mpeg",
+    "durationSec": 5.0,
+    "bytes": 70261,
+    "sha256": "c4ae6cf44f19e2e0810a8f4b13614eb0b1f56a50785fbeef31f82b869c3f9c27",
+    "licenseName": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "modified": "Loudness-levelled to about -19 LUFS, mono 112 kbps MP3; call content unchanged"
+   }
+  },
+  "cricket": {
+   "name": "Blanchard's cricket frog",
+   "photo": {
+    "src": "/frog-media/photos/cricket.webp",
+    "srcSmall": "/frog-media/photos/cricket-sm.webp",
+    "width": 1200,
+    "height": 900,
+    "widthSmall": 560,
+    "heightSmall": 420,
+    "alt": "Small brown Blanchard's cricket frog among smooth gray stones",
+    "photographer": "ramonsita625",
+    "credit": "© ramonsita625, CC BY 4.0",
+    "license": "cc-by",
+    "licenseName": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "sourceUrl": "https://www.inaturalist.org/observations/236786969",
+    "originalUrl": "https://www.inaturalist.org/photos/421309585",
+    "identification": "iNaturalist research grade, 4 identifications, none dissenting",
+    "modified": "Cropped to 4:3 and converted to WebP",
+    "sha256": {
+     "large": "35214c4071006f4bf11b4e23c76aa449d7f3e025c8b2a13994a732e3f881533c",
+     "small": "a224a52cb21436cce57532cf5d6285a69fda0a99c502a828774175c4df9f51ab"
+    },
+    "bytes": {
+     "large": 95204,
+     "small": 37620
+    }
+   },
+   "audio": {
+    "recordist": "U.S. Geological Survey",
+    "credit": "U.S. Geological Survey, Upper Midwest Environmental Sciences Center",
+    "license": "public-domain",
+    "sourceUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/frog_calls.html",
+    "originalUrl": "https://www.umesc.usgs.gov/terrestrial/amphibians/armi/frog_calls/cricket_frog.mp3",
+    "identification": "USGS ARMI reference call library",
+    "src": "/frog-media/audio/cricket.mp3",
+    "format": "audio/mpeg",
+    "durationSec": 28.7,
+    "bytes": 401964,
+    "sha256": "2b31e357ac494a1759a85ab3a3830c359ac2fc04c85927245d251c5a9246c4dc",
+    "licenseName": "Public domain (U.S. Government work)",
+    "licenseUrl": "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+    "modified": "Loudness-levelled to about -19 LUFS, mono 112 kbps MP3; call content unchanged"
+   }
+  }
+ }
+}
