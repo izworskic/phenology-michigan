@@ -53,8 +53,15 @@ const publicApi=fs.readFileSync(new URL('../pages/api/trillium-auto-reports.js',
 const page=fs.readFileSync(new URL('../pages/michigan-trillium.js',import.meta.url),'utf8');
 const component=fs.readFileSync(new URL('../components/TrilliumFieldReports.js',import.meta.url),'utf8');
 assert.ok(endpoint.includes('TRILLIUM_WEBHOOK_SECRET')&&endpoint.includes('timingSafeEqual')&&endpoint.includes('GH_TOKEN'));
-assert.ok(endpoint.includes('safeCandidateArchive')&&endpoint.includes('PUT')&&endpoint.includes('sha:old.data.sha'));
+const persistence=fs.readFileSync(new URL('../lib/trillium-github-archive.mjs',import.meta.url),'utf8');
+assert.ok(endpoint.includes('commitCandidate')&&persistence.includes('safeCandidateArchive')&&persistence.includes('PUT')&&persistence.includes('sha:old.data.sha'));
 assert.ok(endpoint.includes('res.status(401)')&&endpoint.includes('bodyParser:false'));
 assert.ok(publicApi.includes('evidenceStatus')===false&&publicApi.includes('publicCandidate'));
 assert.ok(page.includes('/api/trillium-auto-reports')&&component.includes('Automatically checked source links'));
-console.log('Trillium automatic Jotform ingestion: secure body parser, exact site/species/date/flowering checks, source-only public display, privacy, duplication and season gates passed.');
+const direct=fs.readFileSync(new URL('../pages/api/trillium-source-report.js',import.meta.url),'utf8');
+const directUI=fs.readFileSync(new URL('../components/TrilliumDirectReport.js',import.meta.url),'utf8');
+assert.ok(direct.includes('req.headers.origin')&&direct.includes('research')&&direct.includes('Trillium grandiflorum'));
+assert.ok(direct.includes("place_ids?.includes(29)")&&direct.includes("evidenceStatus:'unverified_site'")&&direct.includes('commitCandidate'));
+assert.ok(directUI.includes('/api/trillium-source-report')&&directUI.includes('No account needed'));
+assert.ok(component.includes('TrilliumDirectReport'));
+console.log('Automatic trillium intake: Jotform webhook fallback and no-account on-page source verification, GitHub archival, idempotent verification and honest site status passed.');
