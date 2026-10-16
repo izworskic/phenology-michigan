@@ -27,6 +27,10 @@ const obs={...manager,sourceKind:'reviewed_observation',sourceUrl:'https://www.i
 delete obs.sourceExcerpt;
 assert.equal(validateSiteRecord(obs,STOPS,now).sourceKind,'reviewed_observation');
 assert.throws(()=>validateSiteRecord({...obs,observationFloweringReviewed:false},STOPS,now));
+const formRecord=validateSiteRecord({...manager,issueNumber:'2628826818440661234',intakeKind:'jotform'},STOPS,now);
+assert.equal(formRecord.issueNumber,'2628826818440661234');
+assert.equal(formRecord.intakeKind,'jotform');
+assert.equal(summarizeSiteEvidence(STOPS,[formRecord]).sites[0].reports[0].issueUrl,null,'Form review must not link to a non-existent GitHub issue');
 const original=readArchive(HISTORY,STOPS,now);
 assert.equal(original.length,0,'No historical site bloom confirmations may be fabricated');
 const record=validateSiteRecord(manager,STOPS,now);
