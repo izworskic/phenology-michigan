@@ -2,11 +2,12 @@ import Head from 'next/head';
 import {useEffect,useMemo,useState} from 'react';
 import {useRouter} from 'next/router';
 import SalamanderMap from '../components/SalamanderMap';
+import SalamanderObservations from '../components/SalamanderObservations';
 import {REGIONS,isSeason} from '../lib/salamanders.mjs';
 
 const URL='https://phenology.chrisizworski.com/salamander-migration';
 const TITLE='Michigan Salamander Migration Tracker | Big Night Weather Forecast';
-const DESC='When will salamanders migrate in Michigan? Explore warm-rain Big Night signals, seven-night regional forecasts, spring timing, spotted and blue-spotted salamander identification, and safe viewing.';
+const DESC='When will salamanders migrate in Michigan? Explore warm-rain Big Night signals, seven-night regional forecasts, spring timing, privacy-safe species observation trends, and safe viewing.';
 const QUESTIONS=[
  ['When do salamanders migrate in Michigan?','Spotted and blue-spotted salamanders typically move toward vernal breeding pools in March and April in much of Michigan, and sometimes into May farther north. The actual nights depend on snowmelt, thaw and warm rain, not a fixed date.'],
  ['What temperature triggers salamander migration?','Warm, rainy nights with air temperatures around or above 40°F are often associated with spring migrations. This is a broad field guideline, not a guarantee or a precisely calibrated Michigan threshold.'],
@@ -14,7 +15,8 @@ const QUESTIONS=[
  ['Does rain guarantee that salamanders will cross?','No. Thawed ground, snow cover, rainfall duration, breeding-pool water, habitat, species timing and recent previous migrations also matter. This tracker only estimates regional weather fit.'],
  ['Where can I see salamander migration in Michigan?','Look for educational programs run by established nature centers and conservation organizations rather than searching for or publicizing individual vernal pools. Marquette is known for conservation-minded road closures at Presque Isle; always verify current local access and follow closure signs.'],
  ['Is it safe to pick up salamanders?','Avoid unnecessary handling, never collect or relocate wildlife without proper permission, do not enter roads at night, and keep pets away. Chemicals such as sunscreen and insect repellent can harm amphibians through their skin.'],
- ['Are these maps showing actual salamander locations?','No. Each marker is a representative regional weather location. Forecast ratings are not sightings, animal density estimates, verified crossing sites or specific vernal-pool locations.']
+ ['Are these maps showing actual salamander locations?','No. Each marker is a representative regional weather location. Forecast ratings are not sightings, animal density estimates, verified crossing sites or specific vernal-pool locations.'],
+ ['Do research-grade salamander sightings confirm a migration?','No. Research Grade indicates community support for a wildlife identification. An actual migration requires independent evidence of movement, and the tool keeps these categories separate. Small regional samples and obscured locations are withheld to protect habitat.']
 ];
 const tone=l=>['strong','watch','guarded','cold','dry','unknown'].includes(l)?l:'off';
 const dateFmt=s=>new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',weekday:'short',timeZone:'UTC'}).format(new Date(s+'T12:00:00Z'));
@@ -95,10 +97,10 @@ export default function SalamanderMigration(){
  ]};
  return <div className="sala">
   <Head><title>{TITLE} | Chris Izworski</title><meta name="description" content={DESC}/><link rel="canonical" href={URL}/><meta name="robots" content="index,follow,max-image-preview:large"/><meta property="og:type" content="website"/><meta property="og:title" content={TITLE}/><meta property="og:description" content={DESC}/><meta property="og:url" content={URL}/><meta name="twitter:card" content="summary"/><link rel="stylesheet" href="/salamander-migration.css"/><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/><script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(structured)}}/></Head>
-  <header className="sala-top"><div className="sala-wrap sala-top-inner"><a href="/">MICHIGAN PHENOLOGY <span>/ SALAMANDERS</span></a><nav aria-label="Tool navigation"><a href="#forecast">7 nights</a><a href="#thaw">Thaw</a><a href="#regions">Regional map</a><a href="#field-guide">Field guide</a><a href="/firefly-tracker">Fireflies</a></nav></div></header>
+  <header className="sala-top"><div className="sala-wrap sala-top-inner"><a href="/">MICHIGAN PHENOLOGY <span>/ SALAMANDERS</span></a><nav aria-label="Tool navigation"><a href="#forecast">7 nights</a><a href="#thaw">Thaw</a><a href="#observations">Sightings</a><a href="#regions">Regional map</a><a href="#field-guide">Field guide</a><a href="/firefly-tracker">Fireflies</a></nav></div></header>
   <main>
    <section className="sala-hero"><div className="sala-wrap sala-hero-layout">
-    <div><div className="sala-overline"><span className="sala-live-dot"/> Michigan's living calendar · Spring after dark</div><h1>When will the salamanders move?</h1><p className="sala-lead">A quiet forest. A warm spring rain. Then hundreds of hidden amphibians may make their way toward woodland pools. Track the rain, temperature, and recent snow and thaw clues.</p><div className="sala-pills"><span>9 forecast regions</span><span>7-night rain & temperature</span><span>Conservation-first</span></div></div>
+    <div><div className="sala-overline"><span className="sala-live-dot"/> Michigan's living calendar · Spring after dark</div><h1>When will the salamanders move?</h1><p className="sala-lead">A quiet forest. A warm spring rain. Then hundreds of hidden amphibians may make their way toward woodland pools. Track the rain, temperature, snow and thaw clues—and see when Michigan observers begin documenting salamanders.</p><div className="sala-pills"><span>9 forecast regions</span><span>7-night rain & temperature</span><span>Conservation-first</span></div></div>
     <aside className="sala-hero-card"><span className="sala-overline">Your region · {region.name}</span><div className="sala-hero-status">{headline}</div><Stamp level={off?'off':best?.level||'unknown'}>{status}</Stamp><p>{off?'Migration generally returns with the first suitable spring thaws and rains. No current activity is implied.':best?'Next notable window: '+dateFmt(best.date)+'. '+best.details:'A suitable night needs sustained warm rain and locally thawed ground.'}</p><div className="sala-hero-meter"><span>Spring watch</span><span>{off?'Paused until spring':unavailable?'Data unavailable':'Forecast updated '+(updated||'recently')}</span></div></aside>
    </div></section>
    <div className="sala-wrap">
@@ -114,6 +116,7 @@ export default function SalamanderMigration(){
     </section>
     <ThawEvidence region={region} thaw={row?.thaw} off={off}/>
    <WeatherStrip row={row} off={off} unavailable={unavailable} loading={loading}/>
+    <SalamanderObservations selected={selected}/>
     <section className="sala-section" id="timing"><div className="sala-section-title"><div><span className="sala-overline">The spring migration clock</span><h2>Why the first rainy night matters</h2></div><p>These are broad Michigan seasonal windows, not a prediction that migration has started.</p></div>
      <SpringCalendar/><div className="sala-reasons">
       <div><span className="sala-reason-num">01</span><h3>Air above roughly 40°F</h3><p>Several hours of mild nighttime air are a common ingredient in spring amphibian movement.</p></div>
