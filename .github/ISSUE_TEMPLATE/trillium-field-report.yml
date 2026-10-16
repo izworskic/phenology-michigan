@@ -1,7 +1,6 @@
 name: Trillium field observation
 description: Share a dated, source-linked trillium observation at one of the ten public destinations. Reports are NOT published without editor review.
 title: "[Trillium field report] "
-labels: ["trillium-field-report"]
 body:
   - type: markdown
     attributes:
