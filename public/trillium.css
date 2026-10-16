@@ -108,3 +108,51 @@
 .tri-history-months>span.first{transform:none}
 .tri-history-months>span.last{transform:translateX(-100%)}
 @media(max-width:740px){.tri-history-months{margin-left:42px;margin-right:70px;font-size:9px}}
+
+/* Spring heat: a weather index, explicitly separate from verified flowering. */
+.tri-thermal-section{margin:52px 0 0}
+.tri-thermal-section .tri-section-heading{margin-bottom:18px}
+.tri-thermal-panels{display:grid;grid-template-columns:minmax(280px,.78fr) minmax(0,1.22fr);gap:16px}
+.tri-thermal-insight,.tri-thermal-graph{border:1px solid #d7e4d6;background:#fff;border-radius:12px;padding:22px;min-width:0}
+.tri-thermal-insight{background:linear-gradient(140deg,#e9f2e8 0%,#fff 78%)}
+.tri-thermal-large{font:500 clamp(36px,5vw,52px)/1.1 'Fraunces',Georgia,serif;color:#26593c;letter-spacing:-.045em;margin:12px 0 10px}
+.tri-thermal-large small{font:13px Arial,sans-serif;letter-spacing:0;color:#677d6c}
+.tri-thermal-relative{display:flex;align-items:center;gap:8px;color:#2d6847;margin:10px 0 4px;font:700 14px Arial,sans-serif}
+.tri-thermal-relative svg{flex:none}
+.tri-thermal-insight>p{font:13px/1.65 Arial,sans-serif;color:#65786b;margin:10px 0}
+.tri-thermal-insight>p.tri-fine{font-size:11px;color:#728276;margin-top:20px}
+.tri-heat-facts{display:grid;grid-template-columns:1fr 1fr;gap:12px;border-top:1px solid #dce8dc;padding-top:16px;margin-top:16px}
+.tri-heat-facts>div{display:flex;flex-direction:column;gap:5px}
+.tri-heat-facts span{font:11px Arial,sans-serif;color:#738275}
+.tri-heat-facts strong{font:700 22px Georgia,serif;color:#305d42}
+.tri-heat-alert{display:flex;gap:8px;margin:15px 0 0;padding:12px;border-radius:8px;border-left:3px solid #6a976c;background:#e6f1e5}
+.tri-heat-alert svg{flex:none;color:#3a7b4a}
+.tri-heat-alert div{display:flex;flex-direction:column;gap:5px}
+.tri-heat-alert b{font:700 12px/1.4 Arial,sans-serif;color:#335f40}
+.tri-heat-alert span{font:11px/1.5 Arial,sans-serif;color:#657967}
+.tri-thermal-graph-head{display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap}
+.tri-thermal-graph-head h3{font-size:22px;margin:0;color:#244b35}
+.tri-thermal-graph-head span{color:#738578;font:11px Arial,sans-serif}
+.tri-heat-chart{margin:22px 0 12px}
+.tri-heat-chart svg{max-width:100%;height:auto;display:block}
+.tri-heat-legend{display:flex;flex-wrap:wrap;gap:8px 17px;align-items:center;font:11px Arial,sans-serif;color:#637b6c;margin:8px 0 12px}
+.tri-heat-legend span{display:inline-flex;align-items:center;gap:6px}
+.tri-heat-key{display:block;width:20px;border-top:3px solid #2f7551}
+.tri-heat-key.future{border-top:3px dashed #c17d3d}
+.tri-heat-key.normal{border-color:#98ad9b}
+.tri-heat-empty{font:13px/1.7 Arial,sans-serif;color:#728575;padding:32px 22px;background:#f4f7f0;border:1px dashed #cbd9cb;border-radius:8px;margin:18px 0}
+.tri-thermal-off{display:flex;align-items:center;gap:11px;color:#3a6e4a;padding:20px 0 5px}
+.tri-thermal-off strong{font:700 16px Arial,sans-serif}
+.tri-thermal-off svg{flex:none}
+.tri-thermal-validation{display:flex;gap:11px;align-items:flex-start;padding:13px;border-top:1px solid #e0e9df;border-radius:8px;background:#f4f6f1;margin-top:20px}
+.tri-thermal-validation.validated{background:#ebf4e9}
+.tri-thermal-icon{color:#51805c;flex:none;margin-top:2px}
+.tri-thermal-validation b{font:700 12px Arial,sans-serif;color:#335b3e}
+.tri-thermal-validation p{font:11px/1.6 Arial,sans-serif;color:#68796e;margin:5px 0 0}
+.tri-thermal-foot{display:flex;gap:10px;align-items:flex-start;margin:12px 0 0;padding:11px 13px;border-radius:8px;background:#edf2e9;color:#687b6c}
+.tri-thermal-foot svg{margin-top:1px;flex:none}
+.tri-thermal-foot p{font:11px/1.6 Arial,sans-serif;margin:0}
+.tri-thermal-foot a{font-weight:700;text-decoration:underline;color:#366a48}
+.tri-thermal-foot a svg{display:inline-block;vertical-align:middle}
+@media(max-width:900px){.tri-thermal-panels{grid-template-columns:1fr}}
+@media(max-width:740px){.tri-thermal-section{margin-top:38px}.tri-thermal-insight,.tri-thermal-graph{padding:16px}.tri-thermal-large{font-size:41px}.tri-heat-chart{margin:18px -7px 8px}.tri-thermal-graph-head h3{font-size:20px}.tri-heat-facts strong{font-size:20px}}
