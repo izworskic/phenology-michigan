@@ -70,7 +70,8 @@ const css=fs.readFileSync(new URL('../public/trillium.css',import.meta.url),'utf
 const operator=fs.readFileSync(new URL('../scripts/refresh-trillium-history.mjs',import.meta.url),'utf8');
 assert.ok(api.includes('PARTITIONS[region]')&&api.includes('s-maxage=43200'),'Live source should be scoped and cached');
 assert.ok(main.includes('targetBloomYear(now)')&&main.includes('buildBenchmark(ARCHIVE,region.id,targetYear)'));
-assert.ok(page.includes('<TrilliumHistory regionId={selected}/>'));
+assert.ok(page.includes('getStaticProps')&&page.includes('initialHistory[selected]')&&page.includes('revalidate:86400'),'History dates must be rendered into static HTML and refreshed daily');
+assert.ok(comp.includes('initialBenchmark')&&comp.includes('AXIS_TICKS'),'History must render before client hydration with calendar-aligned chart axis');
 assert.ok(comp.includes('benchmark.years')&&comp.includes('tri-history-range')&&comp.includes('MIN')===false);
 assert.ok(css.includes('tri-history-year')&&css.includes('@media(max-width:740px)'));
 assert.ok(operator.includes('combineHistograms(')&&operator.includes('histogramUrl('));
