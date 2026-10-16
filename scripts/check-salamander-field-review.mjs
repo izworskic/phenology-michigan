@@ -36,7 +36,7 @@ assert.throws(()=>reviewFieldReport({...input,observedOn:'2027-04-08'},[],now));
 assert.throws(()=>reviewFieldReport({...input,method:'sighting_only'},[],now));
 assert.throws(()=>reviewFieldReport({...input,sourceExcerpt:'A salamander photograph exists on the web.'},[],now));
 assert.throws(()=>reviewFieldReport({...input,summary:'Salamanders crossing at 46.546 -87.395.'},[],now));
-assert.throws(()=>reviewFieldReport({...input,summary:'Salamanders were reported on Main Road.'},[],now));
+assert.throws(()=>reviewFieldReport({...input,summary:'Salamanders were reported near 123 Road.'},[],now));
 assert.throws(()=>reviewFieldReport({...input,organization:'unknown'},[{bad:'record'}],now),/invalid records/);
 const one=fieldEvidenceReadiness(initial,'2026-10-16');
 assert.equal(one.sourceReviewedEvents,1);
