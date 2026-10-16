@@ -26,6 +26,7 @@ assert.equal(morningOutlook(site,{c:14,time:'2026-09-30T00:00:00Z'},periods,now)
 const api=readFileSync(new URL('../pages/api/lake-smoke.js',import.meta.url),'utf8');
 assert.match(api,/GLSEA_ACSPO_GCS/);
 assert.match(api,/forecastHourly/);
+assert.match(api,/value<=0\.5/,'Near-freezing or masked pixels should be rejected when open water is not verified');
 assert.match(api,/noindex, nofollow/);
 assert.match(api,/s-maxage=3600/);
 const page=readFileSync(new URL('../pages/lake-smoke.js',import.meta.url),'utf8');
