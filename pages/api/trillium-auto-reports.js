@@ -11,7 +11,7 @@ export default function handler(req,res){
     linkOnly:rows.filter(r=>r.checkStatus==='link_only').length};
   res.setHeader('Cache-Control','public, s-maxage=21600, stale-while-revalidate=21600');
   return res.status(200).json({state:'ready',counts,records:rows.slice(-35).reverse().map(publicCandidate),
-    source:'Automated Jotform source review, not preserve-boundary confirmation',
+    source:'Automated source screening from the on-page iNaturalist form or a configured Jotform webhook; not preserve-boundary confirmation',
     policy:'These are visitor-selected preserve references. Publicly sourced species/flowering may pass automatic checks, but preserve membership is NOT independently established. None counts as an editor-reviewed site bloom, peak or site-specific training truth.'});
  }catch{return res.status(503).json({state:'unavailable',records:[],error:'Automatic-source archive failed verification'});}
 }
