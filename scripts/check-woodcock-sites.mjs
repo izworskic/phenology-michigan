@@ -36,7 +36,7 @@ assert.ok(map.includes("setLayer('venues')")&&map.includes("setLayer('weather')"
 assert.ok(map.includes('WOODCOCK_SITES.forEach')&&map.includes('woodcock-venue-pin'));
 assert.ok(map.includes('CARTO')&&map.includes('Map library unavailable'));
 assert.ok(view.includes('None are certified as independently open after sunset'));
-assert.ok(view.includes('Read the original event source')&&view.includes('Verify current access & hours'));
+assert.ok((view.includes('Read the historical event source')||view.includes('Read the original event source'))&&view.includes('Verify current access & hours'));
 assert.ok(view.includes('no after-dark access')||view.includes('No after-dark access'));
 assert.ok(css.includes('woodcock-access-layout')&&css.includes('@media(max-width:700px)'));
 console.log('Woodcock viewing atlas checks passed: six dated sources, access gating, unique IDs, map/finder sync and responsive styling.');

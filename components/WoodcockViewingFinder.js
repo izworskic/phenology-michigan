@@ -1,6 +1,7 @@
 import {useMemo,useState} from 'react';
 import {ArrowUpRight,CalendarDays,Compass,MapPin,ShieldAlert,ParkingCircle,Footprints,Info,CheckCircle2} from 'lucide-react';
 import {WOODCOCK_SITES,ACCESS_LABELS,PIN_LABELS,distanceMiles} from '../lib/woodcock-sites';
+import upcomingEvents from '../data/woodcock-spring-events.json';
 import {REGIONS} from '../lib/woodcock';
 
 const safeDirections=query=>'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(query);
@@ -16,6 +17,10 @@ export default function WoodcockViewingFinder({regionId,selectedSite,onPickSite}
     return aDistance-bDistance||a.name.localeCompare(b.name);
   }),[ref]);
   const visible=sorted.filter(s=>filter==='all'||s.accessType===filter);
+  const springYear=upcomingEvents.year||2027;
+  const listedEvents=(upcomingEvents.events||[]).filter(e=>e.status==='organizer-listed'&&e.date?.startsWith(String(springYear)+'-'));
+  const sourceFailures=(upcomingEvents.sources||[]).filter(src=>src.status==='partial'||src.status==='unavailable').length;
+  const checkedLabel=upcomingEvents.checkedAt?dateText(upcomingEvents.checkedAt.slice(0,10)):'Automatic checks begin January 2027';
   const active=visible.find(s=>s.id===selectedSite)||visible[0]||null;
   return <div className="woodcock-access-atlas" id="woodcock-access-atlas">
     <div className="woodcock-access-head">
@@ -23,6 +28,24 @@ export default function WoodcockViewingFinder({regionId,selectedSite,onPickSite}
       <span className="woodcock-review-date"><CheckCircle2 size={14}/> Sources checked October 16, 2026</span>
     </div>
     <p className="woodcock-access-lead">Six Michigan places with documented woodcock walks. Choose a site to see historical evidence, the actual published meetup or entrance, and what still needs confirmation. <strong>None are certified as independently open after sunset.</strong></p>
+    <section className="woodcock-2027-events" aria-labelledby="woodcock-2027-heading">
+      <div className="woodcock-2027-head">
+        <div><span className="woodcock-eyebrow">AUTOMATED OFFICIAL EVENT CHECKS</span><h4 id="woodcock-2027-heading">Spring {springYear} woodcock walks</h4></div>
+        <span className="woodcock-2027-checked">{upcomingEvents.checkedAt?'Last checked '+checkedLabel:checkedLabel} · weekly Jan–Jun</span>
+      </div>
+      {listedEvents.length?
+        <div className="woodcock-2027-list">
+          {listedEvents.map(event=><article key={event.id}>
+            <div><strong>{dateText(event.date)}</strong><span className="woodcock-2027-label">Organizer-listed event</span></div>
+            <h5>{event.title}</h5>
+            <p>{event.venue} · {event.source}</p>
+            <a href={event.url} target="_blank" rel="noopener noreferrer">Check organizer for registration, time and access <ArrowUpRight size={14}/></a>
+          </article>)}
+        </div>:
+        <p className="woodcock-2027-none"><CalendarDays size={18}/> No dated spring {springYear} Michigan woodcock walks are in the verified organizer feed yet. Historical venues below remain useful planning leads, not confirmed {springYear} programs.</p>}
+      {sourceFailures>0&&<p className="woodcock-2027-warning" role="status">Some organizer calendars were inaccessible during the latest check ({sourceFailures} source{sourceFailures===1?'':'s'}). See official links below; older listed dates may not reflect changes or cancellations.</p>}
+      <p className="woodcock-2027-disclosure">Official organizer listings only. A walk is not a bird sighting, a ticket reservation or independent authorization to enter after dusk. Listings can change; follow the original organizer link.</p>
+    </section>
     <div className="woodcock-access-key">
       <div><span className="woodcock-access-dot"/> Verified event history <small>Not a current bird sighting</small></div>
       <div><ShieldAlert size={17}/> After-dark access check <small>Mandatory before self-guided visiting</small></div>
@@ -53,7 +76,12 @@ export default function WoodcockViewingFinder({regionId,selectedSite,onPickSite}
             <div><span className="woodcock-access-dossier">LOCATION DOSSIER · {active.county.toUpperCase()}</span><h4>{active.name}</h4><p>{active.kind} · {active.region}</p></div>
             <AccessTag code={active.accessType}/>
           </div>
-          <div className="woodcock-access-evidence"><CalendarDays size={19}/><div><strong>Documented woodcock walk · {dateText(active.eventDate)}</strong><p>{active.evidence} This is historical event evidence, not a verified 2027 walk or current observation.</p><a href={active.eventSource} target="_blank" rel="noopener noreferrer">Read the original event source <ArrowUpRight size={13}/></a></div></div>
+          {listedEvents.filter(e=>e.siteId===active.id).map(event=><div className="woodcock-current-event" key={event.id}>
+            <strong><CalendarDays size={17}/> {dateText(event.date)} · Organizer-listed spring {springYear} walk</strong>
+            <p>{event.title}. Verify registration, meeting point and permission to enter after dusk with the organizer. Venue access restrictions below still apply.</p>
+            <a href={event.url} target="_blank" rel="noopener noreferrer">See latest organizer announcement <ArrowUpRight size={13}/></a>
+          </div>)}
+          <div className="woodcock-access-evidence"><CalendarDays size={19}/><div><strong>Historical woodcock walk · {dateText(active.eventDate)}</strong><p>{active.evidence} This is past event evidence, not a current bird observation or automatic permission to return.</p><a href={active.eventSource} target="_blank" rel="noopener noreferrer">Read the historical event source <ArrowUpRight size={13}/></a></div></div>
           <div className="woodcock-access-details-grid">
             <div><span><MapPin size={15}/> Published approach</span><p>{active.where}</p></div>
             <div><span><ParkingCircle size={15}/> Parking and directions</span><p>{active.parking}</p></div>
