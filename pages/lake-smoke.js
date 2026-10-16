@@ -131,7 +131,7 @@ export default function LakeSmoke(){
   const locations=data?.locations||SITES.map(site=>({...site,status:{label:'Awaiting data',tone:'unknown'},outlook:{windows:[],hourly:[],best:null}}));
   const picked=locations.find(site=>site.id===selected)||locations[0];
   const best=picked?.outlook?.best;
-  const top=useMemo(()=>locations.filter(x=>x.outlook?.best).sort((a,b)=>b.outlook.best.score-a.outlook.best.score).slice(0,3),[locations]);
+  const top=useMemo(()=>locations.filter(x=>x.outlook?.best&&x.outlook.best.score>=30).sort((a,b)=>b.outlook.best.score-a.outlook.best.score).slice(0,3),[locations]);
   const filtered=locations.filter(x=>filter==='All lakes'||x.lake===filter);
   const anyForecast=data&&data.activeLocations>0;
   const schema={'@context':'https://schema.org','@graph':[
@@ -153,7 +153,7 @@ export default function LakeSmoke(){
       </section>
       <div className='smoke-wrap'>
         <section className='smoke-status-strip' aria-label='Current forecast status'>
-          <div><small>Lake smoke outlook</small><h2>{loading?'Checking lake and air temperatures…':error?'Forecast connection unavailable':anyForecast?'Current cold-air setup outlook':'Local water readings unavailable'}</h2><p>{loading?'Gathering NOAA and NWS conditions across five Great Lakes.':error?error:anyForecast?'Compare the strongest upcoming morning setups below. A strong setup is not a confirmed sighting.':'There are currently no reliable combined water-and-air forecasts to rank. The map and viewing guide remain available.'}</p></div>
+          <div><small>Lake smoke outlook</small><h2>{loading?'Checking lake and air temperatures…':error?'Forecast connection unavailable':anyForecast?(top.length?'Current cold-air setup outlook':'Few lake smoke conditions in the forecast'):'Local water readings unavailable'}</h2><p>{loading?'Gathering NOAA and NWS conditions across five Great Lakes.':error?error:anyForecast?'Compare the strongest upcoming morning setups below. A strong setup is not a confirmed sighting.':'There are currently no reliable combined water-and-air forecasts to rank. The map and viewing guide remain available.'}</p></div>
           <div className='smoke-updated'><span>{data?.activeLocations??'—'} / {SITES.length}</span><small>sites with comparable data</small><small>{data?.generatedAt?'Updated '+dt(data.generatedAt):'Live update pending'}</small></div>
         </section>
         {top.length>0&&<section className='smoke-top' aria-label='Top forecast locations'><div className='smoke-section-line'><h2>Best upcoming morning setups</h2><p>Ranked by temperature contrast and forecast wind, not reported visibility.</p></div><div className='smoke-top-grid'>{top.map((s,i)=><button key={s.id} type='button' className='smoke-top-card' onClick={()=>{choose(s.id);document.getElementById('forecast')?.scrollIntoView({behavior:'smooth'});}}><span className='smoke-top-kicker'>#{i+1} · Lake {s.lake}</span><strong>{s.name}</strong><div><Score value={s.outlook.best.score}/><Tone status={s.status}/></div><small>{shortDay(s.outlook.best.time,s.tz)} · {s.outlook.best.spreadC>0?'+':''}{s.outlook.best.spreadC}°C water–air gap</small></button>)}</div></section>}
