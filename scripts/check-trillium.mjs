@@ -14,7 +14,7 @@ for(const region of REGIONS) {
 }
 const may=new Date('2027-05-15T18:00:00Z');
 assert.equal(outlook(REGIONS[0],may,null,[]).state,'window');
-const flowers=normalizeSightings([{id:42,quality_grade:'research',observed_on:'2027-05-14',geojson:{coordinates:[-86.4,42.2]}}],may);
+const flowers=normalizeSightings([{id:42,quality_grade:'research',observed_on:'2027-05-14',taxon:{name:'Trillium grandiflorum'},annotations:[{controlled_attribute_id:12,controlled_value_id:13}],geojson:{coordinates:[-86.4,42.2]}}],may);
 assert.equal(flowers.length,1);
 assert.equal(flowers[0].region,'southwest');
 assert.equal(outlook(REGIONS[0],may,null,flowers).state,'sighting');
