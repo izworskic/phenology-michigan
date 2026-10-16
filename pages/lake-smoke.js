@@ -2,7 +2,7 @@ import Head from 'next/head';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {SITES,SOURCE_LINKS} from '../lib/lakeSmoke.mjs';
 import {rankShorelineViews,compass} from '../lib/lakeSmokeWind.mjs';
-import {historyForSite} from '../lib/lakeSmokeArchive.mjs';
+import {historyForSite,easternDay} from '../lib/lakeSmokeArchive.mjs';
 const BASE='https://phenology.chrisizworski.com';
 const CANONICAL=BASE+'/lake-smoke';
 const TITLE='Great Lakes Lake Smoke Forecast: Where & When to See Steam Fog';
@@ -192,10 +192,11 @@ function LakeSmokeHistory({site,history,loading,error}){
         <p>A forecast is not a sighting. Only a dated, location-specific lake-smoke record that has been manually reviewed and linked to its original source can appear here.</p>
         {loading?<div className='smoke-evidence-empty'>Checking reviewed evidence…</div>
         :!evidenceReady?<div className='smoke-evidence-empty'>Independent evidence records are temporarily unavailable. No observation claims can be made.</div>
-        :verified.length?<div className='smoke-evidence-rows'>{verified.slice(-4).reverse().map(e=><div key={e.id} className='smoke-evidence-row'>
+        :verified.length?<div className='smoke-evidence-rows'>{verified.slice(-4).reverse().map(e=>{const observedDay=easternDay(e.observedAt);const advance=all.find(a=>a.date===observedDay&&Date.parse(a.issuedAt)<Date.parse(e.observedAt));return <div key={e.id} className='smoke-evidence-row'>
             <span className='smoke-evidence-confirmed'>Reviewed observation</span><strong>{dt(e.observedAt,site.tz)}</strong>
+            <small>{advance?.score!=null?'Prior-day model issue: '+advance.score+'/100 (issued '+advance.issuedDate+')':'No comparable prior-day forecast score archived.'} This pairing does not establish forecast accuracy.</small>
             <a href={e.sourceUrl} target='_blank' rel='noopener noreferrer'>View original evidence ↗</a>
-          </div>)}</div>
+          </div>;})}</div>
         :<div className='smoke-evidence-empty'><strong>No reviewed lake-smoke sightings for this lookout yet.</strong><span>That does not mean lake smoke was absent. It means the tool has no reviewed evidence for this location.</span></div>}
         <div className='smoke-evidence-method'><strong>Evidence rules</strong>
           <p>Reports need a precise location, observation date/time, original photo, camera record or official source, and an independent editorial review. Generic fog reports, an unavailable webcam, and forecast scores never become confirmed sightings automatically.</p>
