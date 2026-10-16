@@ -22,7 +22,7 @@ function Status({live}){
  if(live.state==='off')return <div className='tri-history-current idle'><strong>Next live comparison: spring</strong><span>Archived observations remain visible during fall and winter. No current flower-timing claim.</span></div>;
  return <div className='tri-history-current idle'><strong>{live.state==='developing'?'Spring reports are still accumulating':live.state==='sparse'?'Not enough reports yet':live.state==='unavailable'?'Live comparison unavailable':'Historical comparison not available'}</strong><span>{live.note}</span></div>;
 }
-export default function TrilliumHistory({regionId,initialBenchmark=null}){
+export default function TrilliumHistory({regionId,initialBenchmark=null,archiveRetrievedAt}){
  const [response,setResponse]=useState(null),[state,setState]=useState('loading');
  useEffect(()=>{
   if(!REGIONS.some(r=>r.id===regionId))return;
@@ -68,6 +68,6 @@ export default function TrilliumHistory({regionId,initialBenchmark=null}){
       <p className='tri-fine'>Reports are grouped by their observation week. Calendar-week resolution and changing observer participation limit precision. Reporting density does not measure flower abundance.</p>
     </article>
   </div>}
-  {benchmark&&<div className='tri-history-source'><Info size={17}/><span>{activeResponse?.liveStatus||'Archived flowering observations available; current-season comparison not yet loaded'}. Archive sampled {activeResponse?.archiveRetrievedAt?.slice(0,10)||'2026-10-15'}. <a href={activeResponse?.sourceUrl||'https://www.inaturalist.org/observations?place_id=29&taxon_name=Trillium%20grandiflorum&term_id=12&term_value_id=13'} target='_blank' rel='noopener noreferrer'>Explore source records <ExternalLink size={13}/></a>. Comparisons stay undecided until reporting coverage and timing pass the evidence gates.</span></div>}
+  {benchmark&&<div className='tri-history-source'><Info size={17}/><span>{activeResponse?.liveStatus||'Archived flowering observations available; current-season comparison not yet loaded'}. Archive sampled {activeResponse?.archiveRetrievedAt?.slice(0,10)||archiveRetrievedAt||'date not available'}. <a href={activeResponse?.sourceUrl||'https://www.inaturalist.org/observations?place_id=29&taxon_name=Trillium%20grandiflorum&term_id=12&term_value_id=13'} target='_blank' rel='noopener noreferrer'>Explore source records <ExternalLink size={13}/></a>. Comparisons stay undecided until reporting coverage and timing pass the evidence gates.</span></div>}
  </section>;
 }
