@@ -26,8 +26,14 @@ export default async function handler(req,res){
   message:'Live sighting totals resume during Michigan spring monitoring. No current migration is implied.',
   claimsMigration:false,regions:REGIONS.map(r=>({id:r.id,state:'off_season',count:null,species:null,trend:null})),
   statewide:{state:'off_season',count:null,species:null,trend:null},links:[],sampleComplete:false}});
- const results=await Promise.allSettled(TARGET_TAXA.map(t=>speciesObservations(t.name,day)));
- const inputs=TARGET_TAXA.map((t,i)=>results[i].status==='fulfilled'?results[i].value:{taxon:t.name,error:'unavailable'});
+ const inputs=[];
+ for(let i=0;i<TARGET_TAXA.length;i++){
+  // iNaturalist recommends approximately one API request per second. Respect that across species.
+  if(i>0)await new Promise(resolve=>setTimeout(resolve,1100));
+  const taxon=TARGET_TAXA[i].name;
+  try{inputs.push(await speciesObservations(taxon,day));}
+  catch{inputs.push({taxon,error:'unavailable'});}
+ }
  const summary=aggregateObservations(inputs,day,REGIONS.map(r=>r.id));
  // Sanitize every response. Never leak raw observation object, hidden GPS, username, image or ID.
  return res.status(200).json({...base,observations:{...summary,status:summary.state,
