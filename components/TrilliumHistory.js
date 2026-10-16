@@ -1,5 +1,5 @@
 import {useEffect,useState} from 'react';
-import {CalendarDays,ChartNoAxesCombined,ExternalLink,Info} from 'lucide-react';
+import {CalendarDays,BarChart3,ExternalLink,Info} from 'lucide-react';
 import {REGIONS} from '../lib/trillium.mjs';
 const DOMAIN_LOW=74,DOMAIN_HIGH=196;
 const AXIS_TICKS=[['Mar 15',74],['Apr 1',91],['May 1',121],['Jun 1',152],['Jul 15',196]];
@@ -50,7 +50,7 @@ export default function TrilliumHistory({regionId,initialBenchmark=null,archiveR
        <h3>Typical reporting window</h3>
        <div className='tri-history-big'>{benchmark.lowLabel} – {benchmark.highLabel}</div>
        <div className='tri-history-stat'><CalendarDays size={18}/> Historical reporting center near <strong>{benchmark.centerLabel}</strong></div>
-       <div className='tri-history-stat'><ChartNoAxesCombined size={18}/> Typical inter-year shift: <strong>±{benchmark.spread} days</strong></div>
+       <div className='tri-history-stat'><BarChart3 size={18}/> Typical inter-year shift: <strong>±{benchmark.spread} days</strong></div>
        <p>Middle 60% of reports in an eligible season. Each year contributes equally to the regional benchmark.</p>
       </>:<>
        <h3>Not enough comparable years yet</h3>
