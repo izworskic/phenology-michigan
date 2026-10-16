@@ -43,3 +43,43 @@
 .smoke-camera-card .smoke-camera-notice{padding-left:10px;border-left:3px solid #d8ad67;color:#835c2b}
 @media(max-width:740px){.smoke-cameras-grid{grid-template-columns:1fr}}
 @media(max-width:480px){.smoke-camera-card,.smoke-camera-howto{padding:18px}.smoke-ice-readout{align-items:flex-start;flex-direction:column}.smoke-ice-value{text-align:left}.smoke-ice-value small{max-width:unset}}
+
+
+/* V3: shore-relative NWS wind direction: separate qualitative viewing guidance */
+.smoke-rank-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 15px}
+.smoke-rank-tabs button{font-size:13px;border:1px solid #c4d8dd;background:#fff;padding:9px 15px;border-radius:8px;color:#2a6578;cursor:pointer;font-weight:700}
+.smoke-rank-tabs button.active{border-color:#2b7085;background:#1d5a6d;color:#fff}
+.smoke-rank-tabs button:focus-visible{outline:2px solid #3ba1bd;outline-offset:2px}
+.smoke-rank-foot,.smoke-rank-note{margin:12px 0 0;font-size:12px;line-height:1.55;color:#607982}
+.smoke-rank-note{border-left:3px solid #d2a65d;padding:8px 13px;background:#faf4e8}
+.smoke-drift-label{border-radius:20px;padding:5px 10px;display:inline-flex;align-items:center;font-size:11px;font-weight:800;background:#e4ecef;color:#54717b;white-space:normal;line-height:1.4}
+.smoke-drift-label.alongshore{background:#dff2ed;color:#1b7558}
+.smoke-drift-label.shoreward{background:#e5effa;color:#265e88}
+.smoke-drift-label.lakeward{background:#f7f0df;color:#81651e}
+.smoke-drift-label.uncertain,.smoke-drift-label.unknown{background:#e8edf0;color:#687a80}
+.smoke-view-section{margin:0 0 54px;scroll-margin-top:20px}
+.smoke-view-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:15px}
+.smoke-wind-card{min-width:0;background:#fff;border:1px solid var(--sm-line);border-radius:12px;padding:22px}
+.smoke-wind-card h3{font-size:24px;margin:8px 0 14px}
+.smoke-wind-card p{font-size:13px;color:#56747d;line-height:1.6}
+.smoke-wind-card-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.smoke-wind-card-head>div{flex:1;min-width:0}
+.smoke-wind-card-head h3{margin:10px 0;max-width:240px}
+.smoke-wind-rose{width:180px;max-width:46%;height:auto;flex-shrink:0}
+.smoke-compass-cardinal{font:bold 13px Arial,sans-serif;fill:#647f88}
+.smoke-compass-shore{font:bold 10px Arial,sans-serif;fill:#164154}
+.smoke-wind-unknown{min-height:110px;min-width:120px;display:grid;place-items:center;text-align:center;font-size:12px;color:#6a8590;max-width:200px}
+.smoke-wind-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:18px 0}
+.smoke-wind-facts>div{background:#eff5f6;border:1px solid #e0ebed;border-radius:9px;padding:12px;min-width:0}
+.smoke-wind-facts small{display:block;font-size:10px;color:#67828a}
+.smoke-wind-facts strong{font:700 20px Georgia,serif;color:#205d73}
+.smoke-wind-card .smoke-wind-caveat{font-size:11px;color:#6c858d;border-top:1px solid #e2eded;padding-top:10px}
+.smoke-view-days{margin:10px 0 17px}
+.smoke-view-day{display:flex;justify-content:space-between;align-items:center;gap:9px;padding:13px 0;border-bottom:1px solid #e0eaec}
+.smoke-view-day>div{min-width:0}
+.smoke-view-day>div:last-child{text-align:right}
+.smoke-view-day strong{display:block;font-size:13px}
+.smoke-view-day small{display:block;color:#70858c;font-size:11px;margin-top:4px}
+.smoke-view-day .smoke-drift-label{font-size:12px}
+@media(max-width:850px){.smoke-view-grid{grid-template-columns:1fr}}
+@media(max-width:420px){.smoke-wind-card{padding:16px}.smoke-wind-rose{width:130px}.smoke-wind-card-head h3{font-size:20px}.smoke-view-day{align-items:flex-start}.smoke-view-day small{font-size:10px}.smoke-drift-label{font-size:10px}}

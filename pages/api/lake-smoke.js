@@ -1,6 +1,7 @@
 import {SITES,SOURCE_LINKS,morningOutlook,siteStatus,periodAirF} from '../../lib/lakeSmoke.mjs';
 import {ICE_DATASET,iceSeason,parseIceGrid,iceAssessment,iceAdjustedOutlook,iceAwareStatus} from '../../lib/lakeSmokeIce.mjs';
 import {cameraFor} from '../../lib/lakeSmokeCameras.mjs';
+import {attachViewingOutlook,rankShorelineViews} from '../../lib/lakeSmokeWind.mjs';
 
 const UA='GreatLakesLakeSmoke/1.0 (https://phenology.chrisizworski.com/lake-smoke; public outdoor planning)';
 async function getJson(url,timeout=3800){
@@ -47,7 +48,9 @@ async function snapshot(site,now){
   const wx=weatherResult.status==='fulfilled'?weatherResult.value:null;
   const ice=iceResult.status==='fulfilled'?iceResult.value:null;
   const iceCheck=iceAssessment(ice,now);
-  const outlook=iceAdjustedOutlook(morningOutlook(site,water,wx?.periods||[],now),iceCheck);
+  // Never attach a shore-view recommendation before the existing water and ice safeguards.
+  const weatherOutlook=iceAdjustedOutlook(morningOutlook(site,water,wx?.periods||[],now),iceCheck);
+  const outlook=attachViewingOutlook(site,weatherOutlook,wx?.periods||[]);
   const current=wx?.periods?.find(p=>new Date(p.startTime).getTime()>=now.getTime()-3600000);
   return {
     ...site,
@@ -73,13 +76,16 @@ export default async function handler(req,res){
   const now=new Date();
   const results=await Promise.all(SITES.map(site=>snapshot(site,now)));
   const ranked=results.filter(r=>r.outlook.best).sort((a,b)=>b.outlook.best.score-a.outlook.best.score);
+  const viewing=rankShorelineViews(results);
   return res.status(200).json({
     generatedAt:now.toISOString(),
     model:'Experimental conditions-based lake smoke setup index; not a fog observation, visibility forecast, or probability.',
     verifiedSightings:false,
     activeLocations:ranked.length,
+    shoreViewingLocations:viewing.length,
+    viewingMethod:'Wind direction is FROM the reported NWS direction. Approximate waterward bearing is derived from the mapped shoreline point and local offshore sampling cell. View ranking is a qualitative heuristic and does not change the lake smoke weather score.',
     locations:results,
     sources:SOURCE_LINKS,
-    notes:['NOAA GLSEA temperature is a satellite-derived analyzed grid, not a live thermometer or a precise nearshore reading. Ice assessments are sampled from a separate GLSEA/NIC analysis in November–May. A current grid cell does not predict ice formation over the following days.','NWS forecasts describe hourly atmospheric conditions near each viewing location.','Ratings require recent local water temperature and usable hourly forecast data, plus recent local ice coverage in November–May; missing data produce no ranking. A patchy ice signal caps scores at 45, and 15% or greater ice cover suppresses scores.','Wind, local geography, ice, and turbulence can change actual visibility; consult NWS marine forecasts and advisories for safety.']
+    notes:['NOAA GLSEA temperature is a satellite-derived analyzed grid, not a live thermometer or a precise nearshore reading. Ice assessments are sampled from a separate GLSEA/NIC analysis in November–May. A current grid cell does not predict ice formation over the following days.','NWS forecasts describe hourly atmospheric conditions near each viewing location.','Ratings require recent local water temperature and usable hourly forecast data, plus recent local ice coverage in November–May; missing data produce no ranking. A patchy ice signal caps scores at 45, and 15% or greater ice cover suppresses scores.','Wind, local geography, ice, and turbulence can change actual visibility; consult NWS marine forecasts and advisories for safety. Shoreline view rankings are available only when a forecast wind direction and trustworthy ice/water conditions are present. Along-shore, shoreward and lakeward drift are approximations, not measured plume tracks.']
   });
 }

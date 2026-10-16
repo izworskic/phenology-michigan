@@ -71,3 +71,73 @@ assert.match(api,/iceAdjustedOutlook/);
 assert.match(page,/Open operator camera/);
 assert.match(page,/iceCheck/);
 console.log('Lake smoke winter ice gate and operator webcam contracts passed');
+
+
+// V3 shore-relative wind guide: directional truth must not alter formation scores.
+const {windFromDegrees,bearingToWater,angleDistance,driftForHour,attachViewingOutlook,rankShorelineViews,compass}=await import('../lib/lakeSmokeWind.mjs');
+assert.equal(windFromDegrees('N'),0,'N wind comes FROM north');
+assert.equal(windFromDegrees('WSW'),247.5);
+assert.equal(windFromDegrees('360°'),0);
+assert.equal(windFromDegrees('270 deg'),270);
+assert.equal(windFromDegrees('VRB'),null,'Variable wind is not an observed bearing');
+assert.equal(windFromDegrees('calm'),null);
+assert.equal(windFromDegrees('15 mph'),null,'Speed must not be misparsed as a direction');
+assert.equal(windFromDegrees('361°'),null);
+assert.equal(windFromDegrees(null),null);
+assert.equal(compass(360),'N');
+assert.equal(compass(-90),'W');
+assert.equal(angleDistance(359,1),2,'Bearing wraps around north correctly');
+const frankfort=SITES.find(x=>x.id==='frankfort');
+assert.ok(bearingToWater(frankfort)>240&&bearingToWater(frankfort)<300,'Lake Michigan open water is west of Frankfort Beach');
+const toward=driftForHour(frankfort,'W',6);
+assert.equal(toward.status,'shoreward','West wind moves toward Michigan east shore');
+assert.equal(toward.driftTowardDeg,90,'West wind blows east');
+assert.equal(toward.windFrom,'W');
+const away=driftForHour(frankfort,'E',6);
+assert.equal(away.status,'lakeward','East wind goes offshore from Lake Michigan east shore');
+assert.equal(away.driftTowardDeg,270);
+const across=driftForHour(frankfort,'N',6);
+assert.equal(across.status,'alongshore','North wind moves south along west-facing shoreline');
+assert.ok(across.rank>toward.rank && toward.rank>away.rank);
+assert.equal(driftForHour(frankfort,'VRB',6).rank,null,'Unknown wind must not be ranked');
+assert.equal(driftForHour(frankfort,'W',0).rank,null,'Calm day must not be ranked');
+assert.equal(driftForHour(frankfort,'W',18).rank,null,'Strong wind must not be ranked as a clear view');
+assert.equal(driftForHour({...frankfort,waterLat:frankfort.lat,waterLon:frankfort.lon},'W',6).rank,null,'Identical shoreline and water grid points must not be ranked');
+const at=new Date('2026-10-16T08:00:00Z');
+const modeledWater={c:16,time:'2026-10-16T06:00:00Z'};
+const directional=[
+  {startTime:'2026-10-16T11:00:00Z',temperature:36,temperatureUnit:'F',windSpeed:'7 mph',windDirection:'W',probabilityOfPrecipitation:{value:0}},
+  {startTime:'2026-10-16T12:00:00Z',temperature:37,temperatureUnit:'F',windSpeed:'7 mph',windDirection:'N',probabilityOfPrecipitation:{value:0}},
+  {startTime:'2026-10-17T11:00:00Z',temperature:36,temperatureUnit:'F',windSpeed:'7 mph',windDirection:'VRB',probabilityOfPrecipitation:{value:0}}
+];
+const atmospheric=morningOutlook(frankfort,modeledWater,directional,at);
+const enhanced=attachViewingOutlook(frankfort,atmospheric,directional);
+assert.equal(atmospheric.best.score,enhanced.best.score,'Wind view info must not modify formation scores');
+assert.equal(enhanced.windows.length,atmospheric.windows.length,'Preserve morning atmospheric bars');
+assert.equal(enhanced.hourly.length,atmospheric.hourly.length,'Preserve every hourly bar');
+assert.equal(enhanced.viewWindows.length,1,'Missing directions cannot create a second viewing morning');
+assert.equal(enhanced.bestView.viewing.status,'alongshore','Prefer a comparable across-shore viewing hour');
+assert.equal(enhanced.bestView.hour,8,'Viewing hour may differ from highest setup hour');
+assert.equal(enhanced.best.hour,7,'Original weather best hour remains unchanged');
+assert.equal(attachViewingOutlook(frankfort,atmospheric,[]).bestView,null,'Missing NWS wind direction cannot be manufactured');
+const blocked=iceAdjustedOutlook(atmospheric,iceAssessment(null,winter));
+assert.equal(attachViewingOutlook(frankfort,blocked,directional).bestView,null,'Never bypass winter ice gate');
+const patchyV3=iceAdjustedOutlook(atmospheric,iceAssessment({percent:6},winter));
+assert.equal(attachViewingOutlook(frankfort,patchyV3,directional).bestView,null,'Patchy ice caps scores under 50 and prevents a strong-view recommendation');
+const ranked=rankShorelineViews([
+ {name:'Lakeward',outlook:{bestView:{...enhanced.bestView,viewing:away}}},
+ {name:'Across',outlook:{bestView:{...enhanced.bestView,viewing:across}}},
+ {name:'Missing',outlook:{bestView:{...enhanced.bestView,viewing:driftForHour(frankfort,'VRB',6)}}},
+ {name:'Toward',outlook:{bestView:{...enhanced.bestView,viewing:toward}}}
+]);
+assert.deepEqual(ranked.map(s=>s.name),['Across','Toward','Lakeward']);
+const apiV3=readFileSync(new URL('../pages/api/lake-smoke.js',import.meta.url),'utf8');
+const pageV3=readFileSync(new URL('../pages/lake-smoke.js',import.meta.url),'utf8');
+assert.match(apiV3,/iceAdjustedOutlook\(morningOutlook/);
+assert.match(apiV3,/attachViewingOutlook\(site,weatherOutlook/);
+assert.match(pageV3,/WindCompass/);
+assert.match(pageV3,/rankShorelineViews/);
+assert.match(pageV3,/Best shoreline views/);
+assert.match(pageV3,/Strongest fog setup/);
+assert.match(pageV3,/No direction-qualified/);
+console.log('Lake smoke wind direction, dual rankings, unknown-wind gates and winter safeguards passed');
