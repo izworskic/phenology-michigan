@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import Script from 'next/script';
-import {useEffect,useMemo,useRef,useState} from 'react';
+import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {ArrowRight,BookOpen,CalendarDays,ExternalLink,Flower2,MapPin,RefreshCcw,ShieldCheck,Sun,Thermometer,TreePine,Wind,Info} from 'lucide-react';
 import {REGIONS,STOPS} from '../lib/trillium.mjs';
 const URL='https://phenology.chrisizworski.com/michigan-trillium';
@@ -71,7 +71,7 @@ export default function MichiganTrillium(){
  const byId=useMemo(()=>Object.fromEntries((payload?.regions||[]).map(r=>[r.id,r])),[payload]);
  const focus=REGIONS.find(r=>r.id===selected)||REGIONS[0],detail=byId[selected],stops=all?STOPS:STOPS.filter(s=>s.region===selected);
  const evidence=(payload?.regions||[]).reduce((n,r)=>n+r.floweringCount,0);
- const selectStop=(region,id)=>{setSelected(region);setAll(false);document.getElementById('tri-destinations')?.scrollIntoView({behavior:'smooth',block:'start'});};
+ const selectStop=useCallback((region,id)=>{setSelected(region);setAll(false);document.getElementById('tri-destinations')?.scrollIntoView({behavior:'smooth',block:'start'});},[]);
  const structured={'@context':'https://schema.org','@graph':[
  {'@type':'WebApplication','@id':URL+'#app',name:'Michigan Trillium Bloom Tracker',url:URL,description:DESC,applicationCategory:'TravelApplication',operatingSystem:'Any',isAccessibleForFree:true,creator:{'@id':'https://chrisizworski.com/#person'}},
  {'@type':'WebPage','@id':URL+'#webpage',url:URL,name:TITLE,description:DESC,mainEntity:{'@id':URL+'#app'},breadcrumb:{'@id':URL+'#breadcrumb'},author:{'@id':'https://chrisizworski.com/#person'}},
