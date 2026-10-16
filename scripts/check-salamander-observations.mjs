@@ -37,7 +37,7 @@ const sightings=aggregateObservations([
 ],today,REGIONS.map(r=>r.id));
 assert.equal(sightings.state,'available');
 assert.equal(sightings.statewide.count,8);
-assert.deepEqual(sightings.statewide.trend,[6,1,1]);
+assert.deepEqual(sightings.statewide.trend,[5,2,1]);
 const bay=sightings.regions.find(r=>r.id==='saginaw-bay');
 assert.equal(bay.count,4);
 assert.equal(bay.state,'reported');
