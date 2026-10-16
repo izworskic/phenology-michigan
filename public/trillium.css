@@ -28,3 +28,31 @@
 @media(max-width:740px){.tri-container{width:calc(100% - 30px)}.tri-top-inner{min-height:58px;align-items:flex-start;flex-direction:column;gap:8px;padding:12px 0}.tri-top nav{gap:15px;font-size:11px;flex-wrap:wrap}.tri-hero-inner{grid-template-columns:1fr;gap:22px;padding:35px 0 28px;min-height:0}.tri-site h1{font-size:44px}.tri-hero-figure{height:260px}.tri-hero-pills span{font-size:11px}.tri-content{padding-top:32px}.tri-section-heading{align-items:flex-start;flex-direction:column;gap:14px}.tri-region-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tri-region{padding:13px;min-height:145px}.tri-region.selected{padding:12px}.tri-region strong{font-size:17px}.tri-insight-grid{grid-template-columns:1fr}.tri-focus-panel,.tri-forecast-panel{padding:19px}.tri-band{grid-template-columns:85px 1fr;gap:10px;min-height:36px}.tri-band small{display:none}.tri-band-months{margin:12px 0 0 95px}.tri-bands{padding:16px 13px}.tri-map{height:340px}.tri-stops{grid-template-columns:1fr}.tri-explain{padding:21px}.tri-explain-grid{grid-template-columns:1fr}.tri-guide{padding:23px}.tri-guide p{font-size:15px}.tri-footer .tri-container{flex-direction:column}}
 @media(max-width:390px){.tri-region-grid{grid-template-columns:1fr}.tri-region{min-height:auto}.tri-site h1{font-size:40px}.tri-brand{font-size:11px}.tri-map{height:285px}}
 @media(prefers-reduced-motion:reduce){.tri-refresh,.tri-region{animation:none!important;transition:none!important}}
+
+/* Site-specific evidence: intentionally not a bloom-probability traffic light. */
+.tri-site-summary{display:flex;align-items:center;gap:15px;flex-wrap:wrap;background:#edf2ea;border:1px solid #d4dfd0;border-radius:10px;padding:14px 18px;margin-bottom:13px}
+.tri-site-summary>div{display:inline-flex;align-items:center;gap:8px;color:#355b42;font:13px Arial,sans-serif}
+.tri-site-summary>span{flex-basis:100%;font:11px/1.55 Arial,sans-serif;color:#647668}
+.tri-map-legend{display:flex;gap:20px;flex-wrap:wrap;align-items:center;border:1px solid #dce7d9;background:#fff;border-radius:0 0 8px 8px;padding:10px 14px;font:12px Arial,sans-serif;color:#58705c;margin-bottom:12px}
+.tri-map-legend span{display:inline-flex;align-items:center;gap:7px}
+.tri-map-legend i{display:inline-block;width:11px;height:11px;border:2px solid white;box-shadow:0 0 0 1px #b9c8ba;border-radius:50%}
+.tri-legend-confirmed{background:#24784b}.tri-legend-nearby{background:#c18a45}.tri-legend-unknown{background:#778b7e}
+.tri-stop{scroll-margin-top:24px}
+.tri-site-evidence{border:1px solid #dce4dc;background:#f6f8f5;border-left:4px solid #86998a;border-radius:7px;padding:11px 13px;margin:14px 0 17px;min-width:0}
+.tri-site-evidence>strong{font:700 12px/1.45 Arial,sans-serif;display:flex;gap:7px;align-items:center;color:#526a58}
+.tri-site-evidence>strong svg{flex-shrink:0}
+.tri-site-evidence p{font:12px/1.6 Arial,sans-serif;color:#62736b;margin:7px 0!important}
+.tri-site-evidence small{font:11px Arial,sans-serif;color:#936f50}
+.tri-site-evidence.confirmed{background:#e8f3e7;border-left-color:#24784b}
+.tri-site-evidence.confirmed>strong{color:#25613a}
+.tri-site-evidence.nearby{background:#faf4e9;border-left-color:#c18a45}
+.tri-site-evidence.nearby>strong{color:#865e29}
+.tri-site-evidence.budding{background:#eff5e8;border-left-color:#88ad68}
+.tri-site-evidence.fading{background:#f3eee8;border-left-color:#ab9b80}
+.tri-site-evidence.off{background:#f4f5f1;border-left-color:#aab8a8}
+.tri-evidence-links{display:flex;gap:7px 15px;flex-wrap:wrap;align-items:center;margin-top:8px;font:11px/1.5 Arial,sans-serif}
+.tri-evidence-links>span{color:#687768}
+.tri-evidence-links>a{display:inline-flex;align-items:center;gap:4px;color:#326b48!important;font-weight:700;text-decoration:underline}
+.tri-explain-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:1000px){.tri-explain-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:740px){.tri-site-summary{align-items:flex-start;flex-direction:column;gap:10px}.tri-explain-grid{grid-template-columns:1fr}.tri-map-legend{gap:9px 18px}}
