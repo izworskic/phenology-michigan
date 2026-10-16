@@ -208,3 +208,14 @@ const ledger=JSON.parse(readFileSync(new URL('../data/lake-smoke-observations.js
 assert.equal(ledger.records.length,0,'Never invent initial confirmed sightings');
 assert.ok(ledger.policy.includes('manually reviewed'));
 console.log('Lake smoke forecast-issue archive, retry protection, provenance, history display and schedule tests passed');
+
+
+assert.match(page,/tiles\.openfreemap\.org\/styles\/positron/,'Use keyless OpenFreeMap vector basemap');
+assert.match(page,/maplibre-gl@4\.7\.1/,'MapLibre JS and CSS must be loaded');
+assert.match(page,/tile\.openstreetmap\.org/,'Keep no-key raster map fallback');
+assert.doesNotMatch(page,/basemaps\.cartocdn\.com/,'Do not emit watermarked CARTO raster tiles');
+assert.match(page,/ml\.Marker/,'Keep geolocated shore markers on vector map');
+assert.match(page,/fitBounds/,'All 15 lake shorelines must fit the map viewport');
+assert.match(page,/setSelected|chooseRef\.current/,'Map markers must remain selectable');
+assert.match(page,/No API key needed/);
+console.log('Lake smoke keyless vector map, marker layer, style CSS and tile-failure fallback verified');
