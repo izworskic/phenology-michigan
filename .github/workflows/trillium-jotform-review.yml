@@ -1,0 +1,89 @@
+name: Publish reviewed trillium form submission
+on:
+  workflow_dispatch:
+    inputs:
+      submission_id:
+        description: 'Numeric Jotform submission identifier, independently reviewed'
+        required: true
+        type: string
+      site_id:
+        description: 'Exact site slug from lib/trillium.mjs'
+        required: true
+        type: string
+      observed_at:
+        description: 'Date flowers were observed, YYYY-MM-DD'
+        required: true
+        type: string
+      source_url:
+        description: 'Direct public iNaturalist observation or dated official manager evidence'
+        required: true
+        type: string
+      source_excerpt:
+        description: 'Required for dated official land-manager source (12+ chars)'
+        required: false
+        type: string
+      reviewed_stage:
+        description: 'Stage positively confirmed by maintainer'
+        required: true
+        type: choice
+        options: [FLOWERING, BUDDING, FADING, DONE, NEAR_PEAK, PEAK]
+      on_site_review_note:
+        description: 'Positive evidence identifying exact preserve (24+ chars)'
+        required: true
+        type: string
+      observation_flowering_reviewed:
+        description: 'I independently verified iNaturalist flowering annotation AND site membership'
+        required: true
+        default: false
+        type: boolean
+      peak_review_note:
+        description: 'For PEAK / NEAR_PEAK only: manager-supported stage evidence'
+        required: false
+        type: string
+permissions:
+  contents: write
+concurrency:
+  group: trillium-published-evidence
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Require repository owner review
+        env:
+          REVIEWER: ${{ github.actor }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          test "$REVIEWER" = "$OWNER" || { echo "Only repo owner can approve submissions"; exit 1; }
+      - name: Validate and archive independently reviewed form evidence
+        env:
+          REVIEW_SOURCE: jotform
+          REVIEW_EXTERNAL_ID: ${{ inputs.submission_id }}
+          REVIEW_SITE_ID: ${{ inputs.site_id }}
+          REVIEW_OBSERVED_AT: ${{ inputs.observed_at }}
+          REVIEW_EVIDENCE_URL: ${{ inputs.source_url }}
+          REVIEW_SOURCE_EXCERPT: ${{ inputs.source_excerpt }}
+          REVIEWED_STAGE: ${{ inputs.reviewed_stage }}
+          ON_SITE_REVIEW_NOTE: ${{ inputs.on_site_review_note }}
+          OBSERVATION_FLOWERING_REVIEWED: ${{ inputs.observation_flowering_reviewed }}
+          PEAK_REVIEW_NOTE: ${{ inputs.peak_review_note }}
+        run: node scripts/review-trillium-site-report.mjs
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Publish only if checks passed
+        run: |
+          git add data/trillium-site-history.json
+          if git diff --cached --quiet; then
+            echo "No reviewed archive changes"; exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Publish owner-reviewed trillium field evidence"
+          git pull --rebase origin main
+          git push origin HEAD:main
