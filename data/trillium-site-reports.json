@@ -1,5 +1,3 @@
-// Source-review ledger. Empty by design until a reviewer verifies a dated
-// on-site bloom statement against the linked public source. Never seed demo reports.
 {
   "schemaVersion": 1,
   "policy": "A site-confirmed label requires a dated, site-specific flowering report from the land manager or a manually inspected public record, with a direct evidence link and reviewer identity. Nearby coordinates do not constitute confirmation.",
