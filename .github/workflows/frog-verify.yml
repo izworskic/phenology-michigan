@@ -6,14 +6,22 @@ on:
       - 'pages/api/frogs.js'
       - 'pages/frog-chorus.js'
       - 'components/FrogMap.js'
+      - 'components/FrogAudio.js'
       - 'public/frog-chorus.css'
+      - 'public/frog-media/**'
+      - 'data/frog-media.json'
       - 'scripts/check-frogs.mjs'
+      - 'scripts/check-frog-media.mjs'
+      - 'scripts/frog-chorus-browser.cjs'
       - '.github/workflows/frog-verify.yml'
   push:
     branches: [main]
     paths:
       - 'lib/frogs.js'
+      - 'data/frog-media.json'
+      - 'public/frog-media/**'
       - 'scripts/check-frogs.mjs'
+      - 'scripts/check-frog-media.mjs'
       - '.github/workflows/frog-verify.yml'
   workflow_dispatch: {}
 permissions:
@@ -21,10 +29,34 @@ permissions:
 jobs:
   model:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - run: node scripts/check-frogs.mjs
+      - name: Media manifest, files, licences and decoded audio
+        run: node scripts/check-frog-media.mjs
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Install isolated browser driver
+        run: npm install --prefix /tmp/frog-browser --no-save --ignore-scripts playwright-core@1.56.1
+      - name: Playback, single-player, photos, layout (phone + desktop)
+        env:
+          NODE_PATH: /tmp/frog-browser/node_modules
+          CHROME_BIN: /usr/bin/google-chrome
+          BASE: http://localhost:3000
+        run: |
+          npx next start -p 3000 > /tmp/next.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:3000/frog-chorus > /dev/null && break; sleep 1; done
+          node scripts/frog-chorus-browser.cjs
