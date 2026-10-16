@@ -95,3 +95,34 @@
 .sala-evidence-privacy p{font:12px/1.7 system-ui,sans-serif;color:#b6c9b7;margin:8px 0 0}
 @media(max-width:960px){.sala-evidence-grid{grid-template-columns:1fr}.sala-evidence-privacy{grid-template-columns:1fr 1fr}}
 @media(max-width:580px){.sala-evidence-main,.sala-evidence-confirm{padding:17px}.sala-evidence-stats strong{font-size:33px}.sala-evidence-privacy{grid-template-columns:1fr;gap:18px}.sala-evidence-stats>div{padding:12px 11px}.sala-sighting-trend-head{flex-direction:column;align-items:flex-start;gap:4px}.sala-sighting-bars{gap:9px}.sala-evidence-species>div{flex-basis:100%}}
+
+
+/* Dated, human-reviewed migration field record and honest calibration gate. */
+.sala-field-workflow{margin:22px 0;border:1px solid #587459;border-radius:16px;padding:clamp(19px,3vw,33px);background:linear-gradient(135deg,#233b2b 0%,#152a20 85%)}
+.sala-field-intro{display:flex;gap:20px;justify-content:space-between;align-items:center}
+.sala-field-intro>div{max-width:680px}
+.sala-field-intro h3{font:500 clamp(24px,3vw,35px)/1.16 'Fraunces',Georgia,serif;margin:9px 0 12px;color:#f6f0d8}
+.sala-field-intro p,.sala-field-steps p,.sala-calibration-panel p,.sala-field-independence{font:13px/1.7 system-ui,sans-serif;color:#c3d3c4}
+.sala-field-submit{display:inline-flex;justify-content:center;align-items:center;gap:9px;flex:0 0 auto;border-radius:100px;background:#dfc492;color:#18281f!important;padding:15px 21px;font:800 12px/1.4 system-ui,sans-serif;text-decoration:none!important;white-space:nowrap;min-height:48px}
+.sala-field-submit:hover{background:#f0d5a3}
+.sala-field-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin:22px 0;border-top:1px solid #53715d;padding-top:22px}
+.sala-field-steps>div{padding:12px 15px 13px;border-radius:10px;background:#13281e;border:1px solid #41644a;min-width:0}
+.sala-field-steps span{display:block;color:#dec997;font:800 10px system-ui,sans-serif;letter-spacing:.08em}
+.sala-field-steps strong{display:block;font:500 20px/1.3 'Fraunces',Georgia,serif;margin:7px 0}
+.sala-field-steps p{font-size:11px;margin:0}
+.sala-calibration-panel{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(280px,.9fr);gap:19px;border:1px solid #53694d;padding:19px;border-radius:12px;background:#0f221b}
+.sala-calibration-panel h4{font:500 24px/1.2 'Fraunces',Georgia,serif;margin:10px 0}
+.sala-calibration-panel p{font-size:12px}
+.sala-calibration-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-content:center}
+.sala-calibration-stats div{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;padding:11px 8px;border:1px solid #46664c;border-radius:8px}
+.sala-calibration-stats strong{font:500 31px/1 'Fraunces',Georgia,serif;color:#efd6a6}
+.sala-calibration-stats span{font:10px/1.35 system-ui,sans-serif;color:#b4c8b7}
+.sala-calibration-panel .sala-calibration-status{grid-column:1/-1;font:700 11px/1.5 system-ui,sans-serif;color:#e1cb96;border-top:1px solid #456347;padding-top:12px;margin:0}
+.sala-history-empty{font:12px/1.6 system-ui,sans-serif;color:#b2c8b2;padding:13px 2px 6px}
+.sala-historical-reports{margin-top:23px}
+.sala-historical-reports h4{font:500 23px 'Fraunces',Georgia,serif;margin:0 0 9px}
+.sala-historical-reports>p{font:12px system-ui,sans-serif;color:#b3c5b1}
+.sala-historical-reports .sala-reviewed-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:16px 0}
+.sala-field-independence{border-top:1px solid #49684c;margin-top:14px;padding-top:15px;font-size:11px}
+@media(max-width:910px){.sala-field-intro{align-items:flex-start;flex-direction:column}.sala-field-steps{grid-template-columns:1fr 1fr}.sala-calibration-panel{grid-template-columns:1fr}.sala-field-submit{align-self:flex-start}}
+@media(max-width:600px){.sala-field-steps{grid-template-columns:1fr;gap:9px}.sala-field-workflow{padding:17px}.sala-calibration-stats{gap:5px}.sala-calibration-stats div{padding:9px 5px}.sala-calibration-stats strong{font-size:26px}.sala-calibration-stats span{font-size:9px}.sala-historical-reports .sala-reviewed-list{grid-template-columns:1fr}.sala-field-submit{width:100%}}
