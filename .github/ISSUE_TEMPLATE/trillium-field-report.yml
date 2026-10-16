@@ -1,0 +1,82 @@
+name: Trillium field observation
+description: Share a dated, source-linked trillium observation at one of the ten public destinations. Reports are NOT published without editor review.
+title: "[Trillium field report] "
+labels: ["trillium-field-report"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Submission is not a bloom confirmation.** An editor must inspect the source, species, date and evidence that it is specifically at this preserve.
+
+        This is a **public GitHub issue**, requiring a free GitHub account. Do not post GPS coordinates of plants, names or contact details of other visitors, private access routes, or images of sensitive plant locations. Instead link to your already public iNaturalist observation or dated land-manager announcement.
+  - type: dropdown
+    id: preserve
+    attributes:
+      label: Preserve
+      description: Select the documented public destination you visited. Do not choose a nearby preserve without specific evidence.
+      options:
+        - Warren Dunes wooded study area
+        - Warren Woods Nature Study Area
+        - Trillium Ravine Nature Sanctuary
+        - Nan Weston Nature Preserve
+        - Trillium Trail Nature Sanctuary
+        - P.J. Hoffmaster spring wildflower hikes
+        - Portage Point Woods Preserve
+        - Hoogland Family Nature Preserve
+        - John Arthur Woollam Preserve
+        - Echo Lake Nature Preserve
+    validations:
+      required: true
+  - type: input
+    id: observedAt
+    attributes:
+      label: Observation date
+      description: The day the flower was actually observed, not the upload date.
+      placeholder: YYYY-MM-DD
+    validations:
+      required: true
+  - type: dropdown
+    id: stage
+    attributes:
+      label: Flower stage reported
+      description: An editor will independently confirm or correct this stage.
+      options:
+        - BUDDING
+        - FLOWERING
+        - FADING
+        - DONE
+        - NEAR_PEAK
+        - PEAK
+    validations:
+      required: true
+  - type: input
+    id: evidence
+    attributes:
+      label: Public evidence URL
+      description: Link directly to your public iNaturalist observation or dated official land-manager report. Links to map pins, generic pages, private media or unhosted claims are not enough.
+      placeholder: https://www.inaturalist.org/observations/12345
+    validations:
+      required: true
+  - type: textarea
+    id: site
+    attributes:
+      label: Why is the observation at this preserve?
+      description: Mention an officially named trail, sign, manager's dated location statement or similar verifiable context. Avoid specific plant coordinates.
+      placeholder: The dated source identifies the preserve by name and shows the marked public trail sign, without identifying sensitive plant locations.
+    validations:
+      required: true
+  - type: textarea
+    id: excerpt
+    attributes:
+      label: Source excerpt (land manager reports only)
+      description: A short dated quote explicitly identifying the preserve and flowering stage. Not needed for individual iNaturalist records.
+      placeholder: Optional for iNaturalist.
+    validations:
+      required: false
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Public sharing and privacy
+      options:
+        - label: I understand this issue and its evidence links will be public. I have not posted private coordinates, visitor contact details or prohibited off-trail information.
+          required: true
