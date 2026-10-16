@@ -3,6 +3,7 @@ import {useEffect,useMemo,useState} from 'react';
 import {ArrowUpRight,Cloud,CloudRain,Clock,Compass,Feather,MapPin,Wind,Volume2,CalendarDays,Info,CheckCircle2} from 'lucide-react';
 import WoodcockCartoMap from '../components/WoodcockCartoMap';
 import WoodcockViewingFinder from '../components/WoodcockViewingFinder';
+import WoodcockSoundExperience from '../components/WoodcockSoundExperience';
 import {WOODCOCK_SITES,distanceMiles} from '../lib/woodcock-sites';
 import {REGIONS} from '../lib/woodcock';
 
@@ -12,7 +13,7 @@ const DESCRIPTION='When does the American woodcock sky dance happen in Michigan?
 const FAQ=[
   ['When do woodcocks perform their sky dance in Michigan?','Primarily in spring, often beginning as thaw and northbound migration progress in March or April. Displays can continue into May and later in northern areas. Local arrival and habitat matter more than any single statewide date.'],
   ['What time does the American woodcock sky dance start?','USFWS singing-ground surveys start about 22 minutes after sunset with 75% or less cloud cover, or 15 minutes after sunset when more than 75% overcast. Arrive before sunset and listen through twilight. The display may begin earlier or last longer.'],
-  ['What does a woodcock sound like?','Listen for a buzzy, nasal peent repeated from the ground. A male then spirals upward, making twittering wing sounds, and descends with melodic chirps. Cornell has recordings to learn before you go.'],
+  ['What does a woodcock sound like?','Listen for a buzzy, nasal peent repeated from the ground. A male then spirals upward, making twittering wing sounds, and descends with melodic chirps. Press play in the sky dance guide on this page, or use Cornell’s recordings, to learn them before you go.'],
   ['What weather is best for a woodcock sky dance?','For listening, prefer evenings at or above 40°F with light wind and little precipitation. The U.S. Fish and Wildlife Service avoids surveys below 40°F, in strong wind or heavy precipitation. Weather suitability is not a guarantee that birds are present.'],
   ['Where can I see woodcocks in Michigan?','Scout small grassy openings next to damp young woods, alders, aspen, shrubs or forest edges. Use official DNR state game area maps to identify permitted public access. A weather region marker on this page is not a known display location.'],
   ['Can I watch a woodcock sky dance in October?','A fall courtship forecast would be misleading. This page treats autumn and winter as off season and shows broad upcoming spring planning windows, not a fabricated live activity score.']
@@ -60,9 +61,6 @@ function NightChart({nights,choice,onSelect,best}){
       {n.passed&&<span className="woodcock-night-past">Passed</span>}
     </button>)}
   </div>;
-}
-function SoundStep({number,title,description}){
-  return <article className="woodcock-sound-step"><span className="woodcock-step-no">{number}</span><h3>{title}</h3><p>{description}</p></article>;
 }
 export default function WoodcockPage(){
   const [selection,setSelection]=useState('saginaw-bay');
@@ -181,15 +179,7 @@ export default function WoodcockPage(){
           <article><span className="woodcock-habitat-no">03</span><h3>Dark, quiet access</h3><p>Scout parking and legal access during daylight. Keep to approved roads or trails, observe from the perimeter and avoid bright lights.</p></article>
         </div>
       </section>
-      <section className="woodcock-container woodcock-section" id="listen">
-        <div className="woodcock-section-head"><div><span className="woodcock-eyebrow">HEAR IT BEFORE YOU SEE IT</span><h2>Three sounds. One extraordinary flight.</h2></div><p>A woodcock may be nearly invisible on the ground. The sound usually reveals the bird first.</p></div>
-        <div className="woodcock-sounds">
-          <SoundStep number="01 / GROUND" title="Peent… peent…" description="A nasal, buzzy call from a low perch or display spot in the grass. Stop moving and listen."/>
-          <SoundStep number="02 / ASCENT" title="Twittering wings" description="The male climbs in a widening spiral. Air through specialized outer wing feathers creates a musical twitter."/>
-          <SoundStep number="03 / DESCENT" title="Chirps from above" description="The bird zigzags and drops back toward the opening, often returning to its starting ground."/>
-        </div>
-        <a className="woodcock-audio-link" href="https://www.allaboutbirds.org/guide/American_Woodcock/sounds" target="_blank" rel="noopener noreferrer"><Volume2 size={21}/> Hear real woodcock recordings from Cornell Lab of Ornithology <ArrowUpRight size={18}/></a>
-      </section>
+      <WoodcockSoundExperience/>
       <section className="woodcock-container woodcock-section" id="how-to">
         <div className="woodcock-section-head"><div><span className="woodcock-eyebrow">FIELD NOTES</span><h2>How to make your evening count.</h2></div></div>
         <div className="woodcock-fieldgrid">
