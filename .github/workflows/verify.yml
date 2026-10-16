@@ -6,6 +6,13 @@ on:
     paths:
       - '.github/workflows/verify.yml'
       - 'lib/bloom/**'
+      - 'lib/trillium.mjs'
+      - 'pages/michigan-trillium.js'
+      - 'pages/api/trillium.js'
+      - 'public/trillium.css'
+      - 'scripts/check-trillium.mjs'
+      - 'pages/sitemap.xml.js'
+      - 'package.json'
       - 'pages/bloom-tracker.js'
       - 'pages/_app.js'
       - 'pages/firefly-tracker.js'
