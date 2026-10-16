@@ -1,6 +1,8 @@
 import {REGIONS,STOPS,normalizeSightings,outlook} from '../../lib/trillium.mjs';
 import {nearbyFlowers,siteDecision,SITE_RADIUS_KM} from '../../lib/trillium-site-verification.mjs';
 import SITE_REPORTS from '../../data/trillium-site-reports.json';
+import SITE_HISTORY from '../../data/trillium-site-history.json';
+import {readArchive} from '../../lib/trillium-site-history.mjs';
 import ARCHIVE from '../../data/trillium-flowering-history.json';
 import {buildBenchmark,targetBloomYear} from '../../lib/trillium-history.mjs';
 const INAT='https://api.inaturalist.org/v1/observations';
@@ -58,14 +60,16 @@ export default async function handler(req,res){
    return {...region,...outlook(region,now,weather,sightings),forecastStatus,historical};
  }));
  const byRegion=new Map(results.map(row=>[row.id,row]));
+ let reviewedHistory=[],siteHistoryStatus='Reviewed site history available';
+ try{reviewedHistory=readArchive(SITE_HISTORY,STOPS,now);}catch{siteHistoryStatus='Reviewed site history failed validation; current confirmation suppressed';}
  const sites=await Promise.all(STOPS.map(async(stop)=>{
    let nearby=[],nearbyStatus=active?'Unavailable':'Outside spring season';
    if(active){try{nearby=await siteNearby(stop,now);nearbyStatus='Checked recent flowering observations within 5 km';}
      catch{nearbyStatus='Nearby observations unavailable';}}
-   return {...siteDecision(stop,now,SITE_REPORTS.reports,nearby,byRegion.get(stop.region)),nearbyStatus};
+   return {...siteDecision(stop,now,[...SITE_REPORTS.reports,...reviewedHistory],nearby,byRegion.get(stop.region)),nearbyStatus};
  }));
  res.setHeader('Cache-Control','public, s-maxage=21600, stale-while-revalidate=21600');
- return res.status(200).json({updatedAt:now.toISOString(),year:now.getFullYear(),targetBloomYear:targetYear,regions:results,sites,observationStatus,
+ return res.status(200).json({updatedAt:now.toISOString(),year:now.getFullYear(),targetBloomYear:targetYear,regions:results,sites,observationStatus,siteHistoryStatus,
    siteEvidencePolicy:'Site confirmation requires a recent dated, editorially reviewed report explicitly tied to that preserve. Nearby iNaturalist flowering records are labeled nearby only and exclude obscured and low-precision coordinates. Absence of a report does not mean an absence of flowers.',
    method:'Seasonal ranges are planning context; temperature suggests weather direction, not a calibrated flowering prediction. Site evidence and nearby observations are kept separate.',
    sources:{flowering:'https://www.inaturalist.org/observations?place_id=29&taxon_name=Trillium%20grandiflorum&term_id=12&term_value_id=13',forecast:'https://open-meteo.com/',timing:'https://www2.dnr.state.mi.us/publications/pdfs/huntingwildlifehabitat/Landowners_Guide/Resource_Dir/Acrobat/Wildflowers.PDF'}});
