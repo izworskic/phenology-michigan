@@ -210,3 +210,34 @@
  .tri-local-identity b{font-size:12px}
  .tri-local-foot{padding:12px}
 }
+
+
+/* Public field-evidence program with manual source review and permanent provenance. */
+.tri-report-program{border:1px solid #d2e1d2;background:linear-gradient(130deg,#eef5ec,#fcfdf9);border-radius:12px;margin:22px 0 20px;padding:25px}
+.tri-report-program-top{display:flex;align-items:center;justify-content:space-between;gap:24px}
+.tri-report-program-top>div{flex:1;min-width:0}
+.tri-report-program h3{font-size:24px;line-height:1.2;color:#25513a;margin:8px 0}
+.tri-report-program p{font:13px/1.65 Arial,sans-serif;color:#617667;margin:8px 0}
+.tri-report-program-cta{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:7px;background:#2e6e48;color:#fff!important;text-decoration:none;font:700 12px Arial,sans-serif;padding:14px 17px;white-space:nowrap}
+.tri-report-program-cta:hover{background:#245537}
+.tri-report-program-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0}
+.tri-report-program-stats>div{border:1px solid #dae6d8;background:#fff;border-radius:8px;padding:13px 15px;display:flex;flex-direction:column;gap:5px}
+.tri-report-program-stats strong{font:500 27px Georgia,serif;color:#315d40}
+.tri-report-program-stats span{font:11px/1.35 Arial,sans-serif;color:#6d8271}
+.tri-report-program-method{display:flex;flex-wrap:wrap;gap:10px 18px;border-top:1px solid #d9e6d7;padding-top:14px}
+.tri-report-program-method span{display:inline-flex;align-items:center;gap:7px;font:11px/1.4 Arial,sans-serif;color:#446d50}
+.tri-report-program-method svg{flex:none}
+.tri-report-program p.tri-report-program-fine{font-size:11px;margin-top:14px;color:#6c7d6f}
+.tri-evidence-archive{padding:12px 13px;border:1px solid #dce7da;border-radius:8px;background:#f9fbf7;margin:14px 0}
+.tri-evidence-archive-head{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;color:#42654e}
+.tri-evidence-archive-head strong{font:700 12px Arial,sans-serif}
+.tri-evidence-archive-head small{font:10px Arial,sans-serif;color:#6a7f6e}
+.tri-evidence-archive>p{font:11px/1.6 Arial,sans-serif!important;color:#6b7a6b;margin:9px 0!important}
+.tri-evidence-archive-reports{margin-top:10px;border-top:1px solid #e4ece2}
+.tri-evidence-history-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:9px 0;border-bottom:1px solid #e9eee6;font:11px Arial,sans-serif}
+.tri-evidence-history-row>div{display:flex;flex-direction:column;gap:3px;color:#44644d}
+.tri-evidence-history-row small{font-size:10px;color:#708275}
+.tri-evidence-history-row a{display:inline-flex;align-items:center;gap:4px;color:#336c49!important;text-decoration:underline;font-weight:700}
+.tri-evidence-submit{display:inline-flex;align-items:center;gap:6px;margin-top:11px;color:#326a48!important;font:700 11px Arial,sans-serif;text-decoration:underline}
+.tri-evidence-submit svg{flex:none}
+@media(max-width:740px){.tri-report-program{padding:17px}.tri-report-program-top{align-items:flex-start;flex-direction:column;gap:12px}.tri-report-program-cta{width:100%;padding:13px}.tri-report-program-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.tri-report-program-stats>div{padding:11px 9px}.tri-report-program-stats strong{font-size:20px}.tri-report-program-stats span{font-size:10px}.tri-report-program h3{font-size:22px}.tri-report-program-method{gap:10px}}
