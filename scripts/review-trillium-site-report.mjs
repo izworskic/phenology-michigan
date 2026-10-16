@@ -19,8 +19,7 @@ export function issueSections(body){
 export function candidateFromIssue(issue,inputs,stops=STOPS,now=new Date()){
  if(issue?.state!=='OPEN' && issue?.state!=='open')throw Error('Only open intake issues can be reviewed');
  if(!Number.isSafeInteger(issue.number)||issue.number<=0)throw Error('Issue number required');
- const labels=(issue.labels||[]).map(x=>typeof x==='string'?x:x.name);
- if(!labels.includes('trillium-field-report'))throw Error('Not a trillium evidence intake issue');
+ if(typeof issue.title!=='string'||!issue.title.startsWith('[Trillium field report]'))throw Error('Issue is not a field report intake');
  const f=issueSections(issue.body);
  const preserve=f.Preserve,stop=stops.find(s=>s.name===preserve);
  if(!stop)throw Error('Unrecognized preserve selection');
@@ -39,7 +38,7 @@ export function candidateFromIssue(issue,inputs,stops=STOPS,now=new Date()){
  };
  return validateSiteRecord(raw,stops,now);
 }
-export async function verifyPublicIbis(record,request=fetch){
+export async function verifyPublicObservation(record,request=fetch){
  if(record.sourceKind!=='reviewed_observation')return true;
  const id=new URL(record.sourceUrl).pathname.split('/').at(-1);
  const response=await request('https://api.inaturalist.org/v1/observations/'+id,{headers:{Accept:'application/json'}});
@@ -58,7 +57,7 @@ async function main(){
  const inputs={reviewer:actor,stage:process.env.REVIEWED_STAGE,siteEvidenceNote:process.env.ON_SITE_REVIEW_NOTE,
    peakEvidenceNote:process.env.PEAK_REVIEW_NOTE,observationFloweringReviewed:process.env.OBSERVATION_FLOWERING_REVIEWED==='true'};
  const record=candidateFromIssue(issue,inputs,STOPS);
- await verifyPublicIbis(record);
+ await verifyPublicObservation(record);
  const existing=JSON.parse(await fs.readFile(path,'utf8')),rows=readArchive(existing,STOPS);
  if(rows.some(r=>r.issueNumber===record.issueNumber||r.siteId===record.siteId&&r.sourceUrl===record.sourceUrl))
   throw Error('Source or issue is already archived; duplicate will not count');
