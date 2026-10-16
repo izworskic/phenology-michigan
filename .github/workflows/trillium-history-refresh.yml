@@ -35,17 +35,20 @@ jobs:
               exit 1
             fi
             node scripts/refresh-trillium-history.mjs --year="$REQUESTED_YEAR"
+            node scripts/refresh-trillium-thermal.mjs --year="$REQUESTED_YEAR"
           else
             node scripts/refresh-trillium-history.mjs
+            node scripts/refresh-trillium-thermal.mjs --year="$(date -u +%Y)"
           fi
-      - name: Commit archived weekly counts
+      - name: Commit archived weekly flower and temperature records
         run: |
-          git add data/trillium-flowering-history.json
+          git add data/trillium-flowering-history.json data/trillium-thermal-history.json
           if ! git diff --cached --quiet; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git commit -m "Refresh Michigan trillium flowering history"
-            git push
+            git commit -m "Refresh Michigan trillium flowering and ERA5 spring history"
+            git pull --rebase origin main
+            git push origin HEAD:main
           else
             echo "Historical flowering archive unchanged"
           fi
