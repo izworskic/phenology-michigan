@@ -141,3 +141,67 @@ assert.match(pageV3,/Best shoreline views/);
 assert.match(pageV3,/Strongest fog setup/);
 assert.match(pageV3,/No direction-qualified/);
 console.log('Lake smoke wind direction, dual rankings, unknown-wind gates and winter safeguards passed');
+
+
+// V4: One-day-ahead issue archive only; never turn modelled weather into sightings.
+const {HISTORY_LIMIT,emptyArchive,makeIssueFromLive,updateArchive,validateArchive,historyForSite, nextDate}=await import('../lib/lakeSmokeArchive.mjs');
+assert.equal(nextDate('2026-12-31'),'2027-01-01');
+assert.equal(nextDate('2028-02-28'),'2028-02-29');
+assert.throws(()=>nextDate('2026-02-31'),/Invalid issue/);
+const issueNow=new Date('2026-10-16T12:20:00Z');
+const tomorrowPoint={
+  date:'2026-10-17',time:'2026-10-17T11:00:00.000Z',score:83,spreadC:11.5,windMph:6,
+  viewing:{status:'alongshore',windFrom:'NNW',rank:3}
+};
+const fixture={
+  generatedAt:'2026-10-16T12:15:00.000Z',
+  locations:SITES.map(s=>({
+    id:s.id,water:{time:'2026-10-15T13:00:00.000Z'},
+    forecastUpdatedAt:'2026-10-16T11:00:00.000Z',
+    iceCheck:{state:'not-checked'},outlook:{windows:[tomorrowPoint],viewWindows:[tomorrowPoint]}
+  }))
+};
+const issue=makeIssueFromLive(fixture,issueNow);
+assert.equal(issue.date,'2026-10-16');
+assert.equal(issue.targetDay,'2026-10-17');
+assert.equal(issue.available,SITES.length);
+assert.equal(issue.sites[0].next.score,83);
+assert.equal(issue.sites[0].view.windFrom,'NNW');
+assert.equal(issue.sites[0].view.drift,'alongshore');
+assert.ok(!JSON.stringify(issue).includes('confirmedSightings'),'Archive must not invent observational fields');
+assert.throws(()=>makeIssueFromLive({...fixture,locations:fixture.locations.slice(0,-1)},issueNow),/Incomplete/);
+assert.throws(()=>makeIssueFromLive({...fixture,generatedAt:'2026-10-15T08:00:00Z'},issueNow),/stale/);
+assert.throws(()=>makeIssueFromLive({...fixture,generatedAt:'2026-10-16T12:15:00Z'},new Date('2026-10-17T12:25:00Z')),/stale|another/);
+const sparse=makeIssueFromLive({...fixture,locations:fixture.locations.map(x=>({...x,outlook:{windows:[],viewWindows:[]}}))},issueNow);
+assert.equal(sparse.available,0,'Missing forecast is stored as missing, not numeric zero');
+assert.equal(sparse.sites[0].next,null);
+const appended=updateArchive(emptyArchive(),issue);
+assert.equal(appended.changed,true);
+assert.equal(appended.archive.issues.length,1);
+assert.equal(updateArchive(appended.archive,issue).changed,false,'Archives are immutable and idempotent for each local date');
+assert.equal(updateArchive(appended.archive,{...issue,sites:sparse.sites}).archive.issues[0].available,15,'Retries must not rewrite issue retrospectively');
+assert.equal(historyForSite(appended.archive,'saginaw-bay')[0].score,83);
+assert.equal(historyForSite(appended.archive,'does-not-exist').length,0);
+assert.equal(validateArchive({schemaVersion:1,kind:'forecast_issues_not_observations',issues:[issue,issue]}).issues.length,1);
+assert.equal(validateArchive(null).issues.length,0);
+const runner=readFileSync(new URL('../scripts/record-lake-smoke.mjs',import.meta.url),'utf8');
+const flow=readFileSync(new URL('../.github/workflows/lake-smoke-archive.yml',import.meta.url),'utf8');
+const archiveApi=readFileSync(new URL('../pages/api/lake-smoke-history.js',import.meta.url),'utf8');
+const historyPage=readFileSync(new URL('../pages/lake-smoke.js',import.meta.url),'utf8');
+assert.match(flow,/workflow_dispatch/);
+assert.match(flow,/schedule:/);
+assert.match(flow,/permissions:\s*\n\s+contents: write/);
+assert.match(flow,/node scripts\/record-lake-smoke\.mjs/);
+assert.match(flow,/\[skip deploy\]/);
+assert.match(runner,/makeIssueFromLive/);
+assert.match(runner,/updateArchive/);
+assert.match(archiveApi,/getGitHubJson/);
+assert.match(archiveApi,/evidenceStatus/);
+assert.match(historyPage,/Next-morning forecast archive/);
+assert.match(historyPage,/No reviewed lake-smoke sightings/);
+assert.match(historyPage,/historyForSite/);
+assert.match(historyPage,/No data/);
+const ledger=JSON.parse(readFileSync(new URL('../data/lake-smoke-observations.json',import.meta.url),'utf8'));
+assert.equal(ledger.records.length,0,'Never invent initial confirmed sightings');
+assert.ok(ledger.policy.includes('manually reviewed'));
+console.log('Lake smoke forecast-issue archive, retry protection, provenance, history display and schedule tests passed');
