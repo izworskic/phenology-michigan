@@ -14,6 +14,8 @@ assert.equal(asSpringDate('2027-04-31',2027),null);
 assert.equal(woodcockWalk('North Central Michigan Chapter Woodcock Walk'),true);
 assert.equal(woodcockWalk('Michigan Grouse & Woodcock Hunt 2027'),false);
 assert.equal(woodcockWalk('Woodcock Conservation Banquet 2027'),false);
+assert.equal(woodcockWalk('Canceled: April Woodcock Walk 2027'),false);
+assert.equal(woodcockWalk('Postponed: Spring Woodcock Sky Dance'),false);
 assert.equal(woodcockWalk('Timberdoodle Sky Dance Evening'),true);
 assert.equal(matchKnownSite('Gourdneck State Game Area, Portage'), 'gourdneck');
 const good={
