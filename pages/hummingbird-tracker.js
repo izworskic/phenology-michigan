@@ -5,6 +5,8 @@ import {Bird,Flower2,Wind,CalendarDays,MapPin,ArrowRight,CheckCircle2,AlertCircl
 import HummingbirdMap from '../components/HummingbirdMap';
 import {REGIONS,seasonState,datesFor,monthDay,readout} from '../lib/hummingbirds';
 
+const HUMMINGBIRD_PHOTO='https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/RubyThroatedHummingbird.jpg/640px-RubyThroatedHummingbird.jpg';
+const HUMMINGBIRD_CREDIT='https://commons.wikimedia.org/wiki/File:RubyThroatedHummingbird.jpg';
 const URL='https://phenology.chrisizworski.com/hummingbird-tracker';
 const TITLE='Michigan Hummingbird Arrival Tracker 2027: Migration Map & Feeder Dates';
 const DESCRIPTION='When do hummingbirds return to Michigan? Explore nine regional arrival windows, when to put feeders out, a CARTO migration map, NWS spring weather clues and clearly labeled iNaturalist sightings.';
@@ -87,7 +89,9 @@ export default function HummingbirdTracker(){
       <h1>When will the<br/><em>hummingbirds</em> arrive?</h1>
       <p className="hum-subtitle">Track spring's smallest travelers as they work north through Michigan. A local arrival window, current migration conditions, and the right day to hang your feeder.</p>
       <div className="hum-select-wrap"><label htmlFor="hum-region">YOUR MICHIGAN REGION</label><select id="hum-region" value={selected} onChange={e=>choose(e.target.value)}>{REGIONS.map(r=><option key={r.id} value={r.id}>{r.name}</option>)}</select></div>
+      <a className="hum-mobile-feeder" href="#feeder-guide" aria-label={"Your regional feeder-ready date: "+asDate(window.feeder)+", "+year+". Open feeder guide."}><CalendarDays size={20}/><span><small>PUT YOUR FEEDER OUT BY</small><strong>{asDate(window.feeder)}, {year}</strong></span><ArrowRight size={18}/></a>
       <div className="hum-chips"><span><MapPin size={14}/> 9 Michigan regions</span><span><CloudSun size={14}/> NWS weather signals</span><span><Bird size={14}/> Observations linked</span></div>
+      <figure className="hum-hero-bird"><img src={HUMMINGBIRD_PHOTO} alt="Female Ruby-throated Hummingbird drinking nectar from scarlet beebalm" width="210" height="178" decoding="async"/><figcaption>RUBY-THROATED HUMMINGBIRD</figcaption></figure>
      </div>
      <div className="hum-arrival-card">
       <div className="hum-arrival-top"><span>YOUR SPRING ARRIVAL WATCH</span><Status tone={signal.tone}>{signal.label}</Status></div>
@@ -105,7 +109,7 @@ export default function HummingbirdTracker(){
    </section>
    <div className="hum-wrap">
     <section className="hum-summary" aria-label="Tracker snapshot">
-     <div><span>SPECIES</span><b>Ruby-throated</b><small>Michigan's regular hummingbird</small></div>
+     <div className="hum-species-snapshot"><img src={HUMMINGBIRD_PHOTO} alt="Ruby-throated Hummingbird feeding on scarlet beebalm" width="74" height="74" loading="lazy" decoding="async"/><div><span>SPECIES</span><b>Ruby-throated</b><small>Michigan's regular hummingbird</small></div></div>
      <div><span>REGION</span><b>{region.name}</b><small>Forecast center · not bird location</small></div>
      <div><span>SEASON</span><b>{year} spring</b><small>{off?'Next arrival season':'Weather & observations watch'}</small></div>
      <div><span>SOURCE HEALTH</span><b>{loading?'Checking…':error?'Seasonal only':data?.observationStatus==='available'?'Sightings sampled':data?.observationStatus==='off_season'?'Off-season': 'Reports unavailable'}</b><small>{updated?'Checked '+updated+' ET':'Regional calendar always available'}</small></div>
@@ -167,12 +171,12 @@ export default function HummingbirdTracker(){
        {actual?.weather?.days?.length?<><p>{actual.weather.favorableDays} of {actual.weather.checked} upcoming daytime forecasts meet our exploratory mild + southerly-wind screen.</p>
         <div className="hum-forecast">{actual.weather.days.map(d=><div key={d.date}><b>{new Intl.DateTimeFormat('en-US',{weekday:'short',timeZone:'UTC'}).format(new Date(d.date+'T12:00:00Z'))}</b><strong>{d.highF==null?'—':d.highF+'°'}</strong><span>{d.windFrom||'—'}</span><i className={d.favorable?'yes':'no'}/></div>)}</div>
         <p className="hum-smallprint">Screen: daytime high at least 55°F, wind from S/SSE/SSW/SE/SW, and forecast wind not above 20 mph. These are <b>site-defined clues</b>, not validated hummingbird arrival thresholds.</p></>
-       :<div className="hum-empty-state"><CloudSun size={34}/><b>{off?'Migration weather monitoring returns in spring':'Regional forecast not available'}</b><p>{off?'Our forecast window opens as birds begin their northward approach. No invented October migration scores.':'The NWS forecast did not return usable data. The calendar remains available.'}</p></div>}
+       :<div className="hum-empty-state"><CloudSun size={34}/><b>{off?'Migration weather monitoring returns in spring':'Regional forecast not available'}</b><p>{off?'Our forecast window opens as birds begin their northward approach. Out-of-season migration scores are intentionally withheld.':'The NWS forecast did not return usable data. The calendar remains available.'}</p></div>}
       </article>
       <article className="hum-panel hum-signal-panel"><div className="hum-cardheading"><MiniIcon icon={Bird}/><h3>Reported hummingbirds</h3></div>
        {actual?.sightings?.length?<><p>Recent Michigan research-grade iNaturalist submissions matched to the nearest regional center. Tap a record to inspect its source.</p><div className="hum-observations">{actual.sightings.map(s=><a href={s.url} key={s.id} target="_blank" rel="noopener noreferrer"><CheckCircle2 size={17}/>Observed {asDate(s.date)} <ArrowRight size={15}/></a>)}</div></>
        :<div className="hum-empty-state"><Info size={34}/><b>{data?.observationStatus==='off_season'?'Spring observation watch paused':data?.observationStatus==='unavailable'?'Observation feed unavailable':'No observations in the sampled feed'}</b><p>There is no evidence here of a confirmed regional arrival. This does not mean birds have not arrived.</p></div>}
-       <p className="hum-smallprint">iNaturalist is community-contributed and identification quality can change. Limited to the 200 most recently observed research-grade Michigan records in the season; this sample may miss earlier arrivals. We never call these the state's first observations.</p>
+       <p className="hum-smallprint">iNaturalist is community-contributed and identification quality can change. Limited to the 400 most recently observed research-grade Michigan records in the season; this sample may miss earlier arrivals. We never call these the state's first observations.</p>
        <a className="hum-textlink" target="_blank" rel="noopener noreferrer" href="https://maps.journeynorth.org/">Explore Journey North's migration map ↗</a>
       </article>
      </div>
@@ -189,6 +193,6 @@ export default function HummingbirdTracker(){
     <section className="hum-section hum-method"><span className="hum-kicker">DATA, SCIENCE & LIMITATIONS</span><h2>What this tracker knows—and what it doesn't</h2><p>The early regional planning bands are editorial watch windows informed by Michigan Extension and Journey North context, not statistical arrival dates. The separate ten-year historical comparison is calculated from public iNaturalist research-grade observation dates and uses qualifying years with at least two independent observers. Because observer effort is uneven, the historical percentiles describe first reported sightings, not true arrival dates or prediction probabilities. The National Weather Service spring forecast supplies daytime air temperature and wind direction; the displayed movement-weather screen is a planning heuristic. iNaturalist public research-grade observations may offer independent evidence, but the live API sample is capped at 400 and biased by reporting effort. The historical dataset uses complete annual spring queries and confidence-aware regional coverage gates. Coordinates only assign reports to an approximate region—no private feeder addresses or false route lines are shown. When a source is missing or out of season, the site shows that honestly rather than filling gaps with invented sightings or probabilities.</p><ul>{SOURCES.map(([label,url])=><li key={url}><a href={url} target="_blank" rel="noopener noreferrer">{label} ↗</a></li>)}</ul></section>
    </div>
   </main>
-  <footer className="hum-footer"><div className="hum-wrap">Built by <a href="https://chrisizworski.com/chris-izworski/">Chris Izworski</a> · <a href="/">Michigan Phenology</a> · <a href="/bloom-tracker">Bloom Tracker</a> · <a href="/firefly-tracker">Firefly Tracker</a>. Independent educational tracker, not a NOAA or Cornell product.</div></footer>
+  <footer className="hum-footer"><div className="hum-wrap">Built by <a href="https://chrisizworski.com/chris-izworski/">Chris Izworski</a> · <a href="/">Michigan Phenology</a> · <a href="/bloom-tracker">Bloom Tracker</a> · <a href="/firefly-tracker">Firefly Tracker</a>. Independent educational tracker, not a NOAA or Cornell product. · Wildlife photo: <a href={HUMMINGBIRD_CREDIT} target="_blank" rel="noopener noreferrer">Joe Schneid</a> · <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener noreferrer">CC BY 3.0</a> (cropped).</div></footer>
  </div>;
 }
