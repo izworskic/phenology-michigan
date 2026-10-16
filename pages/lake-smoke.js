@@ -2,6 +2,7 @@ import Head from 'next/head';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {SITES,SOURCE_LINKS} from '../lib/lakeSmoke.mjs';
 import {rankShorelineViews,compass} from '../lib/lakeSmokeWind.mjs';
+import {historyForSite} from '../lib/lakeSmokeArchive.mjs';
 const BASE='https://phenology.chrisizworski.com';
 const CANONICAL=BASE+'/lake-smoke';
 const TITLE='Great Lakes Lake Smoke Forecast: Where & When to See Steam Fog';
@@ -15,6 +16,7 @@ const QUESTIONS=[
   ['How do ice conditions affect the lake smoke forecast?','Lake smoke requires exposed liquid water. From November through May, the tool uses NOAA GLSEA/National Ice Center local ice concentration to prevent false strong ratings. If the data are stale or missing, no score is shown. Patchy ice can limit a rating even where nearby open water remains.'],
   ['Can a shoreline webcam confirm lake smoke?','A camera can help a person check for moving wisps above exposed water, but video may be dark, unavailable or pointed toward the harbor rather than open lake. We link to original camera operators; no automated camera analysis or confirmed sightings are claimed.'],
   ['How does wind direction affect where lake smoke is visible?','A National Weather Service wind direction names the direction the wind comes from. By comparing that with an approximate bearing from the selected shore toward open lake water, the planner describes whether fog wisps may move along the shore, toward the shore, or out over the lake. These are qualitative clues, not measured fog motion or visibility guarantees.'],
+  ['Are historical forecast scores proof that lake smoke happened?','No. The archive preserves what the NOAA/NWS weather-based tool predicted for the following morning, at the time the prediction was issued. Scores are not observations, probabilities or measures of how often lake smoke actually appeared. Dated, reviewed camera or field evidence is tracked separately.'],
   ['Is it safe to watch lake smoke from a pier or boat?','Cold air outbreaks can bring dangerous waves, ice and reduced visibility. Watch from designated, open shoreline areas and always follow National Weather Service marine advisories. Avoid exposed piers and boating in hazardous conditions.']
 ];
 const dt=(value,zone='America/Detroit')=>value?new Intl.DateTimeFormat('en-US',{timeZone:zone,month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'}).format(new Date(value)):'—';
@@ -143,6 +145,67 @@ function ShorelineViewing({site}){
   </section>;
 }
 
+
+function LakeSmokeHistory({site,history,loading,error}){
+  const [days,setDays]=useState(14);
+  const all=historyForSite(history?.archive,site.id);
+  const samples=all.slice(-days);
+  const count=samples.filter(x=>x.score!=null).length;
+  const biggest=samples.filter(x=>x.score!=null).sort((a,b)=>b.score-a.score)[0]||null;
+  const evidenceReady=history?.evidenceStatus==='available';
+  const verified=evidenceReady?(history.evidence||[]).filter(e=>e.siteId===site.id):[];
+  return <section id='smoke-history' className='smoke-history' aria-label='Recorded lake smoke forecast history and independent evidence'>
+    <div className='smoke-section-line'><div><div className='smoke-overline dark'>A growing historical record</div><h2>What did the forecast say?</h2></div>
+      <p>Saved forecasts issued the previous day. This is an archive of predictions—not confirmed lake smoke or a retrospective reconstruction.</p></div>
+    <div className='smoke-history-grid'>
+      <article className='smoke-history-card'>
+        <div className='smoke-history-toolbar'>
+          <div><small className='smoke-label'>{site.name}</small><h3>Next-morning forecast archive</h3></div>
+          <div className='smoke-history-range' role='group' aria-label='Forecast history range'>
+            {[14,30,90].map(n=><button key={n} type='button' aria-pressed={days===n} onClick={()=>setDays(n)} className={days===n?'active':''}>{n} days</button>)}
+          </div>
+        </div>
+        {loading?<div className='smoke-empty'>Checking the historical forecast archive…</div>
+        :error||history?.archiveStatus==='unavailable'?<div role='status' className='smoke-empty'>Historical source temporarily unavailable. Today's NOAA/NWS forecast remains separate and unaffected.</div>
+        :all.length===0?<div className='smoke-empty'><strong>No daily forecast snapshots yet.</strong><p>The archive begins accumulating once the scheduled first daily capture succeeds. The tool will not manufacture earlier dates, numbers or sighting records.</p></div>
+        :<>
+          <div className='smoke-history-stats'>
+            <div><small>Forecast issues in view</small><strong>{samples.length}</strong></div>
+            <div><small>Scored mornings</small><strong>{count}</strong></div>
+            <div><small>Highest archived projection</small><strong>{biggest?biggest.score+'/100':'—'}</strong></div>
+          </div>
+          <div className='smoke-history-chart' role='list' aria-label={'Archived next-morning forecasts for '+site.name}>
+            {samples.map(p=><div key={p.issuedDate} className='smoke-history-entry' role='listitem' title={'Forecast issued '+p.issuedDate+' for '+p.date+(p.score!=null?' · '+p.score+'/100':' · not available')}>
+              <div className='smoke-history-chart-top'><span>{p.date.slice(5)}</span><strong>{p.score!=null?p.score:'—'}</strong></div>
+              <div className={'smoke-history-bar '+(p.score==null?'missing':p.score>=75?'high':p.score>=50?'mid':'low')}>
+                {p.score!=null&&<div style={{height:p.score+'%'}}/>}
+              </div>
+              <small>{p.score==null?'No data':p.drift==='alongshore'?'Along':p.drift==='shoreward'?'Toward':p.drift==='lakeward'?'Away':'Wind n/a'}</small>
+            </div>)}
+          </div>
+          <p className='smoke-history-foot'>Dates under each bar are the forecast <strong>target mornings</strong>; each value was issued on the previous local day. A dash means the source data were unavailable—not a 0 score or absence of fog.</p>
+        </>}
+        <div className='smoke-history-method'><strong>What this history can show:</strong> how frequently the experimental atmospheric setup index flagged favorable conditions, when ice or missing data interrupted forecasts, and whether the tool anticipated cold-air outbreaks. It cannot establish actual lake-smoke frequency or predictive accuracy without independent observations.</div>
+      </article>
+      <article className='smoke-history-card smoke-evidence-card'>
+        <div className='smoke-overline dark'>Evidence, not assumption</div><h3>Did anyone actually see it?</h3>
+        <p>A forecast is not a sighting. Only a dated, location-specific lake-smoke record that has been manually reviewed and linked to its original source can appear here.</p>
+        {loading?<div className='smoke-evidence-empty'>Checking reviewed evidence…</div>
+        :!evidenceReady?<div className='smoke-evidence-empty'>Independent evidence records are temporarily unavailable. No observation claims can be made.</div>
+        :verified.length?<div className='smoke-evidence-rows'>{verified.slice(-4).reverse().map(e=><div key={e.id} className='smoke-evidence-row'>
+            <span className='smoke-evidence-confirmed'>Reviewed observation</span><strong>{dt(e.observedAt,site.tz)}</strong>
+            <a href={e.sourceUrl} target='_blank' rel='noopener noreferrer'>View original evidence ↗</a>
+          </div>)}</div>
+        :<div className='smoke-evidence-empty'><strong>No reviewed lake-smoke sightings for this lookout yet.</strong><span>That does not mean lake smoke was absent. It means the tool has no reviewed evidence for this location.</span></div>}
+        <div className='smoke-evidence-method'><strong>Evidence rules</strong>
+          <p>Reports need a precise location, observation date/time, original photo, camera record or official source, and an independent editorial review. Generic fog reports, an unavailable webcam, and forecast scores never become confirmed sightings automatically.</p>
+          <a href='#cameras'>Find the camera sources for this shoreline ↓</a>
+        </div>
+      </article>
+    </div>
+  </section>;
+}
+
 function MorningChart({site}){
   const windows=site?.outlook?.windows||[];
   return <div className='smoke-chart'>
@@ -174,6 +237,7 @@ export default function LakeSmoke(){
   const [filter,setFilter]=useState('All lakes');
   const [ranking,setRanking]=useState('views');
   const [data,setData]=useState(null),[loading,setLoading]=useState(true),[error,setError]=useState('');
+  const [history,setHistory]=useState(null),[historyLoading,setHistoryLoading]=useState(true),[historyError,setHistoryError]=useState(false);
   useEffect(()=>{
     const fromUrl=new URLSearchParams(window.location.search).get('location');
     if(SITES.some(x=>x.id===fromUrl))setSelected(fromUrl);
@@ -181,6 +245,13 @@ export default function LakeSmoke(){
     fetch('/api/lake-smoke',{signal:controller.signal}).then(r=>{if(!r.ok)throw Error('The forecast service is temporarily unavailable');return r.json();})
       .then(json=>{setData(json);setLoading(false);})
       .catch(e=>{if(e.name!=='AbortError'){setError(e.message);setLoading(false);}});
+    return()=>controller.abort();
+  },[]);
+  useEffect(()=>{
+    const controller=new AbortController();
+    fetch('/api/lake-smoke-history',{signal:controller.signal}).then(res=>{if(!res.ok)throw Error('Historical archive unavailable');return res.json();})
+      .then(body=>{setHistory(body);setHistoryLoading(false);})
+      .catch(err=>{if(err.name!=='AbortError'){setHistoryError(true);setHistoryLoading(false);}});
     return()=>controller.abort();
   },[]);
   const choose=id=>{
@@ -208,11 +279,11 @@ export default function LakeSmoke(){
       <meta property='og:type' content='website'/><meta property='og:title' content={TITLE}/><meta property='og:description' content={DESCRIPTION}/><meta property='og:url' content={CANONICAL}/>
       <meta name='twitter:card' content='summary'/><link rel='stylesheet' href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'/><link rel='stylesheet' href='/lake-smoke.css'/>
       <script type='application/ld+json' dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}}/></Head>
-    <header className='smoke-header smoke-wrap'><a className='smoke-brand' href='/'>MICHIGAN PHENOLOGY <span> / GREAT LAKES</span></a><nav aria-label='Lake smoke navigation'><a href='#places'>Locations</a><a href='#forecast'>Forecast</a><a href='#wind-view'>Wind direction</a><a href='#cameras'>Cameras</a><a href='#science'>How it works</a></nav></header>
+    <header className='smoke-header smoke-wrap'><a className='smoke-brand' href='/'>MICHIGAN PHENOLOGY <span> / GREAT LAKES</span></a><nav aria-label='Lake smoke navigation'><a href='#places'>Locations</a><a href='#forecast'>Forecast</a><a href='#wind-view'>Wind direction</a><a href='#smoke-history'>History</a><a href='#cameras'>Cameras</a><a href='#science'>How it works</a></nav></header>
     <main>
       <section className='smoke-hero'><div className='smoke-hero-art' aria-hidden='true'><div className='smoke-sun'/><div className='smoke-horizon'/><div className='smoke-mist one'/><div className='smoke-mist two'/><div className='smoke-mist three'/></div>
         <div className='smoke-wrap smoke-hero-content'><div className='smoke-overline'>A living calendar of Great Lakes weather</div><h1>Where will the lakes <em>smoke?</em></h1><p>Cold air. Relatively warm water. A fleeting morning when the Great Lakes appear to breathe. Find the most promising conditions and know when to look.</p>
-          <div className='smoke-hero-pills'><span>15 shoreline locations</span><span>NOAA lake temperatures</span><span>NWS hourly forecasts</span><span>Seasonal ice screening</span><span>Shoreline wind direction</span></div>
+          <div className='smoke-hero-pills'><span>15 shoreline locations</span><span>NOAA lake temperatures</span><span>NWS hourly forecasts</span><span>Seasonal ice screening</span><span>Shoreline wind direction</span><span>Daily forecast archive</span></div>
         </div>
       </section>
       <div className='smoke-wrap'>
@@ -264,6 +335,7 @@ export default function LakeSmoke(){
           </div>
         </section>
         <ShorelineViewing site={picked}/>
+        <LakeSmokeHistory site={picked} history={history} loading={historyLoading} error={historyError}/>
         <section id='cameras' className='smoke-cameras' aria-label='Shoreline camera verification'>
           <div className='smoke-section-line'><div><div className='smoke-overline dark'>Before you make the drive</div><h2>Check a real shoreline view</h2></div><p>Camera sources are independently operated. They may be dark, seasonal, offline, or aimed away from open water.</p></div>
           <div className='smoke-cameras-grid'>
@@ -289,7 +361,7 @@ export default function LakeSmoke(){
           <div className='smoke-caution'><strong>Safety before photography.</strong> Lake smoke can coincide with cold outbreaks, waves, ice and rapidly changing visibility. Do not use this viewing index for boating or navigation. Check <a href='https://www.weather.gov/marine/' target='_blank' rel='noreferrer'>NWS marine forecasts</a> and local advisories.</div>
         </section>
         <section className='smoke-faq'><h2>Lake smoke questions</h2>{QUESTIONS.map(([q,a])=><details key={q}><summary>{q}</summary><p>{a}</p></details>)}</section>
-        <footer className='smoke-footer'><div><strong>Methods & data</strong><p>A transparent, experimental planning heuristic. Scores are not observed sightings or probabilities. NOAA GLSEA analyzed temperatures can be smoothed or missing under clouds; coastal readings are approximations. The engine refuses to score when water or hourly weather is missing or stale, and in November–May when local ice data are missing. NWS wind directions are interpreted as where the air comes from, and the open-water bearing is approximated from the original onshore/offshore coordinate pair. The qualitative shoreline viewing rank is separate from the atmospheric score and requires known direction and appropriate wind speed. A grid cell showing ice limits or blocks scores; the sampled condition may differ at the shoreline and may change over the 72-hour forecast.</p><div className='smoke-sources'>{SOURCE_LINKS.map(s=><a key={s.url} href={s.url} target='_blank' rel='noreferrer'>{s.name} ↗</a>)}</div></div><p>Built by <a href='https://chrisizworski.com/chris-izworski/'>Chris Izworski</a> · <a href='/'>Michigan Phenology</a> · <a href='/bloom-tracker'>Michigan Bloom Tracker</a></p></footer>
+        <footer className='smoke-footer'><div><strong>Methods & data</strong><p>A transparent, experimental planning heuristic. Scores are not observed sightings or probabilities. NOAA GLSEA analyzed temperatures can be smoothed or missing under clouds; coastal readings are approximations. The engine refuses to score when water or hourly weather is missing or stale, and in November–May when local ice data are missing. NWS wind directions are interpreted as where the air comes from, and the open-water bearing is approximated from the original onshore/offshore coordinate pair. The qualitative shoreline viewing rank is separate from the atmospheric score and requires known direction and appropriate wind speed. A grid cell showing ice limits or blocks scores; the sampled condition may differ at the shoreline and may change over the 72-hour forecast. Daily next-morning forecast issues are archived as predictions when issued; an independently reviewed source is required to claim any actual sighting.</p><div className='smoke-sources'>{SOURCE_LINKS.map(s=><a key={s.url} href={s.url} target='_blank' rel='noreferrer'>{s.name} ↗</a>)}</div></div><p>Built by <a href='https://chrisizworski.com/chris-izworski/'>Chris Izworski</a> · <a href='/'>Michigan Phenology</a> · <a href='/bloom-tracker'>Michigan Bloom Tracker</a></p></footer>
       </div>
     </main>
   </div>;
