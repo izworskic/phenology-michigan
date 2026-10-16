@@ -12,6 +12,7 @@ const current=new Date();
 const autoYear=current.getUTCMonth()>=6?current.getUTCFullYear()+1:current.getUTCFullYear();
 const year=Number(process.env.WOODCOCK_YEAR||autoYear);
 if(!Number.isInteger(year)||year<2026||year>2040)throw new Error('Year outside supported spring range');
+if(!dryRun&&year!==autoYear)throw new Error('Publishing a past or non-upcoming year is not allowed; use --dry-run to inspect it.');
 const now=current.toISOString();
 const UA='MichiganPhenology-Woodcock-Events/1.0 (+https://phenology.chrisizworski.com/woodcock-sky-dance)';
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
