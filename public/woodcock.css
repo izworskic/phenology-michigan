@@ -65,3 +65,64 @@
 @media(max-width:750px){.woodcock-container{width:min(100% - 28px,1220px)}.woodcock-nav{height:auto;min-height:66px;padding-block:15px;align-items:flex-start}.woodcock-nav nav{gap:11px;font-size:11px}.woodcock-intro h1{font-size:43px}.woodcock-hero-grid{padding:29px 0}.woodcock-flight{padding:8px}.woodcock-section,.woodcock-decision{padding-block:36px}.woodcock-section-head{display:block}.woodcock-section-head p{margin-top:8px}.woodcock-answer-grid{grid-template-columns:1fr}.woodcock-primary-card{padding:21px}.woodcock-conditions{grid-template-columns:repeat(2,1fr)}.woodcock-mini-card{padding:14px}.woodcock-chart-panel{padding:14px}.woodcock-night-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}.woodcock-night .woodcock-bar-track{height:60px}.woodcock-night-detail{display:block}.woodcock-detail-stats{margin-top:16px}.woodcock-habitat-grid,.woodcock-sounds,.woodcock-place-links{grid-template-columns:1fr}.woodcock-fieldgrid{grid-template-columns:1fr}.woodcock-offseason{display:block}.woodcock-season-months{margin-top:22px}.woodcock-region-sidebar{grid-template-columns:repeat(2,minmax(0,1fr))}.woodcock-data-status{margin-left:0}.woodcock-select-row select{min-width:0;width:100%}.woodcock-map{height:430px}}
 @media(max-width:430px){.woodcock-intro h1{font-size:38px}.woodcock-nav{display:block}.woodcock-nav nav{margin-top:12px}.woodcock-hero-tags{gap:5px}.woodcock-hero-tags span{font-size:10px}.woodcock-region-sidebar{grid-template-columns:1fr}.woodcock-night-grid{gap:5px}.woodcock-night{padding-inline:3px}.woodcock-night em{font-size:8px}.woodcock-flight-footer{font-size:9px}.woodcock-section-head h2{font-size:30px}}
 @media(prefers-reduced-motion:reduce){.woodcock-trail{animation:none}}
+
+
+/* Researched woodcock viewing atlas: access caveats are permanently visible. */
+.woodcock-hero-location-link{display:inline-flex;align-items:center;gap:8px;font:750 12px/1.5 system-ui,sans-serif;text-decoration:none;margin-top:17px;color:#ffe0bf!important;border-bottom:1px solid #ad8366;padding-bottom:4px}
+.woodcock-hero-location-link:hover{color:#fff!important}
+.woodcock-access-atlas{margin-top:28px;border-top:1px solid #dbe2df;padding-top:30px;scroll-margin-top:30px}
+.woodcock-access-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px}
+.woodcock-access-head h3{font-size:clamp(25px,2.9vw,36px);margin:9px 0 0}
+.woodcock-review-date{font:700 11px/1.5 system-ui,sans-serif;color:#5b7972;display:inline-flex;gap:7px;align-items:center;white-space:nowrap}
+.woodcock-access-lead{font:14px/1.75 system-ui,sans-serif;max-width:920px;color:#607378;margin:13px 0 21px}
+.woodcock-access-lead strong{color:#324e57}
+.woodcock-access-key{display:flex;gap:11px;flex-wrap:wrap}
+.woodcock-access-key>div{display:flex;align-items:center;gap:9px;flex:1;min-width:195px;border:1px solid #d9e2df;background:#edf2ee;border-radius:8px;padding:12px 13px;font:750 12px system-ui,sans-serif;color:#2d5159}
+.woodcock-access-key small{font-size:10px;color:#71878a;font-weight:400;display:block;margin-left:auto;text-align:right}
+.woodcock-access-key svg{flex:none;color:#a56c4f}
+.woodcock-access-dot{width:11px;height:11px;border-radius:50%;background:#53846a;box-shadow:0 0 0 3px #d2e5d7;flex:none}
+.woodcock-access-toolbar{display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap;margin-top:23px;margin-bottom:13px}
+.woodcock-access-toolbar>span{font:11px/1.5 system-ui,sans-serif;max-width:410px;display:flex;gap:7px;align-items:center;color:#708387}
+.woodcock-access-toolbar>span svg{flex:none}
+.woodcock-access-filter{display:flex;flex-wrap:wrap;gap:5px}
+.woodcock-access-filter button{border:1px solid #c7d2cd;background:#fff;border-radius:7px;cursor:pointer;color:#4c6870;font:750 11px system-ui,sans-serif;padding:9px 12px}
+.woodcock-access-filter button[aria-pressed=true]{color:#fff;background:#284651;border-color:#284651}
+.woodcock-access-layout{display:grid;grid-template-columns:minmax(260px,.73fr) minmax(0,1.27fr);gap:15px;align-items:start}
+.woodcock-access-list{display:flex;flex-direction:column;gap:7px}
+.woodcock-access-choice{display:flex;align-items:center;text-align:left;gap:10px;background:#fff;border:1px solid #d5dfda;border-radius:9px;padding:13px 12px;color:#2f4850;cursor:pointer;min-width:0}
+.woodcock-access-choice:hover{border-color:#b6876d}.woodcock-access-choice.active{background:#f7eae0;border-color:#cba78b;box-shadow:inset 3px 0 #b97854}
+.woodcock-access-number{font:800 11px Georgia,serif;color:#b57555;flex:none}
+.woodcock-access-choice-body{flex:1;min-width:0}.woodcock-access-choice-body strong{font:700 13px/1.4 system-ui,sans-serif;display:block}
+.woodcock-access-choice-body small{display:block;font:11px/1.4 system-ui,sans-serif;color:#7e9090;margin-top:4px}
+.woodcock-access-choice-body em{display:block;font:700 10px/1.4 system-ui,sans-serif;color:#986c4b;margin-top:4px;font-style:normal}
+.woodcock-access-distance{font:700 12px/1.2 Georgia,serif;color:#496b74;text-align:right;white-space:nowrap}
+.woodcock-access-distance span{font:10px system-ui,sans-serif;display:block;color:#8fa0a3}
+.woodcock-access-detail{min-width:0;background:white;border:1px solid #d7dfdd;border-radius:12px;padding:22px 23px}
+.woodcock-access-detail-heading{display:flex;gap:15px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.woodcock-access-dossier{color:#a27358;font:800 10px/1.4 system-ui,sans-serif;letter-spacing:.12em}
+.woodcock-access-detail h4{font:500 clamp(24px,2.4vw,31px)/1.15 Fraunces,Georgia,serif;letter-spacing:-.025em;margin:8px 0}
+.woodcock-access-detail-heading p{color:#74878a;font-size:12px;margin:0 0 14px}
+.woodcock-access-tag{display:inline-block;border:1px solid #c5bc9f;background:#f6f1e5;border-radius:6px;color:#796345;padding:7px 9px;font:700 10px/1.4 system-ui,sans-serif;max-width:185px}
+.woodcock-access-tag.event-only{border-color:#dfb5a5;background:#f9ebe6;color:#985f4b}
+.woodcock-access-evidence{display:flex;gap:12px;background:#edf4ef;border:1px solid #cee1d3;border-radius:9px;padding:15px;margin-top:8px;color:#365e49}
+.woodcock-access-evidence>svg{flex:none;margin-top:2px}.woodcock-access-evidence strong{font-size:13px}
+.woodcock-access-evidence p{font-size:12px;line-height:1.65;margin:6px 0;color:#547163}
+.woodcock-access-evidence a{font:700 11px system-ui,sans-serif;color:#315f53;display:inline-flex;align-items:center;gap:3px;text-underline-offset:3px}
+.woodcock-access-details-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-top:15px}
+.woodcock-access-details-grid>div{border:1px solid #e0e5e3;border-radius:8px;padding:13px}
+.woodcock-access-details-grid>div>span{display:flex;align-items:center;gap:7px;color:#46646b;font:750 11px/1.4 system-ui,sans-serif}
+.woodcock-access-details-grid p{font:12px/1.65 system-ui,sans-serif;color:#697c80;margin:8px 0 0}
+.woodcock-access-details-grid .woodcock-access-warning{background:#fff5ed;border-color:#e9c9ae}
+.woodcock-access-warning>span{color:#aa633e!important}
+.woodcock-point-disclosure{display:flex;align-items:flex-start;gap:9px;color:#7b8b8e;font:11px/1.6 system-ui,sans-serif;padding:11px 0;margin:0}
+.woodcock-point-disclosure svg{flex:none;margin-top:1px}
+.woodcock-access-links{border-top:1px solid #e1e6e2;padding-top:15px;display:flex;flex-wrap:wrap;gap:8px}
+.woodcock-access-links a{font:750 11px/1.4 system-ui,sans-serif;text-decoration:none;border:1px solid #b9c9c9;border-radius:7px;padding:10px 12px;background:#f7faf8;color:#34565f;display:inline-flex;align-items:center;gap:6px}
+.woodcock-access-links a.primary{color:white;background:#264650;border-color:#264650}
+.woodcock-access-links a:hover{background:#e8efe9}.woodcock-access-links a.primary:hover{background:#3c6368}
+.woodcock-access-fineprint{background:#f4eee5;border-left:4px solid #bd8358;color:#706b65;display:flex;gap:12px;margin-top:15px;padding:14px 17px}
+.woodcock-access-fineprint svg{color:#ac7651;flex:none;margin-top:2px}.woodcock-access-fineprint p{font:12px/1.65 system-ui,sans-serif;margin:0;max-width:1030px}
+.woodcock-venue-pin{width:39px;height:39px;display:flex;align-items:center;justify-content:center;border-radius:12px 12px 12px 3px;transform:rotate(-8deg);background:#e5b27b;color:#233c46;border:2px solid #fff4dd;font:800 14px/1 system-ui,sans-serif;box-shadow:0 3px 14px #061820aa}
+.woodcock-venue-pin.active{background:#ffdaa9;color:#182f35;box-shadow:0 0 0 5px #f3c48477,0 3px 20px #051b20ee}
+@media(max-width:1050px){.woodcock-access-layout{grid-template-columns:1fr}.woodcock-access-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.woodcock-access-detail{padding:18px}}
+@media(max-width:700px){.woodcock-access-head{display:block}.woodcock-review-date{margin-top:10px}.woodcock-access-key>div{flex-basis:100%}.woodcock-access-toolbar{display:block}.woodcock-access-toolbar>span{margin-top:10px}.woodcock-access-list{grid-template-columns:1fr}.woodcock-access-details-grid{grid-template-columns:1fr}.woodcock-access-detail-heading{display:block}.woodcock-access-tag{margin:4px 0 9px}.woodcock-map-controls{right:10px;gap:3px}.woodcock-map-controls button{font-size:10px;padding:7px}.woodcock-map-caption{font-size:9px;right:12px;bottom:35px}}
