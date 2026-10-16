@@ -6,6 +6,11 @@ on:
     # UTC timing shifts with daylight saving time. GitHub schedules can be delayed.
     - cron: '23 11 * * *'
   workflow_dispatch: {}
+  # Bootstrap the first forecast issue on initial release; does not rerun on daily data pushes.
+  push:
+    branches: [main]
+    paths:
+      - 'pages/api/lake-smoke-history.js'
 
 permissions:
   contents: write
