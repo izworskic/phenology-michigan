@@ -1,0 +1,45 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {REGIONS,isSeason,nightKey,localDate,shiftDate,assessNight,thawContext,analyzeRegion,offlineRegion} from '../lib/salamanders.mjs';
+
+assert.equal(REGIONS.length,9);
+assert.equal(new Set(REGIONS.map(r=>r.id)).size,9);
+assert.equal(isSeason(new Date('2026-10-16T12:00:00Z')),false);
+assert.equal(isSeason(new Date('2027-03-22T12:00:00Z')),true);
+assert.equal(localDate(new Date('2027-03-22T12:00:00Z')),'2027-03-22');
+assert.equal(shiftDate('2027-03-01',-1),'2027-02-28');
+assert.equal(nightKey('2027-03-22T20:00'),'2027-03-22');
+assert.equal(nightKey('2027-03-23T02:00'),'2027-03-22');
+assert.equal(nightKey('2027-03-23T09:00'),null);
+assert.ok(!REGIONS.some(r=>'pool' in r||'crossing' in r),'Do not publish pool or crossing coordinates');
+assert.equal(offlineRegion(REGIONS[0]).nights.length,0);
+assert.equal(thawContext().state,'unknown');
+const hours=(temp,pop,forecast='Rain Showers')=>Array.from({length:10},()=>({temp,pop,rainSignal:/rain|shower/i.test(forecast),snowSignal:/snow/i.test(forecast)}));
+assert.equal(assessNight(hours(44,75)).level,'strong');
+assert.equal(assessNight(hours(44,10,'Clear')).level,'dry');
+assert.equal(assessNight(hours(32,75)).level,'cold');
+assert.equal(assessNight(hours(44,75,'Snow')).level,'guarded');
+assert.equal(assessNight(hours(44,null)).level,'unknown');
+assert.equal(assessNight(hours(44,75).slice(0,2)).level,'unknown');
+const today='2027-04-10';
+const periods=[];
+for(let offset=0;offset<8;offset++)for(let hour=0;hour<24;hour++){
+ const date=shiftDate(today,offset),rain=offset===0&&hour>=18;
+ periods.push({startTime:date+'T'+String(hour).padStart(2,'0')+':00:00-04:00',temperature:rain?45:37,temperatureUnit:'F',probabilityOfPrecipitation:{value:rain?75:8},shortForecast:rain?'Rain Showers':'Partly Cloudy'});
+}
+const result=analyzeRegion(REGIONS[0],periods,new Date('2027-04-10T12:00:00Z'));
+assert.equal(result.nights.length,7);
+assert.equal(result.nights[0].level,'strong');
+assert.equal(result.best.date,today);
+assert.equal(result.thaw.state,'unknown');
+const missing=analyzeRegion(REGIONS[1],[],new Date('2027-04-10T12:00:00Z'));
+assert.equal(missing.best,null);
+assert.equal(missing.tonight.level,'unknown');
+const api=fs.readFileSync(new URL('../pages/api/salamanders.js',import.meta.url),'utf8');
+const page=fs.readFileSync(new URL('../pages/salamander-migration.js',import.meta.url),'utf8');
+const sitemap=fs.readFileSync(new URL('../pages/sitemap.xml.js',import.meta.url),'utf8');
+assert.ok(api.includes('https://api.weather.gov/points/'),'Official free NWS forecast source must be used');
+assert.ok(!api.includes('open-meteo'),'Avoid non-commercial-only hosted weather API');
+assert.ok(page.includes('rainChance')&&page.includes('SalamanderMap'),'Display real rain likelihood and regional map');
+assert.ok(sitemap.includes('/salamander-migration'),'Page must be discoverable');
+console.log('Salamander migration: spring/off-season, night boundaries, temperature/rain/weather cases, provider/privacy and page discovery passed.');

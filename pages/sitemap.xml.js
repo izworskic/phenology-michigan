@@ -5,6 +5,7 @@ function xml() {
   const MICHIGAN_LASTMOD='2026-10-14';
   const WISCONSIN_LASTMOD='2026-10-14';
   const FIREFLY_LASTMOD='2026-10-15';
+  const SALAMANDER_LASTMOD='2026-10-16';
   const HUMMINGBIRD_LASTMOD='2026-10-15';
   const TRILLIUM_LASTMOD='2026-10-15';
   const WOODCOCK_LASTMOD='2026-10-16';
@@ -26,6 +27,7 @@ function xml() {
   <url><loc>${SITE}/frog-chorus</loc><lastmod>${FROG_LASTMOD}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>${SITE}/woodcock-sky-dance</loc><lastmod>${WOODCOCK_LASTMOD}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>${SITE}/firefly-tracker</loc><lastmod>${FIREFLY_LASTMOD}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>${SITE}/salamander-migration</loc><lastmod>${SALAMANDER_LASTMOD}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>${SITE}/wisconsin-bloom-tracker</loc><lastmod>${WISCONSIN_LASTMOD}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>${SITE}/wisconsin-bloom-tracker/door-county-cherries</loc><lastmod>${WISCONSIN_LASTMOD}</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
   <url><loc>${SITE}/wisconsin-bloom-tracker/uw-arboretum</loc><lastmod>${WISCONSIN_LASTMOD}</lastmod><changefreq>weekly</changefreq><priority>0.85</priority></url>
