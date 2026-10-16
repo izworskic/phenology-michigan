@@ -21,7 +21,7 @@ function parseGlsea(json,now){
 async function waterFor(site,now){
   // Request the closest grid cell to an offshore point, not shoreline land.
   // A null/patched/old cell must never become a made-up current temperature.
-  const subset='sst[(last)][('+site.waterLat+')][('+site.waterLon+')]';
+  const subset='sst[last][('+site.waterLat+')][('+site.waterLon+')]';
   const url='https://apps.glerl.noaa.gov/erddap/griddap/GLSEA_ACSPO_GCS.json?'+encodeURIComponent(subset);
   const json=await getJson(url,4500);
   return parseGlsea(json,now);
