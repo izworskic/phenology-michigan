@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
   "kind": "reviewed_firsthand_or_camera_observations",
-  "policy": "No sighting can be inferred from a weather score, satellite temperature, a camera link, a vague fog report, or absence of reports. Only reviewed, dated and site-specific steam-fog evidence with a verifiable original source may be added. Ambiguous evidence must remain unconfirmed. This is a curated ledger, not an automated claims feed.",
+  "policy": "No sighting can be inferred from a weather score, satellite temperature, a camera link, a vague fog report, or absence of reports. Only manually reviewed, dated and site-specific steam-fog evidence with a verifiable original source may be added. Ambiguous evidence must remain unconfirmed. This is a curated ledger, not an automated claims feed.",
   "records": []
 }
