@@ -22,16 +22,49 @@ const monthWindow=(r)=>r.window;
 function Stamp({level,children}){return <span className={'sala-stamp '+tone(level)}>{children}</span>;}
 function WeatherStrip({row,off,unavailable,loading}){
  return <section className="sala-section" id="forecast">
-  <div className="sala-section-title"><div><span className="sala-overline">07-night outlook</span><h2>Which nights have the right conditions?</h2></div><p>Warmth and rainfall must overlap after dark. These bars describe predicted weather fit, not a probability of migration.</p></div>
+  <div className="sala-section-title"><div><span className="sala-overline">07-night outlook</span><h2>Which nights have the right conditions?</h2></div><p>Warmth and forecast rain should overlap after dark. Recent station snow or freezing can downgrade a near-term signal. These are not migration probabilities.</p></div>
   {!off&&row?.nights?.length?<div className="sala-night-grid">
    {row.nights.map((n,i)=><div className={'sala-night '+tone(n.level)} key={n.date}>
     <div className="sala-night-top"><span>{i===0?'Tonight':dateFmt(n.date)}</span><span className="sala-night-symbol">{n.level==='strong'?'●':n.level==='watch'?'◐':'○'}</span></div>
     <div className="sala-night-visual"><span style={{height:(n.level==='strong'?100:n.level==='watch'?71:n.level==='guarded'?43:n.level==='dry'?19:n.level==='cold'?14:8)+'%'}}/></div>
-    <strong>{n.temp==null?'—':n.temp+'°F'}</strong><small>{n.rainChance==null?'Rain n/a':n.rainChance+'% rain'}</small>
-    <span className="sala-night-caption">{n.label}</span>
+    <strong>{n.temp==null?'—':n.temp+'°F'}</strong><small>{n.rainChance==null?'Rain n/a':n.rainChance+'% rain chance'}</small>
+    <span className="sala-night-caption">{n.label}{n.thawLimited?' · Snow/freeze limited':n.thawRecheck?' · Recheck thaw':''}</span>
    </div>)}
   </div>:<div className="sala-empty"><strong>{loading?'Loading spring forecast…':off?'Forecast returns in spring':'Forecast currently unavailable'}</strong><p>{off?'We do not issue October–winter migration warnings. Explore spring timing and learn the signals so you are ready for the thaw.':unavailable?'The National Weather Service forecast is temporarily unavailable. No migration assessment is being invented.':'Actual weather readings are missing, so the app will not invent a migration outlook.'}</p></div>}
   {!off&&row?.nights?.length>0&&<div className="sala-forecast-explain"><Stamp level={row?.best?.level||'off'}>{row?.best?'Best watch: '+dateFmt(row.best.date):'No favorable rain window found'}</Stamp><p>{row?.best?.details||'This seven-night forecast does not currently contain a sustained warm-rain signal. Conditions can change quickly.'}</p></div>}
+ </section>;
+}
+function ThawEvidence({region,thaw,off}){
+ const history=(thaw?.history||[]).filter(x=>x.high!==null);
+ const snow=thaw?.latestSnow;
+ const snowLabel=!snow?'Not reported':snow.trace?'Trace':snow.inches===null?'Not reported':snow.inches+' in';
+ const stateTone=thaw?.impact==='caution'?'sala-thaw-alert':thaw?.impact==='watch'?'sala-thaw-notice':'sala-thaw-neutral';
+ return <section className="sala-section" id="thaw">
+  <div className="sala-section-title"><div><span className="sala-overline">An independent ground-thaw clue</span><h2>Did the region actually warm up?</h2></div><p>Recent observed high temperatures and reported snow depth help interpret a future rainy night. Weather stations are not vernal-pool sensors.</p></div>
+  <div className="sala-thaw-layout">
+   <div className="sala-thaw-panel">
+    <div className="sala-thaw-panel-top"><div><span className="sala-overline">Observed temperature history</span><h3>{region.name}</h3></div><span className="sala-climate-source">NOAA RCC · ACIS</span></div>
+    {off?<div className="sala-thaw-no-data">Spring station observations will appear here during March–May. No October thaw assessment is implied.</div>
+     :history.length?<div className="sala-thaw-chart" role="list" aria-label="Recently observed daily high temperatures at the regional reporting station">
+       <div className="sala-freeze-line" aria-hidden="true"><span>32°F freezing</span></div>
+       {history.map(d=>{
+        const h=Math.max(4,Math.min(100,((d.high+10)/85)*100));
+        return <div className="sala-thaw-day" key={d.date} role="listitem" aria-label={dateFmt(d.date)+': high '+d.high+' degrees Fahrenheit'}>
+         <span className="sala-thaw-high">{Math.round(d.high)}°</span><div className="sala-thaw-bar-slot"><i style={{height:h+'%'}} className={d.high<=32?'freeze':d.high>=45?'warm':'mixed'}/></div>
+         <small>{dateFmt(d.date).split(',')[0].split(' ')[0]}</small></div>;
+       })}
+      </div>:<div className="sala-thaw-no-data">Reliable recent daily high temperatures are unavailable. This is not evidence that temperatures were below freezing.</div>}
+    <p className="sala-chart-note">Daily highs are observed at a representative climate station, not under a forest canopy. Bar height depicts air temperature; the dashed line marks freezing.</p>
+   </div>
+   <div className="sala-thaw-details">
+    <div className={'sala-thaw-assessment '+stateTone}><span className="sala-overline">Thaw evidence assessment</span><h3>{off?'Returns in spring':thaw?.label||'Data unavailable'}</h3><p>{off?'Weather and thaw monitoring resumes next spring.':thaw?.detail||'No trustworthy recent station observations are available. Ground thaw must be checked independently.'}</p></div>
+    <div className="sala-thaw-metrics">
+     <div><span>Reported snow depth</span><strong>{off?'—':snowLabel}</strong><small>{!off&&snow?'As of '+snow.date+(snow.fresh?' · recent':' · older report'):'No recent station reading'}</small></div>
+     <div><span>Warm days (last 5)</span><strong>{off?'—':thaw?.temperatureDays?thaw.warmDays+'/'+thaw.temperatureDays:'—'}</strong><small>Days with high of 45°F or warmer / valid records</small></div>
+    </div>
+    <p className="sala-station-detail">Station: {off?'seasonal monitoring paused':thaw?.stationName||thaw?.station||'unavailable'}{!off&&thaw?.stationName&&thaw?.station?' ('+thaw.station+')':''}{!off&&thaw?.observedThrough?' · Latest high: '+thaw.observedThrough:''}. <a href="https://docs.rcc-acis.org/acisws/" target="_blank" rel="noreferrer">Data method</a>. Preliminary data can be delayed or revised.</p>
+   </div>
+  </div>
  </section>;
 }
 function SpringCalendar(){
@@ -50,7 +83,8 @@ export default function SalamanderMigration(){
  const unavailable=data?.status==='forecast_unavailable'||row?.season==='unavailable'||!!error;
  const regionRows=useMemo(()=>REGIONS.map(r=>data?.regions?.find(x=>x.id===r.id)||r),[data]);
  const best=row?.best,tonight=row?.tonight;
- const headline=off?'The forest is waiting for spring':unavailable?'Weather outlook unavailable':best?.level==='strong'?'Warm-rain window ahead':best?.level==='watch'?'Possible movement ahead':'Watching for the first warm rain';
+ const thawCaution=!off&&row?.nights?.some(n=>n.thawLimited);
+ const headline=off?'The forest is waiting for spring':unavailable?'Weather outlook unavailable':best?.level==='strong'?'Warm-rain window ahead':best?.level==='watch'?'Possible movement ahead':thawCaution?'Warm rain, but thaw may be delayed':'Watching for the first warm rain';
  const status=off?'Outside spring migration season':unavailable?'Forecast not available':best?.label||'No strong migration signal in seven nights';
  const updated=data?.generatedAt?new Intl.DateTimeFormat('en-US',{dateStyle:'medium',timeStyle:'short',timeZone:'America/Detroit'}).format(new Date(data.generatedAt)):null;
  const structured={'@context':'https://schema.org','@graph':[
@@ -61,14 +95,14 @@ export default function SalamanderMigration(){
  ]};
  return <div className="sala">
   <Head><title>{TITLE} | Chris Izworski</title><meta name="description" content={DESC}/><link rel="canonical" href={URL}/><meta name="robots" content="index,follow,max-image-preview:large"/><meta property="og:type" content="website"/><meta property="og:title" content={TITLE}/><meta property="og:description" content={DESC}/><meta property="og:url" content={URL}/><meta name="twitter:card" content="summary"/><link rel="stylesheet" href="/salamander-migration.css"/><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/><script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(structured)}}/></Head>
-  <header className="sala-top"><div className="sala-wrap sala-top-inner"><a href="/">MICHIGAN PHENOLOGY <span>/ SALAMANDERS</span></a><nav aria-label="Tool navigation"><a href="#forecast">7 nights</a><a href="#regions">Regional map</a><a href="#field-guide">Field guide</a><a href="/firefly-tracker">Fireflies</a></nav></div></header>
+  <header className="sala-top"><div className="sala-wrap sala-top-inner"><a href="/">MICHIGAN PHENOLOGY <span>/ SALAMANDERS</span></a><nav aria-label="Tool navigation"><a href="#forecast">7 nights</a><a href="#thaw">Thaw</a><a href="#regions">Regional map</a><a href="#field-guide">Field guide</a><a href="/firefly-tracker">Fireflies</a></nav></div></header>
   <main>
    <section className="sala-hero"><div className="sala-wrap sala-hero-layout">
-    <div><div className="sala-overline"><span className="sala-live-dot"/> Michigan's living calendar · Spring after dark</div><h1>When will the salamanders move?</h1><p className="sala-lead">A quiet forest. A warm spring rain. Then hundreds of hidden amphibians may make their way toward woodland pools. Find the nights when the weather starts to line up.</p><div className="sala-pills"><span>9 forecast regions</span><span>7-night rain & temperature</span><span>Conservation-first</span></div></div>
+    <div><div className="sala-overline"><span className="sala-live-dot"/> Michigan's living calendar · Spring after dark</div><h1>When will the salamanders move?</h1><p className="sala-lead">A quiet forest. A warm spring rain. Then hundreds of hidden amphibians may make their way toward woodland pools. Track the rain, temperature, and recent snow and thaw clues.</p><div className="sala-pills"><span>9 forecast regions</span><span>7-night rain & temperature</span><span>Conservation-first</span></div></div>
     <aside className="sala-hero-card"><span className="sala-overline">Your region · {region.name}</span><div className="sala-hero-status">{headline}</div><Stamp level={off?'off':best?.level||'unknown'}>{status}</Stamp><p>{off?'Migration generally returns with the first suitable spring thaws and rains. No current activity is implied.':best?'Next notable window: '+dateFmt(best.date)+'. '+best.details:'A suitable night needs sustained warm rain and locally thawed ground.'}</p><div className="sala-hero-meter"><span>Spring watch</span><span>{off?'Paused until spring':unavailable?'Data unavailable':'Forecast updated '+(updated||'recently')}</span></div></aside>
    </div></section>
    <div className="sala-wrap">
-    <div className="sala-trust"><strong>Forecast, not sightings.</strong> Temperature and rain likelihood are NWS forecasts for regional points. Soil thaw, breeding-pool conditions, actual movement and road crossings are unconfirmed.</div>
+    <div className="sala-trust"><strong>Forecast, not sightings.</strong> NWS temperature/rain forecasts and preliminary NOAA Regional Climate Center station observations are separate sources. Station snow depth is observed; woodland soil thaw, breeding-pool conditions, and salamander movement are not.</div>
     <section className="sala-section sala-location" id="regions"><div className="sala-section-title"><div><span className="sala-overline">Where spring is waking</span><h2>Explore Michigan's nine watch regions</h2></div><p>Select a marker or region. This map intentionally excludes individual vernal pools, animal locations, and road-crossing sites.</p></div>
      <div className="sala-layout"><div className="sala-map-panel"><SalamanderMap selected={selected} onSelect={choose} rows={data?.regions}/><div className="sala-legend"><span><i className="strong"/>Strong weather</span><span><i className="watch"/>Possible</span><span><i className="off"/>Unfavorable / off-season</span></div></div>
      <div className="sala-current">
@@ -78,7 +112,8 @@ export default function SalamanderMigration(){
       <h4>Pick another region</h4><div className="sala-region-picker">{REGIONS.map((r,i)=>{const b=regionRows[i]?.best;return <button type="button" key={r.id} className={selected===r.id?'selected':''} aria-pressed={selected===r.id} onClick={()=>choose(r.id)}><span>{r.name}</span><small>{off?'Spring planning':b?.level==='strong'?'Strong signal':b?.level==='watch'?'Possible':'No strong signal'}</small></button>;})}</div>
      </div></div>
     </section>
-    <WeatherStrip row={row} off={off} unavailable={unavailable} loading={loading}/>
+    <ThawEvidence region={region} thaw={row?.thaw} off={off}/>
+   <WeatherStrip row={row} off={off} unavailable={unavailable} loading={loading}/>
     <section className="sala-section" id="timing"><div className="sala-section-title"><div><span className="sala-overline">The spring migration clock</span><h2>Why the first rainy night matters</h2></div><p>These are broad Michigan seasonal windows, not a prediction that migration has started.</p></div>
      <SpringCalendar/><div className="sala-reasons">
       <div><span className="sala-reason-num">01</span><h3>Air above roughly 40°F</h3><p>Several hours of mild nighttime air are a common ingredient in spring amphibian movement.</p></div>
@@ -94,10 +129,10 @@ export default function SalamanderMigration(){
     </section>
     <section className="sala-section"><div className="sala-marq"><div><span className="sala-overline">Michigan conservation spotlight</span><h2>Marquette's salamander crossing</h2><p>At Presque Isle Park, the city has used seasonal nighttime closures on part of Peter White Drive to help blue-spotted salamanders migrate. Closure boundaries and dates can change: check the city’s official notices before visiting.</p><p><strong>Observe, don't chase.</strong> Respect gates, stay off closed roads unless clearly permitted, and never enter traffic to move an animal. Participate through organized conservation programs.</p><a href="https://marquettemi.gov/psa/extension-of-presque-isle-park-road-closure/" target="_blank" rel="noreferrer">Read an official Marquette closure notice →</a></div><div className="sala-marq-symbol" aria-hidden="true"><span>MARQUETTE</span><strong>SPRING<br/>NIGHTS</strong><i>WETLANDS · WILDLIFE · SAFE PASSAGE</i></div></div></section>
     <section className="sala-section"><div className="sala-section-title"><div><span className="sala-overline">Understand the signal</span><h2>What this predictor can and cannot know</h2></div></div>
-     <div className="sala-method"><div><strong>Inputs</strong><p>NWS hourly air temperature, precipitation likelihood and rain/snow wording. Nine regions are refreshed approximately every 30 minutes during March–May.</p></div><div><strong>Decision rule</strong><p>At least three hours with air above 40°F, a rain forecast and at least 55% forecast precipitation likelihood can create a strong weather signal, unless snow is also expected. These are editorial rules, not validated migration probabilities.</p></div><div><strong>Not verified</strong><p>Ground thaw, local wetland water, migrations already completed, species actually present, confirmed sightings, and road safety. A strong weather signal is never called a confirmed Big Night.</p></div></div>
+     <div className="sala-method"><div><strong>Inputs</strong><p>NWS hourly air temperature, precipitation likelihood and rain/snow wording, combined with NOAA RCC ACIS daily station high/low temperatures and reported snow depth. Nine regions refresh approximately every 30 minutes during March–May.</p></div><div><strong>Decision rule</strong><p>Warm-rain weather needs multiple overlapping hours above 40°F with rain forecast and at least 55% hourly precipitation likelihood. At least 1 inch of recent reported station snow, or repeated freezing daytime highs, caps the next three nights at 'Thaw caution'. Trace snow can cap a strong signal at 'Possible movement'. Older snow/freeze evidence is flagged for rechecking rather than used to suppress a distant forecast. These are editorial rules, not migration probabilities.</p></div><div><strong>Not verified</strong><p>Woodland ground thaw, local wetland water, migrations already completed, species actually present, confirmed sightings, and road safety. A strong weather signal is never called a confirmed Big Night.</p></div></div>
     </section>
     <section className="sala-section" id="faq"><div className="sala-section-title"><div><span className="sala-overline">Field questions</span><h2>Michigan salamander migration FAQ</h2></div></div><div className="sala-faq">{QUESTIONS.map(([q,a])=><details key={q}><summary>{q}</summary><p>{a}</p></details>)}</div></section>
-    <footer className="sala-footer"><p>Sources: <a href="https://www.michigan.gov/dnr/education/michigan-species/reptiles/lizards" target="_blank" rel="noreferrer">Michigan DNR</a> · <a href="https://michigannature.wordpress.com/2026/03/27/march-of-the-amphibians-springtime-salamander-migration-is-officially-underway/" target="_blank" rel="noreferrer">Michigan Nature Association</a> · <a href="https://extension.unh.edu/blog/2026/03/what-big-night-spring-how-can-you-help-amphibians-during-time" target="_blank" rel="noreferrer">UNH Extension</a> · <a href="https://www.weather.gov/documentation/services-web-api" target="_blank" rel="noreferrer">National Weather Service forecast</a>.</p><p>Built by <a href="https://chrisizworski.com/chris-izworski/">Chris Izworski</a> · <a href="/">Michigan Phenology</a></p></footer>
+    <footer className="sala-footer"><p>Sources: <a href="https://www.michigan.gov/dnr/education/michigan-species/reptiles/lizards" target="_blank" rel="noreferrer">Michigan DNR</a> · <a href="https://michigannature.wordpress.com/2026/03/27/march-of-the-amphibians-springtime-salamander-migration-is-officially-underway/" target="_blank" rel="noreferrer">Michigan Nature Association</a> · <a href="https://extension.unh.edu/blog/2026/03/what-big-night-spring-how-can-you-help-amphibians-during-time" target="_blank" rel="noreferrer">UNH Extension</a> · <a href="https://www.weather.gov/documentation/services-web-api" target="_blank" rel="noreferrer">National Weather Service forecast</a> · <a href="https://docs.rcc-acis.org/acisws/" target="_blank" rel="noreferrer">NOAA RCC climate stations</a>.</p><p>Built by <a href="https://chrisizworski.com/chris-izworski/">Chris Izworski</a> · <a href="/">Michigan Phenology</a></p></footer>
    </div>
   </main>
  </div>;
