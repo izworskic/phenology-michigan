@@ -64,7 +64,7 @@ assert.equal(iceAwareStatus(patchy,water,iceAssessment({percent:6},winter),siteS
 assert.equal(iceAwareStatus(null,water,iceAssessment(null,winter),null).label,'Ice map unavailable');
 assert.ok(Object.keys(CAMERAS).length>=8);
 assert.ok(Object.keys(CAMERAS).every(id=>SITES.some(x=>x.id===id)&&/^https:\/\//.test(cameraFor(id).url)),'Camera links must map to known location and use HTTPS');
-assert.equal(cameraFor('saginaw-bay'),null,'No inventing unverified Saginaw Bay webcam');
+assert.match(cameraFor('saginaw-bay')?.view||'',/NOT open water/,'The independently sourced Essexville river cam must never be presented as open Saginaw Bay');
 assert.match(api,/GL_Ice_Concentration_GCS|ICE_DATASET/);
 assert.match(api,/iceSeason\(now\)/);
 assert.match(api,/iceAdjustedOutlook/);
