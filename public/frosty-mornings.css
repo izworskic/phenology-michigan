@@ -91,3 +91,27 @@
 .fm-science-grid,.fm-compare{grid-template-columns:1fr}
 .fm-section-heading p{margin-top:9px}.fm-section{margin-bottom:40px}.fm-day-list button{grid-template-columns:100px 1fr 27px;gap:8px}.fm-hour strong{font-size:10px}
 }
+
+
+/* Sunrise timing planner: no tiles, API keys or invented melt-time estimates. */
+.fm-board-heading{font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:#537b89;font-weight:800;margin:21px 0 0!important}
+.fm-photo-plan{margin:16px 0 0;padding:22px 24px;border:1px solid #a6cbd2;border-radius:14px;background:linear-gradient(145deg,#f3faf9,#e4eef1);scroll-margin-top:20px}
+.fm-photo-plan h3{font-size:clamp(24px,2.8vw,32px);margin:6px 0}
+.fm-photo-status{display:inline-flex;align-items:center;text-align:center;background:#dde7eb;color:#426575;font:800 11px Arial,sans-serif;border-radius:99px;padding:9px 13px;min-width:140px;justify-content:center}
+.fm-photo-status.strong{background:#daf0e6;color:#1c6953}.fm-photo-status.possible{background:#fff0cd;color:#825e21}
+.fm-photo-status.low,.fm-photo-status.limited{background:#eee8da;color:#806c4c}
+.fm-photo-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:22px 0}
+.fm-photo-steps>div{background:#fff;border:1px solid #cddfe3;border-radius:11px;padding:18px 16px;min-width:0}
+.fm-photo-steps small,.fm-photo-steps strong,.fm-photo-steps span{display:block}
+.fm-photo-steps small{font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:#648793}
+.fm-photo-steps strong{font:700 clamp(20px,2.5vw,30px) Georgia,serif;color:#22495a;margin:9px 0 7px;white-space:nowrap}
+.fm-photo-steps span{font-size:11px;color:#607e87}
+.fm-photo-timeline{max-width:720px;display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:6px 0 20px;color:#557582;font-size:11px;text-align:center}
+.fm-photo-track{height:8px;grid-column:1/4;background:linear-gradient(90deg,#2c596c,#70a9ab 50%,#e3bb61);border-radius:20px;display:flex;align-items:center;justify-content:space-between;margin:2px 20px}
+.fm-photo-track i{width:13px;height:13px;display:block;background:#fff;border:3px solid #447d92;border-radius:50%}
+.fm-photo-track i:nth-child(2){border-color:#b38a34}
+.fm-photo-plan .fm-photo-why{font-size:14px;font-weight:700;color:#2a5967;margin:10px 0 7px}
+.fm-photo-plan .fm-photo-evidence{font-size:12px;color:#567480;margin:4px 0}
+.fm-photo-plan .fm-fine{font-size:11px;color:#6a8790;line-height:1.6;margin:15px 0 0}
+@media(max-width:760px){.fm-photo-steps{grid-template-columns:1fr}.fm-photo-steps>div{padding:13px 15px}.fm-photo-steps strong{font-size:25px}}
+@media(max-width:650px){.fm-photo-plan{padding:17px 15px}.fm-photo-plan .fm-section-heading{display:flex;flex-wrap:wrap;align-items:flex-start}.fm-photo-plan .fm-section-heading h3{font-size:23px}}
