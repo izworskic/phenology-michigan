@@ -333,3 +333,49 @@ assert.match(coastApi,/iceAdjustedOutlook/,'Winter ice gate remains in all pathw
 assert.match(coastPage,/NOAA daily grid source/,'Daily map provenance is explicitly labelled');
 assert.match(coastPage,/file last modified/,'Do not equate file modification time with satellite observation');
 console.log('Lake smoke NOAA direct GLSEA 1024-grid projection, Saginaw Bay, Superior, missing/old cell safety passed');
+
+
+// V7 authentic lake-smoke photo and location-specific, operator-hosted live embeds.
+const {CAMERAS:LIVE_CAMS,cameraFor:camFor,playableCamera,EMBEDDABLE_IDS}=
+  await import('../lib/lakeSmokeCameras.mjs');
+assert.deepEqual([...EMBEDDABLE_IDS].sort(),['grand-haven','marquette','saginaw-bay']);
+for(const id of EMBEDDABLE_IDS){
+  const camera=camFor(id),playable=playableCamera(camera);
+  assert.ok(playable,'Camera embed must be available for '+id);
+  assert.match(playable.embedUrl,/^https:\/\/www\.youtube-nocookie\.com\/embed\/[a-zA-Z0-9_-]{11}\?/);
+  assert.match(camera.url,/^https:\/\/www\.youtube\.com\/watch\?v=/,'Original operator watch page must be linked');
+  assert.equal(playable.kind,'youtube');
+}
+assert.equal(camFor('marquette').operator,'WZMQ 19 News');
+assert.equal(camFor('grand-haven').operator,'Grand Haven Lighthouse Conservancy');
+assert.match(camFor('saginaw-bay').view,/NOT open water/,'River cam must never be labelled as an open-bay observation');
+assert.ok(!camFor('alpena').embed,'Unverified embedded stream is intentionally withheld');
+assert.equal(playableCamera(camFor('alpena')),null,'Camera page is not necessarily an embeddable player');
+assert.equal(playableCamera({embed:{kind:'youtube',videoId:'bad'}}),null,'Invalid video IDs cannot become URLs');
+assert.equal(playableCamera({embed:{kind:'iframe',url:'https://untrusted.example'}}),null,'Arbitrary iframe hosts must not be accepted');
+assert.ok(Object.values(LIVE_CAMS).every(cam=>cam.url.startsWith('https://')),'Operator URLs must use HTTPS');
+const mediaBuild=readFileSync(new URL('../scripts/prepare-lake-smoke-media.mjs',import.meta.url),'utf8');
+const packageConfig=JSON.parse(readFileSync(new URL('../package.json',import.meta.url),'utf8'));
+assert.match(packageConfig.scripts.build,/prepare-lake-smoke-media.mjs/,'Licensed media is cached locally in production build');
+assert.match(mediaBuild,/Steaming_Lake_Michigan/,'Authentic Lake Michigan photographic source');
+assert.match(mediaBuild,/creativecommons\.org\/licenses\/by\/2\.0/,'Source license must be credited');
+assert.match(mediaBuild,/image\/jpeg/,'Build image cannot be HTML or an error page');
+assert.match(mediaBuild,/AbortSignal\.timeout/,'External photo retrieval must be bounded');
+assert.match(mediaBuild,/catch\(error\)/,'NOAA forecast deployment must not fail on a photo host outage');
+const lakePage=readFileSync(new URL('../pages/lake-smoke.js',import.meta.url),'utf8');
+const lakeCss=readFileSync(new URL('../public/lake-smoke.css',import.meta.url),'utf8');
+assert.match(lakePage,/smoke-hero-photo/);
+assert.match(lakePage,/Edward Stojakovic \/ Wikimedia Commons/);
+assert.match(lakePage,/CC BY 2\.0/);
+assert.match(lakePage,/Steam Fog/ig.test(lakePage)?/Steaming_Lake_Michigan/:/Lake Michigan/,'Photo must show genuine steam fog');
+assert.match(lakePage,/iframe key=\{player.videoId\}/,'Embed player exists within the selected camera');
+assert.match(lakePage,/allowFullScreen/,'Video player supports fullscreen viewing');
+assert.match(lakePage,/loading='lazy'/,'Heavy camera content is lazily loaded');
+assert.match(lakePage,/onClick=\{\(\)=>setPlaying\(true\)\}/,'Video requires user initiation, not autoplay on page load');
+assert.match(lakePage,/key=\{picked.id\} camera=\{picked.camera\}/,'New location resets prior camera player');
+assert.match(lakePage,/snapshotUrl/,'Still-image operator feeds can be refreshed when allowed');
+assert.match(lakePage,/camera\.operatorPage/,'Operator camera options retain original provider links');
+assert.match(lakeCss,/aspect-ratio:16\/9/,'Embeds have responsive widescreen layout');
+assert.ok(lakePage.indexOf("id='cameras'")<lakePage.indexOf('<ShorelineViewing site={picked}/>'),
+  'Embed appears near selected-location forecast, before history');
+console.log('Lake-smoke photographic hero license, local asset build, operator video security, and responsive player passed');
