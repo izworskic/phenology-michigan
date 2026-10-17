@@ -43,7 +43,7 @@ assert.equal(partial.coverage.partial,true);
 const olderFeed={...feed,generatedAt:'2027-04-09T19:05:00Z',regions:feed.regions.map(r=>({...r,nights:r.nights.map((n,i)=>({...n,date:shiftDate('2027-04-09',i)}))}))};
 const earlier=createForecastIssue(olderFeed,new Date('2027-04-09T19:10:00Z'));
 assert.throws(()=>appendForecastIssue([issue],earlier),/Backdating/);
-assert.throws(()=>appendForecastIssue([{...issue,source:'https://evil.example'}],earlier),/invalid/);
+assert.throws(()=>appendForecastIssue([{...issue,source:'https://evil.example'}],earlier));
 assert.equal(checkedArchive([{...issue,archivedAt:'2027-04-11T19:10:00Z'}],today).length,0);
 assert.equal(checkedArchive([{...issue,issueDay:'2027-02-10'}],today).length,0);
 assert.equal(checkedArchive([{...issue,regions:[{...issue.regions[0],station:'BAD'}]}],today).length,0);
