@@ -152,3 +152,63 @@
 
 .smoke-daily-source{background:#e9f3f5;border-left:3px solid #327c8d;padding:11px;border-radius:6px;color:#325967!important;line-height:1.6!important}
 .smoke-daily-source a{font-weight:700;text-decoration:underline}
+
+
+/* Real licensed steam-fog photograph: compact, readable hero, credited in-view. */
+.smoke-hero{background:#193843;min-height:365px}
+.smoke-hero-photo{display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 45%;z-index:0}
+.smoke-hero-scrim{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(6,29,39,.94) 0%,rgba(7,32,43,.86) 37%,rgba(8,38,52,.37) 72%,rgba(8,38,52,.17) 100%),linear-gradient(0deg,rgba(5,31,41,.68) 0%,transparent 45%)}
+.smoke-hero-content{padding-top:54px;padding-bottom:80px}
+.smoke-hero-photo-credit{position:absolute;z-index:3;right:max(24px,calc((100vw - 1142px)/2));bottom:11px;max-width:min(550px,calc(100% - 40px));text-align:right;font-size:10px;line-height:1.5;letter-spacing:.015em;color:#f1f4f6;background:#092b38cc;border-radius:5px;padding:5px 9px}
+.smoke-hero-photo-credit a{color:#ecf9fc;text-decoration:underline;text-underline-offset:2px;font-weight:700}
+.smoke-hero-photo-credit a:hover{color:#fff}
+.smoke-hero h1{text-shadow:0 2px 17px #102a3fa8}
+.smoke-hero-pills span{background:#18394fb8}
+@media(max-width:720px){
+  .smoke-hero{min-height:0}
+  .smoke-hero-scrim{background:linear-gradient(90deg,rgba(4,26,36,.94),rgba(8,31,43,.65)),linear-gradient(0deg,rgba(4,26,36,.65),transparent 70%)}
+  .smoke-hero-photo{object-position:60% 50%}
+  .smoke-hero-content{padding-top:36px;padding-bottom:96px}
+  .smoke-hero-photo-credit{left:15px;right:15px;text-align:left;max-width:calc(100% - 30px);font-size:9px}
+}
+
+/* Selected lookout's external-provider camera: click to load, never autoplay sound. */
+.smoke-camera-player,.smoke-camera-start{display:block;position:relative;overflow:hidden;width:100%;aspect-ratio:16/9;border:0;border-radius:10px;background:linear-gradient(135deg,#143341,#24536d)}
+.smoke-camera-player iframe,.smoke-camera-player>img{display:block;position:absolute;inset:0;width:100%;height:100%;border:0;object-fit:cover}
+.smoke-camera-start{padding:0;cursor:pointer;text-align:center;color:#fff;box-shadow:0 7px 20px #12354c23}
+.smoke-camera-start>img{display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.70)}
+.smoke-camera-start:before{content:'';position:absolute;inset:0;background:linear-gradient(0deg,#0d273bbb,transparent 55%);z-index:1}
+.smoke-camera-start:hover img{filter:brightness(.9)}
+.smoke-camera-start:focus-visible{outline:3px solid #3ba0b2;outline-offset:3px}
+.smoke-camera-play{position:absolute;z-index:2;top:50%;left:50%;transform:translate(-50%,-50%);display:inline-flex;align-items:center;gap:11px;padding:13px 19px;border-radius:9px;background:#f4faf9;color:#16465a;font-size:14px;font-weight:800;box-shadow:0 9px 25px #081f2980;white-space:nowrap}
+.smoke-camera-play>span{font-size:18px}
+.smoke-camera-player-meta{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:3px 14px;font-size:10px;line-height:1.5;color:#587885;margin:10px 0}
+.smoke-player-block{margin:15px 0 18px}
+.smoke-player-block .smoke-camera-link{margin:5px 10px 0 0}
+.smoke-camera-noembed,.smoke-camera-snapshot-empty{background:#edf4f5;border:1px dashed #b7ced5;border-radius:10px;padding:25px;display:flex;flex-direction:column;gap:10px;color:#5d7882;font-size:12px;line-height:1.65}
+.smoke-camera-noembed strong{color:#23566b;font-size:14px}
+.smoke-camera-snapshot-empty{height:100%;justify-content:center;text-align:center}
+.smoke-camera-refresh{margin:10px 0;padding:9px 13px;background:#e0eff3;border:1px solid #a9cbd3;color:#1e6177;border-radius:7px;font-weight:700;cursor:pointer}
+.smoke-camera-refresh:focus-visible{outline:2px solid #368e9f;outline-offset:2px}
+.smoke-camera-card{min-width:0}
+.smoke-cameras-grid{grid-template-columns:minmax(0,1.35fr) minmax(0,.65fr)}
+@media(max-width:900px){.smoke-cameras-grid{grid-template-columns:1fr}}
+@media(max-width:580px){.smoke-camera-card,.smoke-camera-howto{padding:16px}.smoke-camera-play{padding:11px 13px;font-size:12px}}
+
+
+/* Photo must be recognizable, not concealed by the text scrim. */
+@media(min-width:721px){
+  .smoke-hero{background:#0d2b3b}
+  .smoke-hero-photo{left:48%;right:0;width:52%;object-position:center 55%}
+  .smoke-hero-scrim{background:linear-gradient(90deg,#0a2c3bf7 0%,#0d3142f0 43%,#0c354b70 56%,transparent 70%)}
+  .smoke-hero-content{padding-right:33%;padding-top:50px;padding-bottom:81px}
+  .smoke-hero h1{max-width:690px}
+  .smoke-hero p{max-width:600px}
+}
+@media(max-width:720px){
+  .smoke-hero{background:#0a2e40}
+  .smoke-hero-photo{top:auto;bottom:0;left:0;width:100%;height:210px;object-fit:cover;object-position:center 70%}
+  .smoke-hero-content{padding-bottom:247px}
+  .smoke-hero-scrim{background:linear-gradient(180deg,#0a2e40 0%,#0a2e40 53%,#0a2e4000 72%)}
+  .smoke-hero-photo-credit{bottom:12px}
+}
