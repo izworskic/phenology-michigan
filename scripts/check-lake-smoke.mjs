@@ -279,7 +279,7 @@ assert.ok(!buoyForSite(SITES.find(s=>s.id==='monroe'),observedBuoys).sourceUrl.i
 const smokeApiV5=readFileSync(new URL('../pages/api/lake-smoke.js',import.meta.url),'utf8');
 const smokePageV5=readFileSync(new URL('../pages/lake-smoke.js',import.meta.url),'utf8');
 assert.match(smokeApiV5,/getText\(NDBC_LATEST_URL,6500\)/,'One NDBC request should be shared among all sites');
-assert.match(smokeApiV5,/glsea\|\|buoyForSite/,'Use buoy only when primary GLSEA fails');
+assert.match(smokeApiV5,/glsea\|\|direct\|\|buoyForSite/,'Use local NOAA grid before a buoy fallback');
 assert.match(smokeApiV5,/buoyBackedLocations/);
 assert.match(smokeApiV5,/iceAdjustedOutlook/,'Ice gate remains intact for buoy-backed sites');
 assert.match(smokePageV5,/NOAA buoy \{picked.water.stationId\}/);
