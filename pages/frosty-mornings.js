@@ -5,6 +5,7 @@ const URL='https://phenology.chrisizworski.com/frosty-mornings';
 const TITLE='Michigan Frosty Morning Predictor: Hoarfrost Forecast';
 const DESCRIPTION='Will tomorrow bring a frosty morning in Michigan? Compare dawn temperatures, dew points, wind and clouds in live NWS forecasts at 12 locations.';
 const QUESTIONS=[
+  ['When should I arrive to photograph frost?','Arrive near civil dawn, typically about half an hour before sunrise. Photograph the frosted branches around sunrise and just afterward. The planning window does not predict precisely when ice crystals will melt.'],
   ['What is hoarfrost?','Hoarfrost is a coating of interlocking ice crystals deposited directly from water vapor onto below-freezing objects. The word hoar comes from an old word for gray or white.'],
   ['Is hoarfrost the same as a frosty morning?','Frosty morning is the familiar general phrase. Hoarfrost is a particular type of crystalline frost. Some white surfaces are instead coated with frozen dew, snow or rime from freezing fog.'],
   ['Can frost form when the forecast low is 35°F?','Yes. Grass and exposed surfaces can radiate heat to the night sky and become colder than standard thermometer-height air. This tool does not measure actual surface temperatures.'],
@@ -22,6 +23,7 @@ const schema={'@context':'https://schema.org','@graph':[
 const day=date=>date?new Intl.DateTimeFormat('en-US',{timeZone:'UTC',weekday:'short',month:'short',day:'numeric'}).format(new Date(date+'T12:00:00Z')):'—';
 const stamp=s=>s?new Intl.DateTimeFormat('en-US',{timeZone:'America/Detroit',dateStyle:'medium',timeStyle:'short'}).format(new Date(s)):'Not available';
 const hour=h=>h==null?'—':(h%12||12)+(h>=12?' p.m.':' a.m.');
+const photoTime=(s,tz='America/Detroit')=>s?new Intl.DateTimeFormat('en-US',{timeZone:tz,hour:'numeric',minute:'2-digit'}).format(new Date(s)):'—';
 const tone=n=>n==null?'unknown':n>=75?'strong':n>=55?'possible':n>=30?'limited':'low';
 function Score({value}){return <span className={'fm-score '+tone(value)}>{value==null?'—':value}<small>{value==null?'unavailable':' / 100'}</small></span>;}
 const x=lon=>(lon+91.5)*520/10;
@@ -90,7 +92,7 @@ export default function FrostyMornings(){
     setLoading(true);setError('');setLocation(null);setMorningIndex(0);
     fetch('/api/frosty-mornings?mode=site&site='+encodeURIComponent(chosen),{signal:c.signal})
       .then(r=>{if(!r.ok)throw Error('Location forecast request failed');return r.json();})
-      .then(v=>{setLocation(v.location);setLoading(false);})
+      .then(v=>{setLocation(v.location);const idx=v.location?.mornings?.findIndex(m=>m.photo?.status!=='passed');setMorningIndex(idx>=0?idx:0);setLoading(false);})
       .catch(e=>{if(e.name!=='AbortError'){setError(e.message);setLoading(false);}});
     return ()=>c.abort();
   },[chosen]);
@@ -99,13 +101,15 @@ export default function FrostyMornings(){
   const mornings=location?.mornings||[];
   const selectedMorning=mornings[morningIndex]||mornings[0]||null;
   const scored=(board?.locations||[]).filter(s=>s.best?.score!=null).sort((a,b)=>b.best.score-a.best.score||a.name.localeCompare(b.name));
-  const missing=(board?.locations||[]).filter(s=>!s.best);
+  const photoLeaders=(board?.locations||[]).filter(s=>s.bestPhoto).sort((a,b)=>({'strong':3,'possible':2,'limited':1}[b.bestPhoto.photo.status]-{'strong':3,'possible':2,'limited':1}[a.bestPhoto.photo.status])||a.bestPhoto.date.localeCompare(b.bestPhoto.date));
+  const featured=photoLeaders.length?photoLeaders:scored;
+  const photo=selectedMorning?.photo;
   return <div className='fm-tool'>
     <Head><title>{TITLE} | Chris Izworski</title><meta name='description' content={DESCRIPTION}/><link rel='canonical' href={URL}/>
       <meta name='robots' content='index,follow,max-image-preview:large'/><meta property='og:type' content='website'/><meta property='og:title' content={TITLE}/>
       <meta property='og:description' content={DESCRIPTION}/><meta property='og:url' content={URL}/><meta name='twitter:card' content='summary'/>
       <link rel='stylesheet' href='/frosty-mornings.css'/><script type='application/ld+json' dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}}/></Head>
-    <div className='fm-top'><a href='/'>MICHIGAN PHENOLOGY</a><nav aria-label='Page sections'><a href='#forecast'>The forecast</a><a href='#places'>Michigan map</a><a href='#science'>How it works</a><a href='/lake-smoke'>Lake smoke ↗</a></nav></div>
+    <div className='fm-top'><a href='/'>MICHIGAN PHENOLOGY</a><nav aria-label='Page sections'><a href='#forecast'>The forecast</a><a href='#sunrise-guide'>Sunrise plan</a><a href='#places'>Michigan map</a><a href='#science'>How it works</a><a href='/lake-smoke'>Lake smoke ↗</a></nav></div>
     <header className='fm-hero'>
       <img className='fm-hero-image' src='https://commons.wikimedia.org/wiki/Special:FilePath/Frosty_morning%2C_tree_with_frost_covered_branches_%2848788814943%29.jpg?width=1400'
         alt='Reference photograph of a frost-covered tree from the U.S. Fish and Wildlife Service, not a current Michigan observation'/>
@@ -113,7 +117,7 @@ export default function FrostyMornings(){
       <div className='fm-wrap fm-hero-content'><div className='fm-eyebrow'>The Michigan living calendar · October through spring and beyond</div>
         <h1>Will tomorrow be a <em>frosty morning?</em></h1>
         <p>Some mornings the fields turn silver and every twig wears ice crystals. See when Michigan weather is lining up for that fleeting sight.</p>
-        <div className='fm-pills'><span>12 forecast locations</span><span>National Weather Service grids</span><span>Three upcoming dawns</span><span>Clear, calm and moist signals</span></div>
+        <div className='fm-pills'><span>12 forecast locations</span><span>National Weather Service grids</span><span>Three upcoming dawns</span><span>Sunrise photo windows</span></div>
       </div>
     </header>
     <main className='fm-wrap'>
@@ -122,8 +126,8 @@ export default function FrostyMornings(){
         <div className='fm-status-row'><div><h2>{!board&&!boardErr?'Checking forecast conditions across Michigan…':boardErr?'Regional forecasts unavailable':scored.length?'Frost-friendly weather around the state':'No locations currently qualify for a reliable ranking'}</h2>
           <p>{boardErr||'This board compares NWS forecast ingredients, not confirmed hoarfrost, live field conditions or the probability of seeing white trees.'}</p></div>
           <div className='fm-status-total'><strong>{board?scored.length:'—'} / 9</strong><small>regional forecasts with complete dawn inputs</small><small>{board?.generatedAt?'Checked '+stamp(board.generatedAt):'Waiting for source data'}</small></div></div>
-        {scored.length>0&&<div className='fm-top-three'>{scored.slice(0,3).map((s,i)=><button key={s.id} type='button' onClick={()=>{choose(s.id);document.getElementById('forecast')?.scrollIntoView({behavior:'smooth'});}}>
-          <small>#{i+1} · {day(s.best.date)}</small><strong>{s.name}</strong><div><Score value={s.best.score}/><span>{s.best.label}</span></div></button>)}</div>}
+        {featured.length>0&&<><p className='fm-board-heading'>{photoLeaders.length?'Best upcoming sunrise weather':'Available frost setups · sunrise conditions not ranked'}</p><div className='fm-top-three'>{featured.slice(0,3).map((s,i)=>{const m=s.bestPhoto||s.best;return <button key={s.id} type='button' onClick={()=>{choose(s.id);document.getElementById('forecast')?.scrollIntoView({behavior:'smooth'});}}>
+          <small>#{i+1} · {day(m.date)}</small><strong>{s.name}</strong><div><Score value={m.score}/><span>{m.photo?.label||m.label}</span></div><small>{m.photo?.sunriseAt?'Sunrise ~ '+photoTime(m.photo.sunriseAt,s.tz)+' · arrive ~ '+photoTime(m.photo.arriveAt,s.tz):'Sunrise unavailable'}</small></button>;})}</div></>}
         {board&&scored.length===0&&<p className='fm-empty'>No complete regional forecast to rank. The site does not fill weather gaps with historical averages.</p>}
       </section>
       <section id='places' className='fm-section'><div className='fm-section-heading'><div><div className='fm-eyebrow dark'>Pick your frost lookout</div><h2>Where might the landscape turn white?</h2></div>
@@ -147,13 +151,26 @@ export default function FrostyMornings(){
             </div>
             <div className='fm-panel'><span className='fm-kicker'>Morning comparison</span><h3>When conditions line up</h3>
               <div className='fm-day-list'>{mornings.length?mornings.map((m,i)=><button type='button' key={m.date} aria-pressed={morningIndex===i} className={morningIndex===i?'active':''} onClick={()=>setMorningIndex(i)}>
-                <span><strong>{day(m.date)}</strong><small>{m.bestHour!=null?'Best hour '+hour(m.bestHour):'Incomplete source data'}</small></span>
+                <span><strong>{day(m.date)}</strong><small>{m.photo?.sunriseAt?'Sunrise ~ '+photoTime(m.photo.sunriseAt):'Sunrise unavailable'}</small></span>
                 <span className='fm-day-track'><span className={tone(m.score)} style={{width:(m.score||0)+'%'}}/></span>
                 <b>{m.score==null?'—':m.score}</b>
               </button>):<div className='fm-empty'>No upcoming complete morning windows.</div>}</div>
               <small>These are comparisons from a simple weighted weather heuristic; no measured local frost is implied.</small>
             </div>
           </div>}
+        {selectedMorning&&<section id='sunrise-guide' className='fm-photo-plan' aria-label='Sunrise photography plan'>
+          <div className='fm-section-heading compact'><div><div className='fm-eyebrow dark'>Before the sunlight changes the scene</div><h3>{day(selectedMorning.date)} · sunrise photo plan</h3></div>
+            <span className={'fm-photo-status '+(photo?.status||'unavailable')}>{photo?.label||'Weather unavailable'}</span></div>
+          {photo?.sunriseAt?<><div className='fm-photo-steps'>
+            <div><small>Arrive by · civil dawn</small><strong>{photoTime(photo.arriveAt,site.tz)}</strong><span>Find your composition before sunrise</span></div>
+            <div><small>Approximate sunrise</small><strong>{photoTime(photo.sunriseAt,site.tz)}</strong><span>Calculated for {site.name}</span></div>
+            <div><small>Suggested photography window</small><strong>{photoTime(photo.windowStartAt,site.tz)}–{photoTime(photo.windowEndAt,site.tz)}</strong><span>Lighting guide, not a melting deadline</span></div>
+          </div><div className='fm-photo-timeline' role='img' aria-label='Arrival at civil dawn, sunrise, then photography shortly after sunrise'><span>Civil dawn</span><span>Sunrise</span><span>After sunrise</span><div className='fm-photo-track'><i/><i/><i/></div></div>
+          <p className='fm-photo-why'>{photo.reason}</p>
+          {photo.frostSetup!=null&&<p className='fm-photo-evidence'>Nearby forecast-grid hours: frost-setup index {photo.frostSetup}/100; average cloud cover {photo.skyCover}%. No verified frost or local camera observation.</p>}
+          </>:<p>Sunrise calculation unavailable. No timed viewing claim is possible.</p>}
+          <p className='fm-fine'>Sunrise and civil dawn are approximate sea-level calculations from NOAA solar equations. Terrain, local horizons and atmosphere may shift the visible time. Frost may disappear sooner or persist longer; the tool cannot predict melt timing.</p>
+        </section>}
         {selectedMorning&&<div className='fm-panel fm-hour-panel'><div className='fm-section-heading compact'><div><span className='fm-kicker'>The overnight ingredients</span><h3>{day(selectedMorning.date)} · dawn-hour setup</h3></div><p>{selectedMorning.explanation}</p></div>
           <HourlyChart morning={selectedMorning}/>
           <div className='fm-metric-row'>{selectedMorning.hourly?.filter(h=>h.score!==null).slice(-1).map(h=><div key={h.time}>
@@ -178,7 +195,7 @@ export default function FrostyMornings(){
         <p className='fm-caution'><strong>Forecast limitation:</strong> The score is an uncalibrated weather-suitability index, not an official NWS frost warning, not a percentage, and not an ice-crystal observation. This tool cannot identify crystal type or certify a safe road or trail. Check local weather alerts and road conditions before traveling.</p>
       </section>
       <section className='fm-section fm-faq'><h2>Frosty morning questions</h2>{QUESTIONS.map(([q,a])=><details key={q}><summary>{q}</summary><p>{a}</p></details>)}</section>
-      <footer className='fm-footer'><p><b>Sources:</b> <a href='https://www.weather.gov/documentation/services-web-api'>National Weather Service grid forecasts</a> · <a href='https://forecast.weather.gov/glossary.php?word=hoar+frost'>NWS hoarfrost definition</a> · <a href='https://www.weather.gov/source/zhu/ZHU_Training_Page/fog_stuff/Dew_Frost/Dew_Frost.htm'>NWS dew and frost forecasting</a>.</p>
+      <footer className='fm-footer'><p><b>Sources:</b> <a href='https://gml.noaa.gov/grad/solcalc/solareqns.PDF'>NOAA sunrise and twilight equations</a> · <a href='https://www.weather.gov/documentation/services-web-api'>National Weather Service grid forecasts</a> · <a href='https://forecast.weather.gov/glossary.php?word=hoar+frost'>NWS hoarfrost definition</a> · <a href='https://www.weather.gov/source/zhu/ZHU_Training_Page/fog_stuff/Dew_Frost/Dew_Frost.htm'>NWS dew and frost forecasting</a>.</p>
         <p><a href='/lake-smoke'>Great Lakes Lake Smoke Predictor</a> · <a href='/salamander-migration'>Salamander Migration</a> · <a href='/'>Michigan Phenology</a> · <a href='https://chrisizworski.com/tools/'>All outdoor tools</a></p>
         <p>Built by <a href='https://chrisizworski.com/chris-izworski/'>Chris Izworski</a>. © 2026 Chris Izworski. NWS forecasts update as fresh grids become available; this page does not claim actual current frost.</p>
       </footer>
