@@ -1,0 +1,42 @@
+name: Archive salamander forecast as issued
+on:
+  schedule:
+    # 19:05 UTC is 2–3 p.m. in Michigan during March–May, before evening movement.
+    # GitHub schedule is best-effort; skipped runs are documented as gaps, never backfilled.
+    - cron: '5 19 * 3-5 *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: salamander-forecast-issue-daily
+  cancel-in-progress: false
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm test
+      - name: Capture currently issued spring forecasts only
+        run: node scripts/archive-salamander-forecast.mjs
+      - name: Commit immutable-by-day forecast issue archive
+        run: |
+          git add data/salamander-forecast-issues.json
+          if git diff --cached --quiet; then
+            echo "Already archived current Michigan spring date; no forecast rewritten."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Freeze Michigan salamander seven-night forecast before evening"
+          git fetch origin main
+          git pull --rebase origin main
+          npm test
+          git push origin HEAD:main
