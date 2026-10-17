@@ -30,7 +30,7 @@ assert.match(api,/GLSEA_ACSPO_GCS/);
 assert.match(api,/forecastHourly/);
 assert.match(api,/value<=0\.5/,'Near-freezing or masked pixels should be rejected when open water is not verified');
 assert.match(api,/noindex, nofollow/);
-assert.match(api,/s-maxage=3600/);
+assert.match(api,/s-maxage=900/,'Fresh source data should replace cached outages within 15 minutes');
 const page=readFileSync(new URL('../pages/lake-smoke.js',import.meta.url),'utf8');
 assert.match(page,/rel='canonical'/);
 assert.match(page,/FAQPage/);
