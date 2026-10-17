@@ -41,3 +41,14 @@ The API now checks three water sources in defensible order: (1) NOAA ERDDAP per-
 ## Michigan Frosty Morning Predictor
 
 Route: `/frosty-mornings`; JSON API `/api/frosty-mornings` (`mode=board` or `mode=site&site=bay-city`). The 0–100 setup index uses NWS grid temperature, dewpoint, wind speed, and sky cover across three upcoming 4–9 a.m. Michigan dawn windows. It is *not* the probability of hoarfrost and cannot verify branch temperature, actual frost, fog, rime, or safe travel. Missing mandatory inputs prevent scores; forecasts are CDN-cached for 30 minutes. The region board compares nine representative grid points; 12 locations have detailed selections. A keyless U.S. Census shape map and credited public-domain reference photo support the page; no tile API credits are needed. Run `node scripts/check-frosty-mornings.mjs` and `npm run build` before release.
+
+
+### V7 — Authentic steam-fog hero photograph and operator webcam players
+
+The /lake-smoke hero now features a genuine photograph, *Steaming Lake Michigan* (6 January 2014), photographed by **Edward Stojakovic**, hosted by Wikimedia Commons: https://commons.wikimedia.org/wiki/File:Steaming_Lake_Michigan_(11809462446).jpg. It is published under [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/), with visible credit, link to original, license link, and note that the image is cropped for the responsive hero. No generated image is represented as a weather photograph.
+
+The build hook scripts/prepare-lake-smoke-media.mjs retrieves the legitimately licensed Commons JPEG (1280px thumbnail) during each new build and stores it under public/lake-smoke/lake-smoke-hero.jpg for local delivery. It validates JPEG bytes, type and size; network timeout/failure does not block deployment or NOAA forecasts. A Commons-hosted image fallback exists if the build-time download is unavailable.
+
+Operator YouTube players are embedded for three independently sourced lookouts: WZMQ Marquette Lower Harbor, Grand Haven Lighthouse Conservancy's Grand Haven Pier, and Essexville's Saginaw River Cam near Saginaw Bay. Essexville is explicitly a river camera, not open Saginaw Bay. The selected-location player loads after visitor presses Watch live camera, starts muted and does not continuously load fifteen streams. Original operator/player links remain if embedding fails. Other lookouts present operator links without inventing stream URLs. An optional still-image snapshot mode, with a manual refresh button and 60-second refresh while displayed, is supported for future permitted operator camera-image sources, but none are assumed without a verified direct URL and reuse permission.
+
+No change to NOAA/NWS/ice scoring, archive, maps, ads, or Person SEO identity. Regression checks are in scripts/check-lake-smoke.mjs.
