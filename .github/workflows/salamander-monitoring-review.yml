@@ -1,0 +1,135 @@
+name: Publish reviewed salamander monitoring session
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: 'Broad Michigan weather region only'
+        required: true
+        type: choice
+        options: [southeast, southwest, west, mid, saginaw-bay, northwest, northeast, central-up, western-up]
+      night:
+        description: 'Evening start of monitored night (YYYY-MM-DD), not upload date'
+        required: true
+        type: string
+      outcome:
+        description: 'What was observed DURING completed monitoring (not regional absence)'
+        required: true
+        type: choice
+        options: [movement_seen, none_encountered]
+      method:
+        description: 'Previously used repeatable, safe authorized method'
+        required: true
+        type: choice
+        options: [stationary_repeat, foot_route_repeat]
+      minutes:
+        description: 'Completed search effort in minutes (20–180)'
+        required: true
+        type: string
+      observers:
+        description: 'Number of trained/authorized active observers (1–12)'
+        required: true
+        type: string
+      completed:
+        description: 'The scheduled monitoring session was actually completed'
+        required: true
+        type: boolean
+        default: false
+      repeated:
+        description: 'Same standardized method used on multiple spring nights'
+        required: true
+        type: boolean
+        default: false
+      organization:
+        description: 'Institutional monitoring organization only; no individuals'
+        required: true
+        type: string
+      source_url:
+        description: 'Public FIRST-PARTY dated monitoring report; no map pins or site GPS'
+        required: true
+        type: string
+      source_excerpt:
+        description: 'Read original source; excerpt confirms observed result AND monitoring effort; NO site locations'
+        required: true
+        type: string
+      owner_approved:
+        description: 'Repository owner approves publication after personally reviewing original'
+        required: true
+        type: boolean
+        default: false
+      source_checked:
+        description: 'Institutional source independently confirms outcome, not an individual sighting'
+        required: true
+        type: boolean
+        default: false
+      date_checked:
+        description: 'Actual evening start date and general region confirmed'
+        required: true
+        type: boolean
+        default: false
+      effort_checked:
+        description: 'Completion, repeat method, 20–180 minute effort and observers verified'
+        required: true
+        type: boolean
+        default: false
+      privacy_checked:
+        description: 'No coordinates, pool/road site names, directions or personal information'
+        required: true
+        type: boolean
+        default: false
+permissions:
+  contents: write
+concurrency:
+  group: salamander-reviewed-monitoring
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Require original repository owner
+        env:
+          REVIEWER: ${{ github.actor }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          test "$REVIEWER" = "$OWNER" || { echo "Only repo owner may approve monitoring"; exit 1; }
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Independently validate monitored evidence
+        env:
+          REVIEW_REGION: ${{ inputs.region }}
+          REVIEW_NIGHT: ${{ inputs.night }}
+          REVIEW_OUTCOME: ${{ inputs.outcome }}
+          REVIEW_METHOD: ${{ inputs.method }}
+          REVIEW_MINUTES: ${{ inputs.minutes }}
+          REVIEW_OBSERVERS: ${{ inputs.observers }}
+          REVIEW_COMPLETED: ${{ inputs.completed }}
+          REVIEW_REPEATED: ${{ inputs.repeated }}
+          REVIEW_ORGANIZATION: ${{ inputs.organization }}
+          REVIEW_SOURCE_URL: ${{ inputs.source_url }}
+          REVIEW_SOURCE_EXCERPT: ${{ inputs.source_excerpt }}
+          REVIEW_OWNER_APPROVED: ${{ inputs.owner_approved }}
+          REVIEW_SOURCE_CHECKED: ${{ inputs.source_checked }}
+          REVIEW_DATE_CHECKED: ${{ inputs.date_checked }}
+          REVIEW_EFFORT_CHECKED: ${{ inputs.effort_checked }}
+          REVIEW_PRIVACY_CHECKED: ${{ inputs.privacy_checked }}
+        run: node scripts/review-salamander-monitoring.mjs
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Publish only reviewed monitoring if every gate passes
+        run: |
+          git add data/salamander-monitored-nights.json
+          if git diff --cached --quiet; then
+            echo "No reviewed monitoring to publish"; exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Archive owner-reviewed standardized salamander monitoring"
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "$(git rev-parse HEAD^)" || { echo "main changed; rerun review and tests on latest main"; exit 1; }
+          git push origin HEAD:main
