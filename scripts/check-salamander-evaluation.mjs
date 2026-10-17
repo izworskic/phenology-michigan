@@ -53,7 +53,7 @@ const mixed=evaluationDiagnostics([first],[
 assert.equal(mixed.pairing.reviewedSessions,11);
 assert.equal(mixed.pairing.matchedSessions,8);
 assert.equal(mixed.pairing.duplicateProgramNightExcluded,1);
-assert.equal(mixed.pairing.forecastUnknown,2);
+assert.equal(mixed.pairing.unknownForecast,2);
 assert.equal(mixed.pairing.matchedDistinctRegionNights,7);
 assert.equal(mixed.pairing.matchedDistinctPrograms>=2,true);
 assert.equal(mixed.status,'descriptive_only');
