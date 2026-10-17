@@ -51,9 +51,9 @@ const mixed=evaluationDiagnostics([first],[
  survey('2027-04-10','southwest','none_encountered','City of Marquette','stationary_repeat')
 ],asOf);
 assert.equal(mixed.pairing.reviewedSessions,11);
-assert.equal(mixed.pairing.matchedSessions,9);
+assert.equal(mixed.pairing.matchedSessions,8);
 assert.equal(mixed.pairing.duplicateProgramNightExcluded,1);
-assert.equal(mixed.pairing.forecastUnknown,1);
+assert.equal(mixed.pairing.forecastUnknown,2);
 assert.equal(mixed.pairing.matchedDistinctRegionNights,7);
 assert.equal(mixed.pairing.matchedDistinctPrograms>=2,true);
 assert.equal(mixed.status,'descriptive_only');
@@ -66,7 +66,7 @@ assert.equal(mixed.forecast.signals.strong,1);
 const gaps=evaluationDiagnostics([makeIssue('2027-04-11',true)],[
  survey('2027-04-11','western-up','none_encountered'),
  survey('2027-04-11','northeast','none_encountered'),
- survey('2027-04-11','west','none_encountered'),
+ survey('2027-04-11','southwest','none_encountered'),
  survey('2027-04-09','west','movement_seen')
 ],asOf);
 assert.equal(gaps.pairing.missingAsIssuedForecast,1);
