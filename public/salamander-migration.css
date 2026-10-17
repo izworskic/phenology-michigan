@@ -126,3 +126,27 @@
 .sala-field-independence{border-top:1px solid #49684c;margin-top:14px;padding-top:15px;font-size:11px}
 @media(max-width:910px){.sala-field-intro{align-items:flex-start;flex-direction:column}.sala-field-steps{grid-template-columns:1fr 1fr}.sala-calibration-panel{grid-template-columns:1fr}.sala-field-submit{align-self:flex-start}}
 @media(max-width:600px){.sala-field-steps{grid-template-columns:1fr;gap:9px}.sala-field-workflow{padding:17px}.sala-calibration-stats{gap:5px}.sala-calibration-stats div{padding:9px 5px}.sala-calibration-stats strong{font-size:26px}.sala-calibration-stats span{font-size:9px}.sala-historical-reports .sala-reviewed-list{grid-template-columns:1fr}.sala-field-submit{width:100%}}
+
+
+/* Standardized monitoring record: absence *during survey* versus regional absence. */
+.sala-monitoring-block{margin:22px 0;border:1px solid #526d65;border-radius:15px;background:linear-gradient(125deg,#182f28,#10241d 74%);padding:clamp(18px,3vw,29px)}
+.sala-monitoring-top{display:flex;align-items:center;justify-content:space-between;gap:22px}
+.sala-monitoring-top>div{max-width:700px}
+.sala-monitoring-top h3{font:500 clamp(24px,3vw,36px)/1.2 'Fraunces',Georgia,serif;margin:9px 0 12px;color:#e8efda}
+.sala-monitoring-block p{font:12px/1.75 system-ui,sans-serif;color:#bed1bf}
+.sala-monitoring-button{flex:0 0 auto;background:#cee6d3;border-radius:999px;padding:15px 21px;font:800 12px/1.4 system-ui,sans-serif;color:#142d22!important;text-decoration:none!important;text-align:center;min-height:48px}
+.sala-monitoring-button:hover{background:#e5f6df}
+.sala-monitoring-dashboard{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:22px 0 19px}
+.sala-monitor-stat{background:#10281e;border:1px solid #526f59;border-radius:11px;padding:15px 12px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.sala-monitor-stat.positive{border-color:#769879;background:#193a29}
+.sala-monitor-stat.zero{border-color:#748998;background:#1b303a}
+.sala-monitor-stat>span{font:700 11px/1.5 system-ui,sans-serif;color:#c4d6c6}
+.sala-monitor-stat>strong{font:500 34px/1.15 'Fraunces',Georgia,serif;color:#ebebdb}
+.sala-monitor-stat>small{font:10px/1.5 system-ui,sans-serif;color:#adc2b3}
+.sala-monitoring-bottom{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:15px;margin-bottom:19px}
+.sala-monitoring-method,.sala-monitoring-readiness{border-top:1px solid #57715c;padding-top:17px}
+.sala-monitoring-method h4{font:500 21px/1.2 'Fraunces',Georgia,serif;margin:0 0 10px}
+.sala-monitoring-readiness>strong{display:block;color:#e8cf92;font:500 20px/1.3 'Fraunces',Georgia,serif;margin:9px 0}
+.sala-monitoring-block .sala-monitoring-safety{font-size:11px;padding-top:14px;border-top:1px solid #46624d;color:#a9c0b0;margin:0}
+@media(max-width:940px){.sala-monitoring-top{flex-direction:column;align-items:flex-start}.sala-monitoring-dashboard{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.sala-monitoring-button{width:100%}.sala-monitoring-bottom{grid-template-columns:1fr}.sala-monitoring-dashboard{gap:8px}.sala-monitor-stat{padding:12px 9px}.sala-monitor-stat>strong{font-size:29px}.sala-monitoring-block{padding:17px}}
