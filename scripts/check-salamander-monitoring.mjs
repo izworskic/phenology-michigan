@@ -70,7 +70,7 @@ const api=fs.readFileSync(new URL('../pages/api/salamander-observations.js',impo
 const wf=fs.readFileSync(new URL('../.github/workflows/salamander-monitoring-review.yml',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../public/salamander-migration.css',import.meta.url),'utf8');
 assert.ok(ui.includes('Log a completed monitoring night')&&ui.includes('No movement')===false);
-assert.ok(ui.includes('form.jotform.com/262892813306057')&&ui.includes('none encountered'));
+assert.ok(ui.includes('form.jotform.com/262892813306057')&&ui.includes('None encountered'));
 assert.ok(api.includes('MONITORED')&&api.includes('monitored:readiness.monitoring'));
 assert.ok(wf.includes('github.actor')&&wf.includes('github.repository_owner')&&wf.includes('npm test')&&wf.includes('npm run build'));
 assert.ok(wf.includes('inputs.effort_checked')&&wf.includes('git push origin HEAD:main'));
