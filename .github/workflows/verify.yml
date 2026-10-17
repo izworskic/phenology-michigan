@@ -65,6 +65,8 @@ on:
       - 'public/hummingbird-tracker.css'
       - 'scripts/check-hummingbirds.mjs'
       - 'scripts/check-firefly-map.mjs'
+      - 'lib/lakeSmokeCameras.mjs'
+      - 'scripts/prepare-lake-smoke-media.mjs'
       - 'lib/lakeSmokeArchive.mjs'
       - 'lib/lakeSmoke.mjs'
       - 'lib/lakeSmokeIce.mjs'
