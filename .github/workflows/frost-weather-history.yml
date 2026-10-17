@@ -5,6 +5,12 @@ on:
     # Captures next-day forecasts and verifies previous mornings. Schedules may be delayed.
     - cron: '17 16 * * *'
   workflow_dispatch: {}
+  # Start the first genuine future forecast capture after this feature ships.
+  # Subsequent archival data-only commits do not trigger this workflow.
+  push:
+    branches: [main]
+    paths:
+      - 'pages/api/frost-history.js'
 permissions:
   contents: write
 concurrency:
