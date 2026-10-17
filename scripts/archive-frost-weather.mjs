@@ -33,10 +33,12 @@ async function issueTomorrow(site){
   if(issues.has(key(site.id,tomorrow)))return;
   try{
     const p=await point(site),grid=await get(p?.properties?.forecastGridData);
-    const issuedAt=grid?.properties?.updateTime||now.toISOString();
-    if(Date.parse(issuedAt)>now.getTime()+3600000||now.getTime()-Date.parse(issuedAt)>24*3600000)throw Error('Grid issue too stale');
+    const gridUpdatedAt=grid?.properties?.updateTime||null;
+    if(gridUpdatedAt&&(Date.parse(gridUpdatedAt)>now.getTime()+3600000||now.getTime()-Date.parse(gridUpdatedAt)>24*3600000))throw Error('NWS grid update too stale');
     const morning=evaluateGrid(grid.properties,now,site).mornings.find(m=>m.date===tomorrow);
-    const issue=forecastIssue(site,morning,issuedAt);
+    // issuedAt is the actual prospective capture timestamp, not the NWS grid's earlier update time.
+    const issue=forecastIssue(site,morning,now.toISOString());
+    if(issue)issue.sourceGridUpdatedAt=gridUpdatedAt;
     if(issue){issues.set(key(site.id,tomorrow),issue);console.log('Archived prospective',site.id,tomorrow,issue.predicted.score);}
     else console.log('No valid future forecast for',site.id,tomorrow);
   }catch(e){console.warn('No forecast archival entry',site.id,String(e));}
