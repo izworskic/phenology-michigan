@@ -4,9 +4,13 @@ import {SITES,SOURCE_LINKS} from '../lib/lakeSmoke.mjs';
 import {rankShorelineViews,compass} from '../lib/lakeSmokeWind.mjs';
 import {GREAT_LAKES} from '../lib/lakeSmokeGeography.mjs';
 import {historyForSite,easternDay} from '../lib/lakeSmokeArchive.mjs';
+import {playableCamera} from '../lib/lakeSmokeCameras.mjs';
 const BASE='https://phenology.chrisizworski.com';
 const CANONICAL=BASE+'/lake-smoke';
 const TITLE='Great Lakes Lake Smoke Forecast: Where & When to See Steam Fog';
+const HERO_LOCAL='/lake-smoke/lake-smoke-hero.jpg';
+const HERO_ORIGINAL='https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0a/Steaming_Lake_Michigan_%2811809462446%29.jpg/1280px-Steaming_Lake_Michigan_%2811809462446%29.jpg';
+const HERO_CREDIT='https://commons.wikimedia.org/wiki/File:Steaming_Lake_Michigan_(11809462446).jpg';
 const DESCRIPTION='Where will lake smoke appear on the Great Lakes? Compare cold-air and warm-water conditions, an hourly NWS viewing outlook and NOAA lake temperatures and nearby buoy fallbacks at 15 shoreline locations.';
 const QUESTIONS=[
   ['What is lake smoke?','Lake smoke, also called steam fog, occurs when cold air moves over warmer unfrozen lake water. Evaporation into the cold air can create wisps or columns of condensation that look like smoke.'],
@@ -218,6 +222,50 @@ function ShorelineViewing({site}){
 }
 
 
+
+function LakeSmokeCameraPlayer({camera}){
+  const player=playableCamera(camera);
+  const [playing,setPlaying]=useState(false);
+  const [posterFailed,setPosterFailed]=useState(false);
+  const [snapshotFailed,setSnapshotFailed]=useState(false);
+  const [refreshCount,setRefreshCount]=useState(0);
+  const [shotOn,setShotOn]=useState(false);
+  useEffect(()=>{
+    if(!camera?.snapshotUrl||!shotOn)return;
+    const id=setInterval(()=>setRefreshCount(v=>v+1),60000);
+    return()=>clearInterval(id);
+  },[camera?.snapshotUrl,shotOn]);
+  const snapshot=/^https:\/\//.test(camera?.snapshotUrl||'')?camera.snapshotUrl:null;
+  const imageLink=snapshot?(snapshot+(snapshot.includes('?')?'&':'?')+'smokeRefresh='+refreshCount):null;
+  return <div className='smoke-player-block'>
+    {player?<>
+      {playing?<div className='smoke-camera-player' role='group' aria-label={'Embedded operator live camera — '+camera.name}>
+        <iframe key={player.videoId} src={player.embedUrl+'&autoplay=1&mute=1'} title={camera.name+' — live camera, supplied by '+camera.operator}
+          allow='autoplay; encrypted-media; picture-in-picture; fullscreen'
+          referrerPolicy='strict-origin-when-cross-origin' loading='lazy' allowFullScreen/>
+      </div>:<button type='button' className='smoke-camera-start' onClick={()=>setPlaying(true)}
+        aria-label={'Play embedded '+camera.name+' camera'}>
+        {!posterFailed&&<img src={player.posterUrl} alt='' loading='lazy' onError={()=>setPosterFailed(true)}/>}
+        <span className='smoke-camera-play'><span aria-hidden='true'>▶</span> Watch live camera</span>
+      </button>}
+      <div className='smoke-camera-player-meta'><span>{playing?'Operator video player loaded':'Load camera only when selected'}</span><span>Playback may require another click or be unavailable seasonally</span></div>
+    </>:snapshot?<>
+      <div className='smoke-camera-player'>
+        {shotOn&&!snapshotFailed?<img src={imageLink} alt={'Latest operator camera still at '+camera.name} loading='lazy'
+          onError={()=>setSnapshotFailed(true)}/>:<div className='smoke-camera-snapshot-empty'>{snapshotFailed?'Operator still image unavailable. Try the original source.':'A recent operator still image can be requested below.'}</div>}
+      </div>
+      <button type='button' className='smoke-camera-refresh' onClick={()=>{setShotOn(true);setSnapshotFailed(false);setRefreshCount(x=>x+1);}}>Refresh operator snapshot</button>
+      <p className='smoke-camera-fine'>If provided by the operator, this still refreshes once per minute while displayed. Camera timestamps must be checked at source.</p>
+    </>:<div className='smoke-camera-noembed'>
+      <strong>No embeddable camera confirmed at this location.</strong>
+      <span>Use the operator's original page below. A still image or a frame from an unrelated camera would be misleading.</span>
+    </div>}
+    {camera?.url&&<a className='smoke-camera-link' href={camera.url} target='_blank' rel='noopener noreferrer'>
+      {player?'Open live stream on YouTube ↗':'Open operator camera ↗'}</a>}
+    {camera?.operatorPage&&<a className='smoke-camera-link secondary' href={camera.operatorPage} target='_blank' rel='noopener noreferrer'>More cameras from operator ↗</a>}
+  </div>;
+}
+
 function LakeSmokeHistory({site,history,loading,error}){
   const [days,setDays]=useState(14);
   const all=historyForSite(history?.archive,site.id);
@@ -351,14 +399,22 @@ export default function LakeSmoke(){
   return <div className='smoke-tool'>
     <Head><title>{TITLE} | Chris Izworski</title><meta name='description' content={DESCRIPTION}/><link rel='canonical' href={CANONICAL}/><meta name='robots' content='index,follow,max-image-preview:large'/>
       <meta property='og:type' content='website'/><meta property='og:title' content={TITLE}/><meta property='og:description' content={DESCRIPTION}/><meta property='og:url' content={CANONICAL}/>
-      <meta name='twitter:card' content='summary'/><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css'/><link rel='stylesheet' href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'/><link rel='stylesheet' href='/lake-smoke.css'/>
+      <meta name='twitter:card' content='summary_large_image'/><meta property='og:image' content={BASE+HERO_LOCAL}/><meta property='og:image:alt' content='Actual lake smoke rising from Lake Michigan during a January cold outbreak'/><meta name='twitter:image' content={BASE+HERO_LOCAL}/><link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css'/><link rel='stylesheet' href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'/><link rel='stylesheet' href='/lake-smoke.css'/>
       <script type='application/ld+json' dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}}/></Head>
     <header className='smoke-header smoke-wrap'><a className='smoke-brand' href='/'>MICHIGAN PHENOLOGY <span> / GREAT LAKES</span></a><nav aria-label='Lake smoke navigation'><a href='#places'>Locations</a><a href='#forecast'>Forecast</a><a href='#wind-view'>Wind direction</a><a href='#smoke-history'>History</a><a href='#cameras'>Cameras</a><a href='#science'>How it works</a></nav></header>
     <main>
-      <section className='smoke-hero'><div className='smoke-hero-art' aria-hidden='true'><div className='smoke-sun'/><div className='smoke-horizon'/><div className='smoke-mist one'/><div className='smoke-mist two'/><div className='smoke-mist three'/></div>
+      <section className='smoke-hero' aria-label='An actual photograph of lake smoke over Lake Michigan'>
+        <img className='smoke-hero-photo' src={HERO_LOCAL} alt='Real steam fog drifting above Lake Michigan during the January 2014 cold outbreak in Chicago' width='1280' height='960' decoding='async' fetchPriority='high' onError={event=>{
+          if(!event.currentTarget.dataset.fallback){
+            event.currentTarget.dataset.fallback='commons';
+            event.currentTarget.src=HERO_ORIGINAL;
+          }else{event.currentTarget.style.display='none';}
+        }}/>
+        <div className='smoke-hero-scrim' aria-hidden='true'/>
         <div className='smoke-wrap smoke-hero-content'><div className='smoke-overline'>A living calendar of Great Lakes weather</div><h1>Where will the lakes <em>smoke?</em></h1><p>Cold air. Relatively warm water. A fleeting morning when the Great Lakes appear to breathe. Find the most promising conditions and know when to look.</p>
           <div className='smoke-hero-pills'><span>15 shoreline locations</span><span>NOAA lake temperatures</span><span>Verified nearby buoy fallback</span><span>NWS hourly forecasts</span><span>Seasonal ice screening</span><span>Shoreline wind direction</span><span>Daily forecast archive</span></div>
         </div>
+        <div className='smoke-hero-photo-credit'><span>Actual lake smoke over Lake Michigan, January 2014 — <a href={HERO_CREDIT} target='_blank' rel='noopener noreferrer'>Edward Stojakovic / Wikimedia Commons</a>, <a href='https://creativecommons.org/licenses/by/2.0/' target='_blank' rel='noopener noreferrer'>CC BY 2.0</a> · Cropped for layout</span></div>
       </section>
       <div className='smoke-wrap'>
         <section className='smoke-status-strip' aria-label='Current forecast status'>
@@ -408,17 +464,14 @@ export default function LakeSmoke(){
             <article className='smoke-panel'><div className='smoke-overline dark'>Next 72 hours</div><h3>Morning-by-morning comparison</h3><MorningChart site={picked}/><SpreadGraph site={picked}/></article>
           </div>
         </section>
-        <ShorelineViewing site={picked}/>
-        <LakeSmokeHistory site={picked} history={history} loading={historyLoading} error={historyError}/>
         <section id='cameras' className='smoke-cameras' aria-label='Shoreline camera verification'>
-          <div className='smoke-section-line'><div><div className='smoke-overline dark'>Before you make the drive</div><h2>Check a real shoreline view</h2></div><p>Camera sources are independently operated. They may be dark, seasonal, offline, or aimed away from open water.</p></div>
+          <div className='smoke-section-line'><div><div className='smoke-overline dark'>Before you make the drive</div><h2>Watch the shoreline camera</h2></div><p>Choose a lookout for its operator-hosted live player where available. Camera feeds can be offline or pointed away from the lake.</p></div>
           <div className='smoke-cameras-grid'>
             <div className='smoke-camera-card'>
               <div className='smoke-camera-kicker'>Selected location · {picked.name}</div>
-              {picked.camera?<><h3>{picked.camera.name}</h3><p><strong>Camera operator:</strong> {picked.camera.operator}</p><p><strong>View:</strong> {picked.camera.view}</p>
+              {picked.camera?<><h3>{picked.camera.name}</h3><p><strong>Camera operator:</strong> {picked.camera.operator}</p><p><strong>View:</strong> {picked.camera.view}</p><LakeSmokeCameraPlayer key={picked.id} camera={picked.camera}/>
                 {picked.camera.note&&<p className='smoke-camera-notice'>{picked.camera.note}</p>}
-                <a className='smoke-camera-link' href={picked.camera.url} target='_blank' rel='noopener noreferrer'>Open operator camera ↗</a>
-                <p className='smoke-camera-fine'>Opens the camera operator’s website. This tool does not ingest, reproduce or automatically interpret live camera footage.</p></>
+                <p className='smoke-camera-fine'>Streams are supplied directly by their original providers in an embedded player. Playback, availability and viewing direction are not monitored or verified by this forecast tool. No footage is copied, recorded or automatically analyzed.</p></>
               :<><h3>No verified camera at this spot</h3><p>We could not confirm a public shoreline-facing camera from an original operator for this lookout. Avoid relying on unrelated city or traffic cameras as evidence of lake smoke.</p>
                 <a className='smoke-camera-link secondary' href='https://www.michigan.org/webcams' target='_blank' rel='noopener noreferrer'>Explore Michigan webcams ↗</a></>}
             </div>
@@ -429,6 +482,8 @@ export default function LakeSmoke(){
             </ol><p>A plausible camera view remains a visual clue, <strong>not a confirmed scientific observation</strong>. Check current marine advisories before going.</p></div>
           </div>
         </section>
+        <ShorelineViewing site={picked}/>
+        <LakeSmokeHistory site={picked} history={history} loading={historyLoading} error={historyError}/>
         <section id='science' className='smoke-science'>
           <div className='smoke-section-line'><div><div className='smoke-overline dark'>Why the lakes seem to breathe</div><h2>How lake smoke forms</h2></div><p>This is steam fog, not wildfire smoke and not the same setup as typical warm-air-over-cold-water fog.</p></div>
           <div className='smoke-science-grid'><div className='smoke-science-card'><span>01</span><h3>Lake stays relatively warm</h3><p>Great Lakes water loses heat slowly. When a cold front arrives, open water can be much warmer than the air above it.</p></div><div className='smoke-science-card'><span>02</span><h3>Cold air draws moisture</h3><p>Water evaporates into the colder air. Close to the surface, that moisture condenses into wisps of visible steam fog.</p></div><div className='smoke-science-card'><span>03</span><h3>Wind shapes the spectacle</h3><p>A light breeze helps move cold air across the water. Stronger wind can mix and disperse the fog, while shore geography adds uncertainty.</p></div></div>
