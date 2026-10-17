@@ -56,3 +56,34 @@ The organization source allowlist is enforced in \`lib/salamander-observations.m
 ## Cost & access
 
 Jotform collects submission records in its existing workspace; this workflow adds no paid environmental API calls, no new data warehouse, no spam-prone public GitHub issues and no third-party webhook credentials. Review and publication are deliberately manual until durable source authentication and conservation review partnerships exist. Jotform plan submission limits may apply; no guarantee of unlimited intake is made. If form availability changes, disable the public CTA rather than silently dropping data.
+
+
+## v3: completed repeat-survey monitoring (movement AND non-detection)
+
+**Public retrospective monitoring log:** https://form.jotform.com/262892813306057
+**Owner form editor:** https://www.jotform.com/build/262892813306057
+
+This is a separate form from the existing institutional movement evidence submission. It is for documented **previously performed**, safe, authorized, repeatable monitoring only. This tool does not organize public night excursions, ask anyone to enter a road, reveal pools or seek out sensitive wildlife sites, and is not formally affiliated with Michigan Vernal Pools Partnership or the Vernal Pool Patrol.
+
+### Why the model needs zero-encounter reports
+
+A missing iNaturalist sighting or absent public migration report is **not** a zero. A reviewable *none encountered* observation must document a **completed** repeatable survey from known authorized monitoring habitat, with effort (20–180 minutes, 1–12 observers), broad region, species-relevant monitoring method, the start-of-evening date, and original public institutional evidence **explicitly describing the absence of observed movement or salamanders during that completed survey**. It does not prove animals were absent from the whole region, or even from the monitored site outside the survey interval. A brief sighting of one salamander does not by itself establish a migration-positive result. Mixed/unsafe/incomplete/unrepeatable reports remain candidates for editorial consideration only; do not publish as standardized labels.
+
+### Editorial intake and archival policy
+
+1. The public Jotform collects coarse location, outcome, effort, authorized repeated monitoring design, original institutional source and privacy attestation in the existing owner-accessible account. Jotform remains the owner-side private queue. No public webhook or auto-promotion is configured, and no submitter email/name/GPS/photo is requested.
+2. Original institutional article/monitoring log must be independently opened and checked by the repository owner. The form submission is *not* its own evidence. Check outcome explicitly documented in original source, actual evening date, safe method, completion, repeated survey design, monitoring effort, program identity and privacy. No exact pool, crossing, route, coordinates, sensitive location, visitor name or on-page directional clues may be copied into publication.
+3. GitHub Actions → **Publish reviewed salamander monitoring session** → Run workflow; choose region, evening date, movement seen vs. none encountered, method, completed effort, observers, approved original institutional URL, original excerpt, and all independent review attestation switches. The backend rejects missing checks, unsupported hostnames, ambiguous outcomes, dates outside Mar–May, insufficient effort, duplicate region+program+night+protocol and location-bearing details.
+4. Full repository tests and site build must pass before the owner workflow commits only \`data/salamander-monitored-nights.json\` to \`main\`, triggering the existing Vercel production pipeline. An originally empty archive is **intentional**. Never seed fabricated zero or positive nights.
+5. Server API serves **aggregate** reviewed sessions, zero encounters, observed movement, coverage years, sampled regions, observer-minutes and no specific nightly sites/URLs/observer identities. Never derive a regional negative label from a no-encounter session. Repeated surveys at individual habitats require independent sampling design; even multiple published zeros do not mean region-wide absence.
+6. Existing \`data/salamander-migration-reports.json\` holds source-reviewed **positive-only public institutional movement reports**, and iNaturalist contains species sightings. These evidence classes remain distinct. \`fieldEvidenceReadiness\` now shows both ledgers without allowing positives-only cases to look like model calibration.
+
+### What would be necessary for real prediction validation
+
+Record the **forecast as issued before target night** (not reconstructed from hindsight), observation sampling design and repeated habitat protocols, zero-encounter effort and confirmed movement, sample selection and any opportunistic bias, and then evaluate on independent held-out seasons and sites with detection sensitivity. The new dashboard shows counts but **no predictive skill**. There is currently no archived, timestamped seven-night forecast history linked to monitored sessions. Even large records will not automatically declare the existing model calibrated.
+
+### References
+
+- Michigan Vernal Pools Partnership community-science monitoring: https://mivernalpools.com/
+- Pool safety, hygiene and habitat protection: https://mivernalpools.com/menus/vp-management-and-protection-recommendations.html
+- This tool is independent of the Partnership. Any actual participation or partner data arrangement requires explicit organization involvement, not just linking its website.
