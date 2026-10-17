@@ -285,3 +285,51 @@ assert.match(smokeApiV5,/iceAdjustedOutlook/,'Ice gate remains intact for buoy-b
 assert.match(smokePageV5,/NOAA buoy \{picked.water.stationId\}/);
 assert.match(smokePageV5,/picked.water.scope/);
 console.log('Lake smoke live NOAA buoy fallback same-lake, distance, age, provenance and ice source gates passed');
+
+
+// Direct NOAA CoastWatch GLSEA full-resolution daily raster, independent of ERDDAP.
+const {sampleDailyGlsea,NOAA_GLSEA_ASCII_URL,NOAA_GLSEA_ASCII_MAX_BYTES,MAX_OFFSET_KM}=
+  await import('../lib/lakeSmokeGlseaAscii.mjs');
+assert.equal(NOAA_GLSEA_ASCII_URL,'https://apps.glerl.noaa.gov/coastwatch/webdata/glsea/cur/glsea_cur.asc');
+assert.ok(NOAA_GLSEA_ASCII_MAX_BYTES>=8000000 && NOAA_GLSEA_ASCII_MAX_BYTES<=12000000);
+const directNow=new Date('2026-10-17T12:00:00Z'),modified='Sat, 17 Oct 2026 10:50:00 GMT';
+const xll=-10288921.955,yll=4676874.158,cell=1800;
+const position=site=>{
+ const x=6378137*site.waterLon*Math.PI/180;
+ const y=6378137*Math.log(Math.tan(Math.PI/4+site.waterLat*Math.PI/360));
+ return {col:Math.floor((x-xll)/cell),row:1023-Math.floor((y-yll)/cell)};
+};
+const rowBlank=' 255.000'.repeat(1024);
+const dailyLines=Array(1024).fill(rowBlank);
+for(const [id,temp] of [['saginaw-bay','12.700'],['marquette','8.900'],['alpena','13.200'],['tawas','12.300']]){
+ const p=position(SITES.find(s=>s.id===id));
+ assert.ok(p.col>0&&p.col<1024&&p.row>0&&p.row<1024);
+ const cols=dailyLines[p.row].trim().split(/\s+/);
+ cols[p.col]=temp;
+ dailyLines[p.row]=' '+cols.join(' ');
+}
+const dailyText=['ncols 1024','nrows 1024','xllcorner '+xll,'yllcorner '+yll,'cellsize '+cell,'NODATA_value -9999.0',...dailyLines].join('\n')+'\n';
+const direct=sampleDailyGlsea(dailyText,SITES,modified,directNow);
+assert.equal(direct['saginaw-bay']?.c,12.7,'A real Saginaw Bay offshore pixel must be recoverable');
+assert.equal(direct['marquette']?.c,8.9,'A Lake Superior offshore pixel must be recoverable');
+assert.equal(direct['alpena']?.c,13.2,'A Lake Huron offshore pixel must be recoverable');
+assert.equal(direct['tawas']?.c,12.3,'A second Huron offshore cell must be recoverable');
+assert.equal(direct['frankfort'],undefined,'Masked water pixels must remain unavailable');
+assert.equal(direct['saginaw-bay'].fromDailyGrid,true);
+assert.equal(direct['saginaw-bay'].sourceUrl,NOAA_GLSEA_ASCII_URL);
+assert.match(direct['saginaw-bay'].timestampType,/not a satellite overpass/);
+assert.ok(direct['saginaw-bay'].gridOffsetKm<MAX_OFFSET_KM);
+assert.throws(()=>sampleDailyGlsea(dailyText,SITES,'Sat, 10 Oct 2026 10:00:00 GMT',directNow),/stale/);
+assert.throws(()=>sampleDailyGlsea(dailyText,SITES,null,directNow),/lacks date/);
+assert.throws(()=>sampleDailyGlsea(dailyText.slice(0,6000),SITES,modified,directNow),/truncated/);
+assert.throws(()=>sampleDailyGlsea(dailyText.replace('cellsize 1800','cellsize 999'),SITES,modified,directNow),/geometry/);
+assert.throws(()=>sampleDailyGlsea(dailyText.replace('ncols 1024','ncols 512'),SITES,modified,directNow),/geometry/);
+const coastApi=readFileSync(new URL('../pages/api/lake-smoke.js',import.meta.url),'utf8');
+const coastPage=readFileSync(new URL('../pages/lake-smoke.js',import.meta.url),'utf8');
+assert.match(coastApi,/fetchDailyGlsea\(SITES,now\)/,'Exactly one shared daily GLSEA request');
+assert.match(coastApi,/glsea\|\|direct\|\|buoyForSite/,'Original ERDDAP pixel first, full NOAA raster second, local buoy third');
+assert.match(coastApi,/dailyGridBackedLocations/);
+assert.match(coastApi,/iceAdjustedOutlook/,'Winter ice gate remains in all pathways');
+assert.match(coastPage,/NOAA daily grid source/,'Daily map provenance is explicitly labelled');
+assert.match(coastPage,/file last modified/,'Do not equate file modification time with satellite observation');
+console.log('Lake smoke NOAA direct GLSEA 1024-grid projection, Saginaw Bay, Superior, missing/old cell safety passed');
