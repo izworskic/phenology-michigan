@@ -73,6 +73,26 @@ export default function SalamanderObservations({selected}){
    :<p className="sala-history-empty">Historical archive: no independently reviewed movement records yet. An empty record is not evidence that salamanders did not migrate in earlier years.</p>}
    <p className="sala-field-independence">This is an independent educational tool, not an official reporting program of the Michigan Vernal Pools Partnership or participating organizations. For formal vernal-pool research and monitoring, use the <a href="https://mivernalpools.com/" target="_blank" rel="noreferrer">Michigan Vernal Pools Partnership</a>.</p>
   </div>
+  <section className="sala-monitoring-block" id="night-monitoring" aria-labelledby="sala-monitor-title">
+    <div className="sala-monitoring-top"><div>
+      <span className="sala-overline">A missing report is not a quiet night</span>
+      <h3 id="sala-monitor-title">Measure the nights people checked.</h3>
+      <p>We need both monitored movement and completed watches where no salamanders were encountered. These are specific surveys, not regional absence claims. Nothing submitted goes public without separate original-source review.</p>
+    </div>
+    <a className="sala-monitoring-button" href="https://form.jotform.com/262892813306057" target="_blank" rel="noreferrer">Log a completed monitoring night ↗</a>
+    </div>
+    <div className="sala-monitoring-dashboard">
+      <div className="sala-monitor-stat"><span>Reviewed monitoring sessions</span><strong>{readiness?.monitoring?.sessions??'—'}</strong><small>Completed, source-checked surveys only</small></div>
+      <div className="sala-monitor-stat positive"><span>Movement encountered</span><strong>{readiness?.monitoring?.withMovement??'—'}</strong><small>During recorded monitoring effort</small></div>
+      <div className="sala-monitor-stat zero"><span>None encountered</span><strong>{readiness?.monitoring?.withNoEncounters??'—'}</strong><small>Not evidence of region-wide absence</small></div>
+      <div className="sala-monitor-stat"><span>Observer-hours logged</span><strong>{readiness?.monitoring?Math.round(readiness.monitoring.observerMinutes/60):'—'}</strong><small>Observers × completed minutes</small></div>
+    </div>
+    <div className="sala-monitoring-bottom">
+      <div className="sala-monitoring-method"><h4>What counts as useful monitoring?</h4><p>A completed, repeatable watch by authorized observers, with recorded duration, effort, a documented movement or zero-encounter result, and a source that the editor independently checks. A casual sighting or skipped night does not meet this standard.</p></div>
+      <div className="sala-monitoring-readiness"><span className="sala-overline">Model verification status</span><strong>Collecting evidence · Not calibrated</strong><p>There is no archive of forecasts frozen before their target night and no held-out comparison across monitoring seasons. The seven-night tool remains a weather-and-thaw guide, not a validated chance of salamander migration.</p></div>
+    </div>
+    <p className="sala-monitoring-safety">For already-authorized monitoring only. Never enter traffic, trespass, move animals, disturb woodland pools, or publish sensitive habitat locations. This is an independent reporting initiative, not the Michigan Vernal Pools Partnership's official monitoring program.</p>
+  </section>
   <div className="sala-evidence-privacy">
    <div><strong>Privacy first</strong><p>No individual observation pins, locations, crossing coordinates, photo metadata or observer identities are returned by this tool. Regional summaries hide small samples, and protected/obscured observations are not used to assign a region.</p></div>
    <div><strong>View original species research</strong><p>Explore the official Michigan <a href="https://www.inaturalist.org/observations?place_id=29&taxon_name=Ambystoma%20maculatum&quality_grade=research" target="_blank" rel="noreferrer">spotted salamander</a> and <a href="https://www.inaturalist.org/observations?place_id=29&taxon_name=Ambystoma%20laterale&quality_grade=research" target="_blank" rel="noreferrer">blue-spotted salamander</a> search pages. Please avoid sharing precise breeding locations.</p></div>
