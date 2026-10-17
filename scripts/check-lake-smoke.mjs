@@ -30,7 +30,7 @@ assert.match(api,/GLSEA_ACSPO_GCS/);
 assert.match(api,/forecastHourly/);
 assert.match(api,/value<=0\.5/,'Near-freezing or masked pixels should be rejected when open water is not verified');
 assert.match(api,/noindex, nofollow/);
-assert.match(api,/s-maxage=3600/);
+assert.match(api,/s-maxage=900/,'Fresh source data should replace cached outages within 15 minutes');
 const page=readFileSync(new URL('../pages/lake-smoke.js',import.meta.url),'utf8');
 assert.match(page,/rel='canonical'/);
 assert.match(page,/FAQPage/);
@@ -229,3 +229,59 @@ assert.match(geo,/ne_50m_lakes\.geojson/,'Great Lakes source attribution must be
 assert.match(geo,/Lake Superior/);
 assert.match(geo,/Lake Ontario/);
 console.log('Lake smoke keyless interactive geographical fallback layer verified');
+
+
+// NOAA GLSEA outages: only fresh, same-lake, nearby NOAA NDBC WTMP readings may rescue a site.
+const {parseNdbcLatest,buoyForSite,kmBetween,MAX_BUOY_KM,MAX_BUOY_AGE_HOURS}=
+  await import('../lib/lakeSmokeBuoys.mjs');
+const NDBC_NOW=new Date('2026-10-17T11:21:00Z');
+const NDBC_HEADER='#STN LAT LON YYYY MM DD hh mm WDIR WSPD GST WVHT DPD APD MWD PRES PTDY ATMP WTMP DEWP VIS TIDE\n'+
+  '#text deg deg yr mo day hr mn degT m/s m/s m sec sec degT hPa hPa degC degC degC nmi ft\n';
+const row=(id,lat,lon,time,temp)=>{
+  const [y,m,d,h,minute]=time;
+  return [id,lat,lon,y,m,d,h,minute,'340','11.0','13.0','MM','MM','MM','MM','1020','MM','4.6',temp,'MM','MM','MM'].join(' ');
+};
+const rows=[
+ row('45029','42.900','-86.272',[2026,10,17,3,30],'11.7'),
+ row('45183','44.982','-85.831',[2026,10,17,3,0],'14.7'),
+ row('45194','45.803','-84.792',[2026,10,17,3,30],'12.9'),
+ row('45165','41.704','-83.264',[2026,10,17,3,40],'16.8'),
+ row('45149','43.540','-82.080',[2026,10,17,3,0],'15.4'),
+ row('45135','43.780','-76.870',[2026,10,17,3,0],'13.9'),
+ row('45026','41.982','-86.619',[2026,10,17,3,30],'15.2'),
+ row('45012','43.621','-77.401',[2026,10,17,3,30],'13.8')
+];
+const NDBC_FIXTURE=NDBC_HEADER+rows.join('\n')+'\n';
+const observedBuoys=parseNdbcLatest(NDBC_FIXTURE,NDBC_NOW);
+assert.equal(observedBuoys.length,8);
+assert.equal(observedBuoys.find(r=>r.id==='45029').c,11.7,'Read WTMP not ATMP');
+assert.equal(buoyForSite(SITES.find(s=>s.id==='grand-haven'),observedBuoys)?.stationId,'45029');
+assert.equal(buoyForSite(SITES.find(s=>s.id==='frankfort'),observedBuoys)?.stationId,'45183');
+assert.equal(buoyForSite(SITES.find(s=>s.id==='mackinaw-city'),observedBuoys)?.stationId,'45194');
+assert.equal(buoyForSite(SITES.find(s=>s.id==='st-joseph'),observedBuoys)?.stationId,'45026');
+assert.equal(buoyForSite(SITES.find(s=>s.id==='monroe'),observedBuoys)?.stationId,'45165');
+assert.equal(buoyForSite(SITES.find(s=>s.id==='oswego'),observedBuoys)?.stationId,'45135');
+assert.equal(buoyForSite(SITES.find(s=>s.id==='saginaw-bay'),observedBuoys),null,'Do not substitute a far lakewide reading for Saginaw Bay');
+assert.equal(buoyForSite(SITES.find(s=>s.id==='marquette'),observedBuoys),null,'No distant Great Lakes proxy');
+assert.ok(MAX_BUOY_KM<=55&&MAX_BUOY_AGE_HOURS<=18);
+assert.ok(buoyForSite(SITES.find(s=>s.id==='grand-haven'),observedBuoys).isProxy);
+assert.ok(buoyForSite(SITES.find(s=>s.id==='grand-haven'),observedBuoys).distanceKm<35);
+assert.ok(buoyForSite(SITES.find(s=>s.id==='grand-haven'),observedBuoys).scope.includes('NOT a shoreline'));
+assert.ok(kmBetween(43,-86,43,-86)<0.001);
+assert.equal(parseNdbcLatest(NDBC_HEADER+row('45029','42.900','-86.272',[2026,10,15,3,30],'11.7'),NDBC_NOW).length,0,'Stale buoy must fail closed');
+assert.equal(parseNdbcLatest(NDBC_HEADER+row('45029','42.900','-86.272',[2026,10,17,3,30],'MM'),NDBC_NOW).length,0,'Missing WTMP sentinel cannot become a temperature');
+assert.equal(parseNdbcLatest(NDBC_HEADER+row('45029','42.900','-86.272',[2026,10,17,3,30],'99.9'),NDBC_NOW).length,0,'Reject invalid water temperatures');
+assert.equal(parseNdbcLatest(NDBC_HEADER+row('45029','42.900','-86.272',[2026,10,17,3,30],'0.0'),NDBC_NOW).length,0,'Reject near freezing NDBC as uncertain ice/water state');
+assert.equal(parseNdbcLatest(NDBC_HEADER+row('99999','42.900','-86.272',[2026,10,17,3,30],'11.7'),NDBC_NOW).length,0,'Unapproved buoy is not assigned to a lake');
+assert.throws(()=>parseNdbcLatest('not ndbc'),/malformed/);
+assert.throws(()=>parseNdbcLatest(NDBC_HEADER.replace('WTMP','ATMP')),/columns changed/);
+assert.ok(!buoyForSite(SITES.find(s=>s.id==='monroe'),observedBuoys).sourceUrl.includes('glsea'),'Buoy provenance should remain distinct');
+const smokeApiV5=readFileSync(new URL('../pages/api/lake-smoke.js',import.meta.url),'utf8');
+const smokePageV5=readFileSync(new URL('../pages/lake-smoke.js',import.meta.url),'utf8');
+assert.match(smokeApiV5,/getText\(NDBC_LATEST_URL,6500\)/,'One NDBC request should be shared among all sites');
+assert.match(smokeApiV5,/glsea\|\|buoyForSite/,'Use buoy only when primary GLSEA fails');
+assert.match(smokeApiV5,/buoyBackedLocations/);
+assert.match(smokeApiV5,/iceAdjustedOutlook/,'Ice gate remains intact for buoy-backed sites');
+assert.match(smokePageV5,/NOAA buoy \{picked.water.stationId\}/);
+assert.match(smokePageV5,/picked.water.scope/);
+console.log('Lake smoke live NOAA buoy fallback same-lake, distance, age, provenance and ice source gates passed');

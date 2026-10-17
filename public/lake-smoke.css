@@ -145,3 +145,7 @@
 .smoke-static-credit{position:absolute;bottom:6px;right:8px;max-width:55%;font-size:9px;color:#526e76;background:#faffffee;padding:3px 6px;border-radius:4px;z-index:1}
 .smoke-map-wrap:has(.smoke-static-wrap) .smoke-map-legend{bottom:12px}
 @media(max-width:620px){.smoke-static-label{font-size:17px;letter-spacing:1px}.smoke-static-credit{bottom:53px;right:8px;font-size:8px}}
+
+.smoke-buoy-note{background:#fff8e9;border:1px solid #e4c895;border-left:3px solid #bf9040;padding:12px;border-radius:7px;font-size:12px!important;line-height:1.65!important;color:#694d28!important}
+.smoke-buoy-note strong{color:#5c421b}
+.smoke-buoy-note a{font-weight:800;color:#215f7c;text-decoration:underline}
