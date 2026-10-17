@@ -22,7 +22,7 @@ const field=(value,uom)=>({uom,values:[{validTime,value}]});
 const grid={temperature:field(-1.7,'wmoUnit:degC'),dewpoint:field(-2.8,'wmoUnit:degC'),
   windSpeed:field(3,'wmoUnit:km_h-1'),skyCover:field(10,'wmoUnit:percent'),
   probabilityOfPrecipitation:field(0,'wmoUnit:percent'),relativeHumidity:field(93,'wmoUnit:percent')};
-assert.equal(expandGrid(grid.temperature,now).size,72);
+assert.equal(expandGrid(grid.temperature,now).size,70,'Only future and recently issued forecast hours are retained');
 assert.equal(expandGrid({values:[{validTime,value:null}]},now).size,0,'Null NWS grid values are missing');
 const report=evaluateGrid(grid,now,lookup('bay-city'));
 assert.equal(report.coverage,3,'Three upcoming Michigan dawn windows should be scored');
