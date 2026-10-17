@@ -12,7 +12,7 @@ assert.ok(kmBetween(43.6,-83.89,43.6,-83.89)<.1);
 const sunrise=solarMorning('2026-10-18',bay).sunriseAt;
 const at=mins=>new Date(Date.parse(sunrise)+mins*60000).toISOString();
 const issued='2026-10-17T16:00:00.000Z';
-const morning={date:'2026-10-18',score:88,photo:{sunriseAt,status:'strong'},hourly:[
+const morning={date:'2026-10-18',score:88,photo:{sunriseAt:sunrise,status:'strong'},hourly:[
   {time:at(-50),score:85,tempF:28,dewF:26,windMph:3},
   {time:at(10),score:90,tempF:29,dewF:27,windMph:2}]};
 const issue=forecastIssue(bay,morning,issued);
