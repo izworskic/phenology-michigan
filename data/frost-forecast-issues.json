@@ -3,5 +3,235 @@
   "kind": "prospective_frost_weather_forecast_snapshots",
   "startedAt": "2026-10-17",
   "policy": "Archive only genuine NWS forecast-issuance values before the target sunrise. Nearby station observations later assess predicted 2m air-weather values, NOT frost occurrence. Never backfill historical forecasts from current weather. Missing station measurements remain pending or unavailable.",
-  "issues": []
+  "issues": [
+    {
+      "siteId": "alpena",
+      "date": "2026-10-18",
+      "issuedAt": "2026-10-17T19:32:21.723Z",
+      "sunriseAt": "2026-10-18T11:52:00.000Z",
+      "predicted": {
+        "score": 10,
+        "photoStatus": "low",
+        "sampleAt": "2026-10-18T12:00:00.000Z",
+        "tempF": 42,
+        "dewF": 35,
+        "windMph": 10.4
+      },
+      "verification": {
+        "status": "pending",
+        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+      },
+      "sourceGridUpdatedAt": "2026-10-17T19:11:31+00:00"
+    },
+    {
+      "siteId": "ann-arbor",
+      "date": "2026-10-18",
+      "issuedAt": "2026-10-17T19:32:21.723Z",
+      "sunriseAt": "2026-10-18T11:50:00.000Z",
+      "predicted": {
+        "score": 76,
+        "photoStatus": "possible",
+        "sampleAt": "2026-10-18T12:00:00.000Z",
+        "tempF": 35,
+        "dewF": 31,
+        "windMph": 5.8
+      },
+      "verification": {
+        "status": "pending",
+        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+      },
+      "sourceGridUpdatedAt": "2026-10-17T19:13:43+00:00"
+    },
+    {
+      "siteId": "bad-axe",
+      "date": "2026-10-18",
+      "issuedAt": "2026-10-17T19:32:21.723Z",
+      "sunriseAt": "2026-10-18T11:49:00.000Z",
+      "predicted": {
+        "score": 48,
+        "photoStatus": "limited",
+        "sampleAt": "2026-10-18T12:00:00.000Z",
+        "tempF": 38,
+        "dewF": 35,
+        "windMph": 12.7
+      },
+      "verification": {
+        "status": "pending",
+        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+      },
+      "sourceGridUpdatedAt": "2026-10-17T19:13:43+00:00"
+    },
+    {
+      "siteId": "bay-city",
+      "date": "2026-10-18",
+      "issuedAt": "2026-10-17T19:32:21.723Z",
+      "sunriseAt": "2026-10-18T11:52:00.000Z",
+      "predicted": {
+        "score": 40,
+        "photoStatus": "limited",
+        "sampleAt": "2026-10-18T12:00:00.000Z",
+        "tempF": 40,
+        "dewF": 36,
+        "windMph": 11.5
+      },
+      "verification": {
+        "status": "pending",
+        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+      },
+      "sourceGridUpdatedAt": "2026-10-17T19:13:43+00:00"
+    },
+    {
+      "siteId": "gaylord",
+      "date": "2026-10-18",
+      "issuedAt": "2026-10-17T19:32:21.723Z",
+      "sunriseAt": "2026-10-18T11:57:00.000Z",
+      "predicted": {
+        "score": 40,
+        "photoStatus": "low",
+        "sampleAt": "2026-10-18T12:00:00.000Z",
+        "tempF": 41,
+        "dewF": 33,
+        "windMph": 15
+      },
+      "verification": {
+        "status": "pending",
+        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+      },
+      "sourceGridUpdatedAt": "2026-10-17T19:11:31+00:00"
+    },
+    {
+      "siteId": "grand-rapids",
+      "date": "2026-10-18",
+      "issuedAt": "2026-10-17T19:32:21.723Z",
+      "sunriseAt": "2026-10-18T11:58:00.000Z",
+      "predicted": {
+        "score": 20,
+        "photoStatus": "low",
+        "sampleAt": "2026-10-18T12:00:00.000Z",
+        "tempF": 41,
+        "dewF": 39,
+        "windMph": 8.1
+      },
+      "verification": {
+        "status": "pending",
+        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+      },
+      "sourceGridUpdatedAt": "2026-10-17T19:03:24+00:00"
+    },
+    {
+      "siteId": "ironwood",
+      "date": "2026-10-18",
+      "issuedAt": "2026-10-17T19:32:21.723Z",
+      "sunriseAt": "2026-10-18T12:20:00.000Z",
+      "predicted": {
+        "score": 38,
+        "photoStatus": "low",
+        "sampleAt": "2026-10-18T12:00:00.000Z",
+        "tempF": 37,
+        "dewF": 28,
+        "windMph": 20.7
+      },
+      "verification": {
+        "status": "pending",
+        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+      },
+      "sourceGridUpdatedAt": "2026-10-17T18:12:08+00:00"
+    },
+    {
+      "siteId": "kalamazoo",
+      "date": "2026-10-18",
+      "issuedAt": "2026-10-17T19:32:21.723Z",
+      "sunriseAt": "2026-10-18T11:57:00.000Z",
+      "predicted": {
+        "score": 51,
+        "photoStatus": "limited",
+        "sampleAt": "2026-10-18T12:00:00.000Z",
+        "tempF": 38,
+        "dewF": 33,
+        "windMph": 4.6
+      },
+      "verification": {
+        "status": "pending",
+        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+      },
+      "sourceGridUpdatedAt": "2026-10-17T19:03:24+00:00"
+    },
+    {
+      "siteId": "lansing",
+      "date": "2026-10-18",
+      "issuedAt": "2026-10-17T19:32:21.723Z",
+      "sunriseAt": "2026-10-18T11:53:00.000Z",
+      "predicted": {
+        "score": 40,
+        "photoStatus": "limited",
+        "sampleAt": "2026-10-18T12:00:00.000Z",
+        "tempF": 39,
+        "dewF": 33,
+        "windMph": 8.1
+      },
+      "verification": {
+        "status": "pending",
+        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+      },
+      "sourceGridUpdatedAt": "2026-10-17T19:03:24+00:00"
+    },
+    {
+      "siteId": "marquette",
+      "date": "2026-10-18",
+      "issuedAt": "2026-10-17T19:32:21.723Z",
+      "sunriseAt": "2026-10-18T12:10:00.000Z",
+      "predicted": {
+        "score": 10,
+        "photoStatus": "low",
+        "sampleAt": "2026-10-18T12:00:00.000Z",
+        "tempF": 44,
+        "dewF": 33,
+        "windMph": 18.4
+      },
+      "verification": {
+        "status": "pending",
+        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+      },
+      "sourceGridUpdatedAt": "2026-10-17T18:12:08+00:00"
+    },
+    {
+      "siteId": "munising",
+      "date": "2026-10-18",
+      "issuedAt": "2026-10-17T19:32:21.723Z",
+      "sunriseAt": "2026-10-18T12:06:00.000Z",
+      "predicted": {
+        "score": 58,
+        "photoStatus": "low",
+        "sampleAt": "2026-10-18T12:00:00.000Z",
+        "tempF": 38,
+        "dewF": 30,
+        "windMph": 10.4
+      },
+      "verification": {
+        "status": "pending",
+        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+      },
+      "sourceGridUpdatedAt": "2026-10-17T18:12:08+00:00"
+    },
+    {
+      "siteId": "traverse-city",
+      "date": "2026-10-18",
+      "issuedAt": "2026-10-17T19:32:21.723Z",
+      "sunriseAt": "2026-10-18T12:00:00.000Z",
+      "predicted": {
+        "score": 10,
+        "photoStatus": "unavailable",
+        "sampleAt": "2026-10-18T12:00:00.000Z",
+        "tempF": 45,
+        "dewF": 38,
+        "windMph": 12.7
+      },
+      "verification": {
+        "status": "pending",
+        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+      },
+      "sourceGridUpdatedAt": "2026-10-17T19:11:31+00:00"
+    }
+  ],
+  "lastRunAt": "2026-10-17T19:32:21.723Z"
 }
