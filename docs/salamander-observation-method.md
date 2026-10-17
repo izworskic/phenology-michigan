@@ -87,3 +87,23 @@ Record the **forecast as issued before target night** (not reconstructed from hi
 - Michigan Vernal Pools Partnership community-science monitoring: https://mivernalpools.com/
 - Pool safety, hygiene and habitat protection: https://mivernalpools.com/menus/vp-management-and-protection-recommendations.html
 - This tool is independent of the Partnership. Any actual participation or partner data arrangement requires explicit organization involvement, not just linking its website.
+
+
+## v4: prospective frozen-as-issued seven-night forecasts
+
+**Source of truth:** \`https://phenology.chrisizworski.com/api/salamanders\` (the same live NWS+ACIS assessment shown on the page).
+
+**First eligible archive date:** the next spring date on which the GitHub Action actually runs (normally March 1, 2027; never backfill 2026 or earlier). Seasonal \`schedule\` is \`5 19 * 3-5 *\` UTC (14:05 EST before DST; 15:05 EDT after transition), which is *before* the site's 6 p.m.–3 a.m. Michigan migration-night window. GitHub Actions cron delivery is best-effort and may occasionally be delayed/skipped: **missing issue days stay missing**. \`workflow_dispatch\` can only take a fresh *same-day, before-6-p.m.* forecast and can never fill missed dates. Note the user-facing issue time comes from the live API's original \`generatedAt\`, while capture \`archivedAt\` is recorded independently. Reject stale API results over 90 minutes old, results from a different Michigan date, or any forecast generated after capture. Daily issues are append-only, one per Michigan calendar day; a repeat run never overwrites a previous forecast.
+
+**Storage:** \`data/salamander-forecast-issues.json\` is an initially empty audited file in git. Each successfully captured issue contains issueDay, generatedAt, archivedAt, method tag, source URL, 6–9 complete forecast regions with station ID and seven dated nightly conditions each (original categorical forecast, temperature, precipitation chance, warm rainy hours, thaw-limit flag). Inadequate source coverage refuses capture; partial 6–8 of 9 records are explicitly flagged. Sensitive animal monitoring sites, source usernames, habitat GPS, visitor submissions, observations, and photos are not archived. A run fails closed rather than guessing missing regions or weather. Current archive capacity limit is 600 issued dates; after that, migrate by year through reviewed code rather than pruning/changing previous issues.
+
+The scheduler executes full existing tests before capture, then fetches the live forecast once, freezes the response into the archive, and commits. Concurrent main changes are reconciled through git rebase and the test suite is rerun before push. Git history supplies the audit trail; "immutable" means the code refuses overwrite/reconstruction, not that repository administrators lack technical ability to edit history.
+
+**Matching to reviewed standardized monitoring:**
+
+- The first comparison is strictly **same-day issued forecast**, same **broad region**, same monitoring night, with \`unknown\` weather excluded. Later refreshed predictions or older multi-day forecasts are never substituted. Sessions reviewed later may still be compared with the earlier genuinely archived prediction.
+- The UI and API expose *counts of aligned survey-night records* (and their reviewed movement vs. zero-encounter outcomes) and issued regional-forecast coverage only. No nightly monitored site or exact survey location is returned, and no confusion-matrix rates or "probability of migration" are claimed.
+- A no-encounter session only means no salamander movement was observed during that standardized session; it cannot certify absence region-wide. Weather-fit \`strong/watch/dry\` classes are *not calibrated* and will stay so even if many archived forecast days exist, until representative survey effort, validated detection assumptions, independent years, holdout evaluation and confidence intervals are met.
+- The daily forecast archive is separate from source-reviewed institutional positive-only migration reports and iNaturalist community species IDs.
+
+**Ops:** GitHub Actions → *Archive salamander forecast as issued* permits same-day reruns, but will not backfill any prior date. Source reliability depends on the live NWS+ACIS endpoint being available and producing enough reliable regions. If the source is stale or an Action is missed, **the gap is preferable to a fabricated forecast**. The live spring tracker itself remains unaffected when archival capture fails. No extra paid data provider, token or database was added.

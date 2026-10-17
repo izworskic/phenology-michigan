@@ -9,6 +9,7 @@ export default function SalamanderObservations({selected}){
  useEffect(()=>{let mounted=true;fetch('/api/salamander-observations').then(r=>{if(!r.ok)throw Error('Observation evidence unavailable');return r.json();}).then(value=>{if(mounted)setPayload(value);}).catch(()=>{if(mounted)setError('The observation feed could not be retrieved. The independent weather outlook is still available.');});return()=>{mounted=false;};},[]);
  const obs=payload?.observations,reported=payload?.migration?.reports||[];
  const history=payload?.migration?.history||[],readiness=payload?.migration?.readiness;
+ const forecastArchive=payload?.migration?.forecastArchive,issueTimeline=forecastArchive?.issueTimeline||[];
  const progress=readiness?.sourceReviewedEvents||0;
  const active=obs?.state!=='off_season',sampled=obs?.state==='sampled';
  const regional=obs?.regions?.find(r=>r.id===selected);
@@ -92,6 +93,31 @@ export default function SalamanderObservations({selected}){
       <div className="sala-monitoring-readiness"><span className="sala-overline">Model verification status</span><strong>Collecting evidence · Not calibrated</strong><p>There is no archive of forecasts frozen before their target night and no held-out comparison across monitoring seasons. The seven-night tool remains a weather-and-thaw guide, not a validated chance of salamander migration.</p></div>
     </div>
     <p className="sala-monitoring-safety">For already-authorized monitoring only. Never enter traffic, trespass, move animals, disturb woodland pools, or publish sensitive habitat locations. This is an independent reporting initiative, not the Michigan Vernal Pools Partnership's official monitoring program.</p>
+  </section>
+  <section className="sala-forecast-history" id="forecast-history" aria-labelledby="sala-archive-title">
+   <div className="sala-archive-heading">
+    <div><span className="sala-overline">The forecast, frozen before the night</span>
+     <h3 id="sala-archive-title">What did the tracker predict at the time?</h3>
+     <p>Each March–May afternoon, the public NWS-and-thaw outlook is saved as it was issued, with a timestamp and its seven-night, nine-region assessments. Forecast history is never reconstructed from observations after the fact.</p>
+    </div>
+    <div className="sala-archive-state"><span>Historical forecast evidence</span><strong>{forecastArchive?.issueDays?'Archiving':'Begins next spring'}</strong><small>{forecastArchive?.lastIssueDay?'Last issued '+forecastArchive.lastIssueDay:'Scheduled for spring afternoons · no past forecasts invented'}</small></div>
+   </div>
+   <div className="sala-archive-metrics">
+    <div><span>Issued forecast days</span><strong>{forecastArchive?.issueDays??'—'}</strong><small>One frozen issue per Michigan date</small></div>
+    <div><span>Seven-night regional assessments</span><strong>{forecastArchive?.forecastRegionNights??'—'}</strong><small>Known-status outlooks preserved</small></div>
+    <div><span>Matches to monitored nights</span><strong>{forecastArchive?.pairedSurveyNights??'—'}</strong><small>Same-day issued forecast + reviewed survey</small></div>
+    <div><span>Both survey outcomes matched</span><strong>{forecastArchive?(forecastArchive.pairedMovementSurveys+' / '+forecastArchive.pairedNoEncounterSurveys):'—'}</strong><small>Movement / none encountered during survey</small></div>
+   </div>
+   {issueTimeline.length>0?<div className="sala-archive-timeline">
+    <div className="sala-archive-chart-head"><strong>As-issued conditions · last {issueTimeline.length} archived days</strong><span>Number of regions per afternoon, not migration counts</span></div>
+    <div className="sala-archive-bars" role="list" aria-label="Original daily regional weather signals on archive dates">
+     {issueTimeline.map(x=><div className="sala-archive-day" role="listitem" key={x.day} aria-label={x.day+': '+x.strongTonight+' regions strong weather and '+x.watchTonight+' regions possible movement weather'}>
+      <div className="sala-archive-columns"><i className="strong" style={{height:Math.max(x.strongTonight?4:0,x.strongTonight/9*100)+'%'}}/><i className="watch" style={{height:Math.max(x.watchTonight?4:0,x.watchTonight/9*100)+'%'}}/></div>
+      <small>{x.day.slice(5)}</small>
+     </div>)}
+    </div><div className="sala-archive-legend"><span><i className="strong"/>Strong weather</span><span><i className="watch"/>Possible movement weather</span><span>Archived forecast, not sighting</span></div>
+   </div>:<div className="sala-archive-empty"><strong>No archived spring forecast issues yet.</strong><p>The daily capture schedule begins in March. October weather cannot be used to recreate a March prediction, and historical forecast scores will not be invented. If a scheduled day is missed, the gap remains visible in the archive.</p></div>}
+   <p className="sala-archive-disclosure"><strong>Not a prediction-accuracy score.</strong> Region-level weather suitability is only matched to separately reviewed, site-specific monitoring effort. A zero encounter at one site does not prove regional absence. The forecast remains uncalibrated; reliable accuracy estimates require held-out seasons, comparable monitoring, and detection-bias checks.</p>
   </section>
   <div className="sala-evidence-privacy">
    <div><strong>Privacy first</strong><p>No individual observation pins, locations, crossing coordinates, photo metadata or observer identities are returned by this tool. Regional summaries hide small samples, and protected/obscured observations are not used to assign a region.</p></div>
