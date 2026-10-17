@@ -1,0 +1,38 @@
+name: Archive and check frost morning forecasts
+on:
+  schedule:
+    # 16:17 UTC = late morning/noon Michigan, before the NEXT day's sunrise.
+    # Captures next-day forecasts and verifies previous mornings. Schedules may be delayed.
+    - cron: '17 16 * * *'
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: frost-morning-archive
+  cancel-in-progress: false
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Capture genuine pre-dawn NWS forecast and audit past station weather
+        run: node scripts/archive-frost-weather.mjs
+      - name: Commit archive only when forecast or verification changes
+        run: |
+          git add data/frost-forecast-issues.json
+          if git diff --cached --quiet; then
+            echo "No archive updates"
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "Archive frost forecast and station weather comparisons [skip deploy]"
+          git pull --rebase origin main
+          git push origin HEAD:main
