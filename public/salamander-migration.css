@@ -150,3 +150,42 @@
 .sala-monitoring-block .sala-monitoring-safety{font-size:11px;padding-top:14px;border-top:1px solid #46624d;color:#a9c0b0;margin:0}
 @media(max-width:940px){.sala-monitoring-top{flex-direction:column;align-items:flex-start}.sala-monitoring-dashboard{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.sala-monitoring-button{width:100%}.sala-monitoring-bottom{grid-template-columns:1fr}.sala-monitoring-dashboard{gap:8px}.sala-monitor-stat{padding:12px 9px}.sala-monitor-stat>strong{font-size:29px}.sala-monitoring-block{padding:17px}}
+
+
+/* Temporal evidence ledger: issue snapshots taken before night, not reconstructed. */
+.sala-forecast-history{margin:24px 0;border:1px solid #72624e;border-radius:16px;background:linear-gradient(130deg,#293026,#172921 75%);padding:clamp(18px,3vw,29px)}
+.sala-archive-heading{display:flex;gap:22px;align-items:flex-start;justify-content:space-between}
+.sala-archive-heading>div:first-child{max-width:710px}
+.sala-archive-heading h3{font:500 clamp(24px,3vw,35px)/1.18 'Fraunces',Georgia,serif;color:#f0ead5;margin:9px 0 10px}
+.sala-forecast-history p{font:12px/1.7 system-ui,sans-serif;color:#c4d2c0}
+.sala-archive-state{flex:0 0 220px;border:1px solid #7d7954;border-radius:12px;padding:14px;background:#2d3527}
+.sala-archive-state span,.sala-archive-state small{display:block;font:11px/1.5 system-ui,sans-serif;color:#c4cebd}
+.sala-archive-state strong{display:block;font:500 23px/1.2 'Fraunces',Georgia,serif;color:#f6dfab;margin:7px 0}
+.sala-archive-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin:20px 0}
+.sala-archive-metrics>div{border:1px solid #61765b;border-radius:10px;padding:15px 12px;background:#10261c;display:flex;flex-direction:column;gap:7px;min-width:0}
+.sala-archive-metrics span{font:700 10px/1.45 system-ui,sans-serif;color:#b9d1ba}
+.sala-archive-metrics strong{font:500 32px/1.25 'Fraunces',Georgia,serif;color:#f2e2bf}
+.sala-archive-metrics small{font:10px/1.5 system-ui,sans-serif;color:#adc6ae}
+.sala-archive-timeline{background:#15271d;border:1px solid #546a50;border-radius:11px;padding:16px 13px}
+.sala-archive-chart-head{display:flex;gap:12px;justify-content:space-between;align-items:center;font:12px/1.4 system-ui,sans-serif}
+.sala-archive-chart-head>strong{color:#e5e7d6}
+.sala-archive-chart-head>span{color:#a6baaa;font-size:10px}
+.sala-archive-bars{display:flex;gap:5px;overflow-x:auto;align-items:flex-end;margin-top:14px;padding-bottom:7px;min-height:122px}
+.sala-archive-day{min-width:27px;flex:1 1 27px;max-width:70px;display:flex;align-items:center;flex-direction:column;gap:8px}
+.sala-archive-columns{height:83px;display:flex;align-items:flex-end;justify-content:center;gap:3px;width:100%;border-bottom:1px solid #64735a}
+.sala-archive-columns i{display:block;width:11px;border-radius:4px 4px 0 0;min-height:0}
+.sala-archive-columns i.strong{background:#e1c892}
+.sala-archive-columns i.watch{background:#87b89a}
+.sala-archive-day small{font:9px/1.3 system-ui,sans-serif;color:#a8bda9;white-space:nowrap}
+.sala-archive-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;font:10px/1.4 system-ui,sans-serif;color:#b8c7b8}
+.sala-archive-legend span{display:inline-flex;gap:6px;align-items:center}
+.sala-archive-legend i{width:10px;height:10px;border-radius:3px}
+.sala-archive-legend i.strong{background:#e1c892}
+.sala-archive-legend i.watch{background:#87b89a}
+.sala-archive-empty{padding:20px;border:1px dashed #667962;background:#14261d;border-radius:10px;margin:16px 0}
+.sala-archive-empty strong{font:500 20px 'Fraunces',Georgia,serif;color:#eee4c6}
+.sala-archive-empty p{margin:9px 0 0}
+.sala-forecast-history .sala-archive-disclosure{margin:17px 0 0;padding-top:16px;border-top:1px solid #51644a;font-size:11px}
+.sala-archive-disclosure strong{color:#ebcf90}
+@media(max-width:850px){.sala-archive-heading{flex-direction:column}.sala-archive-state{flex:auto;max-width:330px;width:100%}.sala-archive-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:550px){.sala-forecast-history{padding:17px}.sala-archive-metrics{gap:7px}.sala-archive-metrics>div{padding:12px 9px}.sala-archive-metrics strong{font-size:27px}.sala-archive-chart-head{align-items:flex-start;flex-direction:column;gap:4px}.sala-archive-day{min-width:29px;flex:0 0 29px}}
