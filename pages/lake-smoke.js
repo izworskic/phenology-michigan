@@ -4,7 +4,7 @@ import {SITES,SOURCE_LINKS} from '../lib/lakeSmoke.mjs';
 import {rankShorelineViews,compass} from '../lib/lakeSmokeWind.mjs';
 import {GREAT_LAKES} from '../lib/lakeSmokeGeography.mjs';
 import {historyForSite,easternDay} from '../lib/lakeSmokeArchive.mjs';
-import {playableCamera} from '../lib/lakeSmokeCameras.mjs';
+import {playableCamera,cameraFor} from '../lib/lakeSmokeCameras.mjs';
 const BASE='https://phenology.chrisizworski.com';
 const CANONICAL=BASE+'/lake-smoke';
 const TITLE='Great Lakes Lake Smoke Forecast: Where & When to See Steam Fog';
@@ -384,6 +384,8 @@ export default function LakeSmoke(){
   };
   const locations=data?.locations||SITES.map(site=>({...site,status:{label:'Awaiting data',tone:'unknown'},outlook:{windows:[],hourly:[],best:null}}));
   const picked=locations.find(site=>site.id===selected)||locations[0];
+  // Cameras do not depend on the slower NOAA/NWS forecast API loading.
+  const selectedCamera=picked?.camera||cameraFor(picked?.id);
   const best=picked?.outlook?.best;
   const top=useMemo(()=>locations.filter(x=>x.outlook?.best&&x.outlook.best.score>=30).sort((a,b)=>b.outlook.best.score-a.outlook.best.score).slice(0,3),[locations]);
   const viewTop=useMemo(()=>rankShorelineViews(locations).slice(0,3),[locations]);
@@ -469,8 +471,8 @@ export default function LakeSmoke(){
           <div className='smoke-cameras-grid'>
             <div className='smoke-camera-card'>
               <div className='smoke-camera-kicker'>Selected location · {picked.name}</div>
-              {picked.camera?<><h3>{picked.camera.name}</h3><p><strong>Camera operator:</strong> {picked.camera.operator}</p><p><strong>View:</strong> {picked.camera.view}</p><LakeSmokeCameraPlayer key={picked.id} camera={picked.camera}/>
-                {picked.camera.note&&<p className='smoke-camera-notice'>{picked.camera.note}</p>}
+              {selectedCamera?<><h3>{selectedCamera.name}</h3><p><strong>Camera operator:</strong> {selectedCamera.operator}</p><p><strong>View:</strong> {selectedCamera.view}</p><LakeSmokeCameraPlayer key={picked.id} camera={selectedCamera}/>
+                {selectedCamera.note&&<p className='smoke-camera-notice'>{selectedCamera.note}</p>}
                 <p className='smoke-camera-fine'>Streams are supplied directly by their original providers in an embedded player. Playback, availability and viewing direction are not monitored or verified by this forecast tool. No footage is copied, recorded or automatically analyzed.</p></>
               :<><h3>No verified camera at this spot</h3><p>We could not confirm a public shoreline-facing camera from an original operator for this lookout. Avoid relying on unrelated city or traffic cameras as evidence of lake smoke.</p>
                 <a className='smoke-camera-link secondary' href='https://www.michigan.org/webcams' target='_blank' rel='noopener noreferrer'>Explore Michigan webcams ↗</a></>}
