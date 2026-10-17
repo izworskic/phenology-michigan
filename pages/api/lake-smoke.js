@@ -3,7 +3,7 @@ import {ICE_DATASET,iceSeason,parseIceGrid,iceAssessment,iceAdjustedOutlook,iceA
 import {cameraFor} from '../../lib/lakeSmokeCameras.mjs';
 import {attachViewingOutlook,rankShorelineViews} from '../../lib/lakeSmokeWind.mjs';
 import {NDBC_LATEST_URL,parseNdbcLatest,buoyForSite} from '../../lib/lakeSmokeBuoys.mjs';
-import {fetchDailyGlsea} from '../../lib/lakeSmokeGlseaAscii.mjs';
+import {sharedDailyGlsea} from '../../lib/lakeSmokeGlseaAscii.mjs';
 
 const UA='GreatLakesLakeSmoke/1.0 (https://phenology.chrisizworski.com/lake-smoke; public outdoor planning)';
 async function getJson(url,timeout=3800){
@@ -90,7 +90,7 @@ export default async function handler(req,res){
   // NOAA GLSEA remains primary: this feed is used only if a valid recent grid cell is absent.
   const buoyPromise=getText(NDBC_LATEST_URL,6500).then(text=>parseNdbcLatest(text,now)).catch(()=>[]);
   // Shared direct NOAA grid request is only one request for the entire Great Lakes.
-  const dailyGridPromise=fetchDailyGlsea(SITES,now).catch(()=>({}));
+  const dailyGridPromise=sharedDailyGlsea(SITES,now).catch(()=>({}));
   const results=await Promise.all(SITES.map(site=>snapshot(site,now,buoyPromise,dailyGridPromise)));
   const ranked=results.filter(r=>r.outlook.best).sort((a,b)=>b.outlook.best.score-a.outlook.best.score);
   const viewing=rankShorelineViews(results);
