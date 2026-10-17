@@ -326,7 +326,7 @@ assert.throws(()=>sampleDailyGlsea(dailyText.replace('cellsize 1800','cellsize 9
 assert.throws(()=>sampleDailyGlsea(dailyText.replace('ncols 1024','ncols 512'),SITES,modified,directNow),/geometry/);
 const coastApi=readFileSync(new URL('../pages/api/lake-smoke.js',import.meta.url),'utf8');
 const coastPage=readFileSync(new URL('../pages/lake-smoke.js',import.meta.url),'utf8');
-assert.match(coastApi,/fetchDailyGlsea\(SITES,now\)/,'Exactly one shared daily GLSEA request');
+assert.match(coastApi,/sharedDailyGlsea\(SITES,now\)/,'Exactly one shared daily GLSEA request');
 assert.match(coastApi,/glsea\|\|direct\|\|buoyForSite/,'Original ERDDAP pixel first, full NOAA raster second, local buoy third');
 assert.match(coastApi,/dailyGridBackedLocations/);
 assert.match(coastApi,/iceAdjustedOutlook/,'Winter ice gate remains in all pathways');
