@@ -1,0 +1,84 @@
+name: Publish an owner-reviewed frost photograph
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Existing public Frost field sighting issue number'
+        required: true
+        type: string
+      reviewed_type:
+        description: 'Type verified from original evidence; unspecified if uncertain'
+        required: true
+        type: choice
+        options: [frost-unspecified, hoarfrost, frozen-dew, rime]
+      review_note:
+        description: '35–400 chars explaining evidence; no personal details or exact site'
+        required: true
+        type: string
+      photo_reviewed:
+        description: 'I opened the ORIGINAL dated photograph and verified actual ice crystals'
+        required: true
+        type: boolean
+        default: false
+      privacy_reviewed:
+        description: 'No personal details, exact GPS or private address will be republished'
+        required: true
+        type: boolean
+        default: false
+      owner_approved:
+        description: 'I independently reviewed and approve publication'
+        required: true
+        type: boolean
+        default: false
+permissions:
+  contents: write
+  issues: read
+concurrency:
+  group: frost-reviewed-observations
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Require repository owner
+        env:
+          ACTOR: ${{ github.actor }}
+          OWNER: ${{ github.repository_owner }}
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+        run: |
+          test "$ACTOR" = "$OWNER" || { echo "Only repository owner can approve frost reports"; exit 1; }
+          [[ "$ISSUE_NUMBER" =~ ^[1-9][0-9]*$ ]] || { echo "Bad issue number"; exit 1; }
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Read original public intake issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+        run: gh issue view "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --json number,title,body,state --jq '.' > /tmp/frost-issue.json
+      - name: Validate original evidence and owner approval
+        env:
+          FROST_ISSUE_JSON: /tmp/frost-issue.json
+          FROST_REVIEWED_TYPE: ${{ inputs.reviewed_type }}
+          FROST_REVIEW_NOTE: ${{ inputs.review_note }}
+          FROST_PHOTO_REVIEWED: ${{ inputs.photo_reviewed }}
+          FROST_PRIVACY_REVIEWED: ${{ inputs.privacy_reviewed }}
+          FROST_OWNER_APPROVED: ${{ inputs.owner_approved }}
+        run: node scripts/review-frost-sighting.mjs
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Commit only human-reviewed sightings
+        run: |
+          git add data/frost-reviewed-sightings.json
+          git diff --cached --quiet && { echo "No new report"; exit 1; }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "Publish independently reviewed frost photograph [skip deploy]"
+          git pull --rebase origin main
+          git push origin HEAD:main
