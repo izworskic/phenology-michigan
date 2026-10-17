@@ -370,7 +370,8 @@ assert.match(lakePage,/iframe key=\{player.videoId\}/,'Embed player exists withi
 assert.match(lakePage,/allowFullScreen/,'Video player supports fullscreen viewing');
 assert.match(lakePage,/loading='lazy'/,'Heavy camera content is lazily loaded');
 assert.match(lakePage,/onClick=\{\(\)=>setPlaying\(true\)\}/,'Video requires user initiation, not autoplay on page load');
-assert.match(lakePage,/key=\{picked.id\} camera=\{picked.camera\}/,'New location resets prior camera player');
+assert.match(lakePage,/key=\{picked.id\} camera=\{selectedCamera\}/,'New location resets prior camera player');
+assert.match(lakePage,/picked\?\.camera\|\|cameraFor\(picked\?\.id\)/,'Show camera immediately before NOAA weather finishes');
 assert.match(lakePage,/snapshotUrl/,'Still-image operator feeds can be refreshed when allowed');
 assert.match(lakePage,/camera\.operatorPage/,'Operator camera options retain original provider links');
 assert.match(lakeCss,/aspect-ratio:16\/9/,'Embeds have responsive widescreen layout');
