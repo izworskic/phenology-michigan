@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "kind": "prospective_frost_weather_forecast_snapshots",
+  "startedAt": "2026-10-17",
+  "policy": "Archive only genuine NWS forecast-issuance values before the target sunrise. Nearby station observations later assess predicted 2m air-weather values, NOT frost occurrence. Never backfill historical forecasts from current weather. Missing station measurements remain pending or unavailable.",
+  "issues": []
+}
