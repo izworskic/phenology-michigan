@@ -4,6 +4,7 @@ import REPORTS from '../../data/salamander-migration-reports.json';
 import MONITORED from '../../data/salamander-monitored-nights.json';
 import FORECAST_ISSUES from '../../data/salamander-forecast-issues.json';
 import {forecastArchiveCoverage,checkedArchive} from '../../lib/salamander-forecast-archive.mjs';
+import {evaluationDiagnostics} from '../../lib/salamander-evaluation.mjs';
 import {fieldEvidenceReadiness} from '../../lib/salamander-field-review.mjs';
 
 const UA='Michigan Salamander Observation Evidence (https://phenology.chrisizworski.com/salamander-migration)';
@@ -23,6 +24,7 @@ export default async function handler(req,res){
  const reports=spring?archive.filter(r=>r.observedOn>=day.slice(0,4)+'-03-01'&&r.observedOn>=new Date(new Date(day+'T12:00:00Z').getTime()-21*86400000).toISOString().slice(0,10)).slice(0,12):[];
  const readiness=fieldEvidenceReadiness(REPORTS,day,MONITORED);
  const forecastCoverage=forecastArchiveCoverage(FORECAST_ISSUES,MONITORED,day);
+ const evaluation=evaluationDiagnostics(FORECAST_ISSUES,MONITORED,day);
  const historicalIssues=checkedArchive(FORECAST_ISSUES,day);
  const issueTimeline=historicalIssues.slice(-21).map(issue=>({day:issue.issueDay,
   observedRegions:issue.regions.length,forecasts:issue.regions.length*7,
@@ -34,6 +36,7 @@ export default async function handler(req,res){
    history:archive.slice(0,12),readiness,
    monitored:readiness.monitoring,
    forecastArchive:{...forecastCoverage,issueTimeline},
+   evaluation,
    explanation:'Only independently source-reviewed institutional reports qualify as documented migration. Historical reports are separate from current activity; forecast scoring is not calibrated from these events.'},
   sources:[{name:'iNaturalist research-grade observations',url:INAT_SOURCE},
    {name:'iNaturalist Research Grade explanation',url:'https://help.inaturalist.org/en/support/solutions/articles/151000169936-what-is-the-data-quality-assessment-dqa-and-how-do-observations-qualify-to-become-research-grade-'},

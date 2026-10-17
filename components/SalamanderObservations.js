@@ -1,5 +1,6 @@
 import {useEffect,useState} from 'react';
 import {REGIONS} from '../lib/salamanders.mjs';
+import SalamanderEvaluation from './SalamanderEvaluation';
 
 const LABELS={'Ambystoma maculatum':'Spotted salamander','Ambystoma laterale':'Blue-spotted salamander'};
 const period=(date)=>date?new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',timeZone:'UTC'}).format(new Date(date+'T12:00:00Z')):'—';
@@ -90,7 +91,7 @@ export default function SalamanderObservations({selected}){
     </div>
     <div className="sala-monitoring-bottom">
       <div className="sala-monitoring-method"><h4>What counts as useful monitoring?</h4><p>A completed, repeatable watch by authorized observers, with recorded duration, effort, a documented movement or zero-encounter result, and a source that the editor independently checks. A casual sighting or skipped night does not meet this standard.</p></div>
-      <div className="sala-monitoring-readiness"><span className="sala-overline">Model verification status</span><strong>Collecting evidence · Not calibrated</strong><p>There is no archive of forecasts frozen before their target night and no held-out comparison across monitoring seasons. The seven-night tool remains a weather-and-thaw guide, not a validated chance of salamander migration.</p></div>
+      <div className="sala-monitoring-readiness"><span className="sala-overline">Model verification status</span><strong>Collecting evidence · Not calibrated</strong><p>An as-issued forecast archive begins in spring; held-out evaluation across monitoring seasons remains unavailable. The seven-night tool is a weather-and-thaw guide, not a validated probability.</p></div>
     </div>
     <p className="sala-monitoring-safety">For already-authorized monitoring only. Never enter traffic, trespass, move animals, disturb woodland pools, or publish sensitive habitat locations. This is an independent reporting initiative, not the Michigan Vernal Pools Partnership's official monitoring program.</p>
   </section>
@@ -119,6 +120,7 @@ export default function SalamanderObservations({selected}){
    </div>:<div className="sala-archive-empty"><strong>No archived spring forecast issues yet.</strong><p>The daily capture schedule begins in March. October weather cannot be used to recreate a March prediction, and historical forecast scores will not be invented. If a scheduled day is missed, the gap remains visible in the archive.</p></div>}
    <p className="sala-archive-disclosure"><strong>Not a prediction-accuracy score.</strong> Region-level weather suitability is only matched to separately reviewed, site-specific monitoring effort. A zero encounter at one site does not prove regional absence. The forecast remains uncalibrated; reliable accuracy estimates require held-out seasons, comparable monitoring, and detection-bias checks.</p>
   </section>
+  <SalamanderEvaluation evaluation={payload?.migration?.evaluation}/>
   <div className="sala-evidence-privacy">
    <div><strong>Privacy first</strong><p>No individual observation pins, locations, crossing coordinates, photo metadata or observer identities are returned by this tool. Regional summaries hide small samples, and protected/obscured observations are not used to assign a region.</p></div>
    <div><strong>View original species research</strong><p>Explore the official Michigan <a href="https://www.inaturalist.org/observations?place_id=29&taxon_name=Ambystoma%20maculatum&quality_grade=research" target="_blank" rel="noreferrer">spotted salamander</a> and <a href="https://www.inaturalist.org/observations?place_id=29&taxon_name=Ambystoma%20laterale&quality_grade=research" target="_blank" rel="noreferrer">blue-spotted salamander</a> search pages. Please avoid sharing precise breeding locations.</p></div>
