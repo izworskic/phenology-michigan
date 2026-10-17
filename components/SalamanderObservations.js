@@ -85,7 +85,7 @@ export default function SalamanderObservations({selected}){
       <div className="sala-monitor-stat"><span>Reviewed monitoring sessions</span><strong>{readiness?.monitoring?.sessions??'—'}</strong><small>Completed, source-checked surveys only</small></div>
       <div className="sala-monitor-stat positive"><span>Movement encountered</span><strong>{readiness?.monitoring?.withMovement??'—'}</strong><small>During recorded monitoring effort</small></div>
       <div className="sala-monitor-stat zero"><span>None encountered</span><strong>{readiness?.monitoring?.withNoEncounters??'—'}</strong><small>Not evidence of region-wide absence</small></div>
-      <div className="sala-monitor-stat"><span>Observer-hours logged</span><strong>{readiness?.monitoring?Math.round(readiness.monitoring.observerMinutes/60):'—'}</strong><small>Observers × completed minutes</small></div>
+      <div className="sala-monitor-stat"><span>Observer-hours logged</span><strong>{readiness?.monitoring?Number((readiness.monitoring.observerMinutes/60).toFixed(1)):'—'}</strong><small>Observers × completed minutes</small></div>
     </div>
     <div className="sala-monitoring-bottom">
       <div className="sala-monitoring-method"><h4>What counts as useful monitoring?</h4><p>A completed, repeatable watch by authorized observers, with recorded duration, effort, a documented movement or zero-encounter result, and a source that the editor independently checks. A casual sighting or skipped night does not meet this standard.</p></div>
