@@ -63,7 +63,7 @@ export default function FrostVerificationHistory({siteId,siteName}){
         <article className='fm-panel'><div className='fm-section-heading compact'><div><span className='fm-kicker'>Prediction vs measurement</span><h3>{siteName} · dawn history</h3></div></div>
           {!data?.forecastsAvailable?<p className='fm-empty'>Forecast archive unavailable, so no history is asserted.</p>:
           !recent.length?<p className='fm-empty'>The prospective archive has started, but no earlier forecasts have matured yet. Historical predictions will not be fabricated.</p>:
-          <TemperatureComparison issues={compared}/>
+          <><TemperatureComparison issues={compared}/>
           <div className='fm-verify-log'>{recent.map(i=>{
             const verified=i.verification?.status==='station_weather_compared',diff=i.verification?.difference;
             return <div className='fm-verify-row' key={i.siteId+'-'+i.date}>
@@ -73,7 +73,7 @@ export default function FrostVerificationHistory({siteId,siteName}){
               <div className='fm-verify-result'><strong>{verified?errorLabel(diff.tempF):'Pending'}</strong>
                 <small>{verified?i.verification.stationId+' · '+i.verification.distanceKm+' km away':'Station weather not yet compared'}</small></div>
             </div>;
-          })}</div>}
+          })}</div></>}
           <p className='fm-fine'>These are paired air-weather readings from the forecast grid and a nearby NWS station (up to 65 km away), not surface temperatures. Differences include local geography as well as forecast error. “Pending” is not a forecast failure.</p>
         </article>
         <article className='fm-panel'><div className='fm-section-heading compact'><div><span className='fm-kicker'>Actual frost evidence</span><h3>Reviewed photographs</h3></div></div>
