@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "kind": "manually_reviewed_firsthand_frost_photos",
+  "policy": "A frost claim needs a dated, original public image or dated, verifiable field evidence and independent human review. Types are hoarfrost, rime, frozen-dew or frost-unspecified. Automated weather or station data is NOT proof of frost. A lack of reports is NOT proof no frost formed. Do not publish private addresses, GPS coordinates, contributor identities or private-property details.",
+  "reports": []
+}

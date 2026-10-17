@@ -115,3 +115,42 @@
 .fm-photo-plan .fm-fine{font-size:11px;color:#6a8790;line-height:1.6;margin:15px 0 0}
 @media(max-width:760px){.fm-photo-steps{grid-template-columns:1fr}.fm-photo-steps>div{padding:13px 15px}.fm-photo-steps strong{font-size:25px}}
 @media(max-width:650px){.fm-photo-plan{padding:17px 15px}.fm-photo-plan .fm-section-heading{display:flex;flex-wrap:wrap;align-items:flex-start}.fm-photo-plan .fm-section-heading h3{font-size:23px}}
+
+/* Observation and forecast verification; station checks are never called frost sightings. */
+.fm-verify{scroll-margin-top:20px}
+.fm-verify-intro{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0}
+.fm-verify-intro>div{padding:19px 18px;border-radius:12px;border:1px solid #d9e5e6;background:#f9fbf9}
+.fm-verify-intro b{font-size:12px;color:#315a69}.fm-verify-intro p{font-size:12px;color:#68828b;margin:8px 0 0}
+.fm-verify-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:0 0 16px}
+.fm-verify-stats>div{min-width:0;padding:16px 14px;border-radius:11px;background:#dfecef}
+.fm-verify-stats small,.fm-verify-stats strong,.fm-verify-stats span{display:block}
+.fm-verify-stats small{font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:#62818b;font-weight:800}
+.fm-verify-stats strong{font:700 29px Georgia,serif;color:#245063;margin:6px 0}
+.fm-verify-stats span{font-size:10px;color:#67858d}
+.fm-verify-columns{display:grid;grid-template-columns:minmax(0,1.16fr) minmax(0,1fr);gap:15px;align-items:start}
+.fm-verify-columns>.fm-panel{min-width:0}
+.fm-verify-log{display:grid;gap:8px;margin:16px 0}
+.fm-verify-row{display:grid;grid-template-columns:115px minmax(0,1fr) 115px;align-items:center;gap:8px;background:#f5f9f8;border:1px solid #dfebea;border-radius:9px;padding:12px 10px}
+.fm-verify-row strong,.fm-verify-row small{display:block}.fm-verify-row strong{font-size:13px}.fm-verify-row small{font-size:10px;color:#6a8690;line-height:1.4}
+.fm-verify-values{display:flex;gap:11px}.fm-verify-values>div{min-width:0}.fm-verify-values span{display:block;font-size:9px;color:#65818b}
+.fm-verify-values b{display:block;color:#2b6371;font-size:15px}
+.fm-verify-result{text-align:right}.fm-verify-result strong{font-size:14px}
+.fm-verify-columns .fm-fine{font-size:11px;color:#6b858e;margin-top:14px}
+.fm-sighting-list{display:grid;gap:10px;margin:17px 0}
+.fm-sighting-list article{border:1px solid #cfe3dd;border-radius:9px;background:#f3faf6;padding:14px}
+.fm-sighting-list h4{margin:5px 0 7px;font:700 19px Georgia,serif}
+.fm-sighting-list small{color:#638184}.fm-sighting-list p{font-size:12px;color:#506f79;margin-bottom:8px}
+.fm-report-link{display:inline-flex;align-items:center;text-decoration:none!important;padding:13px 18px;background:#286678;color:#fff!important;font-size:12px;font-weight:800;border-radius:9px;margin:12px 0}
+.fm-report-link:hover{background:#1e5667}
+@media(max-width:900px){.fm-verify-stats{grid-template-columns:repeat(2,1fr)}.fm-verify-columns{grid-template-columns:1fr}}
+@media(max-width:650px){.fm-verify-intro{grid-template-columns:1fr}.fm-verify-row{grid-template-columns:95px 1fr;gap:5px}.fm-verify-result{grid-column:1/3;text-align:left;display:flex;align-items:center;gap:10px}.fm-verify-result small{font-size:10px}.fm-verify-stats strong{font-size:25px}}
+
+.fm-verify-chart{margin:15px 0 18px;padding:12px 10px;border:1px solid #d8e5e5;border-radius:12px;background:#fafdfd}
+.fm-verify-chart svg{display:block;width:100%;height:auto}
+.fm-verify-chart small{display:block;color:#6c8790;font-size:10px;line-height:1.6;margin:3px 8px 4px}
+.fm-chart-legend{display:flex;flex-wrap:wrap;gap:8px 15px;font-size:10px;color:#547381;font-weight:700;margin:3px 8px 8px}
+.fm-chart-legend span{display:inline-flex;gap:5px;align-items:center}
+.fm-chart-legend i{display:inline-block;width:17px;height:4px;border-radius:3px}
+.fm-chart-legend .fm-chart-predicted{background:#c28d37}
+.fm-chart-legend .fm-chart-observed{background:#277b83}
+.fm-verify-chart-empty{font-size:12px;color:#6e8790;background:#f5f9f8;padding:12px;border-radius:8px;margin:16px 0}

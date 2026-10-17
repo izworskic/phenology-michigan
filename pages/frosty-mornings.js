@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import {useEffect,useMemo,useState} from 'react';
 import {SITES} from '../lib/frostMorning.mjs';
+import FrostVerificationHistory from '../components/FrostVerificationHistory';
 const URL='https://phenology.chrisizworski.com/frosty-mornings';
 const TITLE='Michigan Frosty Morning Predictor: Hoarfrost Forecast';
 const DESCRIPTION='Will tomorrow bring a frosty morning in Michigan? Compare dawn temperatures, dew points, wind and clouds in live NWS forecasts at 12 locations.';
@@ -109,7 +110,7 @@ export default function FrostyMornings(){
       <meta name='robots' content='index,follow,max-image-preview:large'/><meta property='og:type' content='website'/><meta property='og:title' content={TITLE}/>
       <meta property='og:description' content={DESCRIPTION}/><meta property='og:url' content={URL}/><meta name='twitter:card' content='summary'/>
       <link rel='stylesheet' href='/frosty-mornings.css'/><script type='application/ld+json' dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}}/></Head>
-    <div className='fm-top'><a href='/'>MICHIGAN PHENOLOGY</a><nav aria-label='Page sections'><a href='#forecast'>The forecast</a><a href='#sunrise-guide'>Sunrise plan</a><a href='#places'>Michigan map</a><a href='#science'>How it works</a><a href='/lake-smoke'>Lake smoke ↗</a></nav></div>
+    <div className='fm-top'><a href='/'>MICHIGAN PHENOLOGY</a><nav aria-label='Page sections'><a href='#forecast'>The forecast</a><a href='#sunrise-guide'>Sunrise plan</a><a href='#frost-verification'>Evidence history</a><a href='#places'>Michigan map</a><a href='#science'>How it works</a><a href='/lake-smoke'>Lake smoke ↗</a></nav></div>
     <header className='fm-hero'>
       <img className='fm-hero-image' src='https://commons.wikimedia.org/wiki/Special:FilePath/Frosty_morning%2C_tree_with_frost_covered_branches_%2848788814943%29.jpg?width=1400'
         alt='Reference photograph of a frost-covered tree from the U.S. Fish and Wildlife Service, not a current Michigan observation'/>
@@ -180,6 +181,7 @@ export default function FrostyMornings(){
           <p className='fm-fine'>Weather values shown above are for the last available dawn hour, not necessarily the best hour. Missing hourly values are left blank.</p>
         </div>}
       </section>
+      <FrostVerificationHistory siteId={site.id} siteName={site.name}/>
       <section className='fm-section'><div className='fm-section-heading'><div><div className='fm-eyebrow dark'>What the weather can tell you</div><h2>Four ingredients for a silver morning</h2></div></div>
         <div className='fm-science-grid'>
           <article><span>01</span><h3>Cold surfaces</h3><p>Frost grows on objects at or below freezing. Forecast air temperatures are a proxy; grasses and twigs can cool below measured air temperature.</p></article>
@@ -195,7 +197,7 @@ export default function FrostyMornings(){
         <p className='fm-caution'><strong>Forecast limitation:</strong> The score is an uncalibrated weather-suitability index, not an official NWS frost warning, not a percentage, and not an ice-crystal observation. This tool cannot identify crystal type or certify a safe road or trail. Check local weather alerts and road conditions before traveling.</p>
       </section>
       <section className='fm-section fm-faq'><h2>Frosty morning questions</h2>{QUESTIONS.map(([q,a])=><details key={q}><summary>{q}</summary><p>{a}</p></details>)}</section>
-      <footer className='fm-footer'><p><b>Sources:</b> <a href='https://gml.noaa.gov/grad/solcalc/solareqns.PDF'>NOAA sunrise and twilight equations</a> · <a href='https://www.weather.gov/documentation/services-web-api'>National Weather Service grid forecasts</a> · <a href='https://forecast.weather.gov/glossary.php?word=hoar+frost'>NWS hoarfrost definition</a> · <a href='https://www.weather.gov/source/zhu/ZHU_Training_Page/fog_stuff/Dew_Frost/Dew_Frost.htm'>NWS dew and frost forecasting</a>.</p>
+      <footer className='fm-footer'><p><b>Sources:</b> <a href='https://gml.noaa.gov/grad/solcalc/solareqns.PDF'>NOAA sunrise and twilight equations</a> · <a href='https://www.weather.gov/documentation/services-web-api'>National Weather Service forecast grids and station observations</a> · <a href='https://forecast.weather.gov/glossary.php?word=hoar+frost'>NWS hoarfrost definition</a> · <a href='https://www.weather.gov/source/zhu/ZHU_Training_Page/fog_stuff/Dew_Frost/Dew_Frost.htm'>NWS dew and frost forecasting</a>.</p>
         <p><a href='/lake-smoke'>Great Lakes Lake Smoke Predictor</a> · <a href='/salamander-migration'>Salamander Migration</a> · <a href='/'>Michigan Phenology</a> · <a href='https://chrisizworski.com/tools/'>All outdoor tools</a></p>
         <p>Built by <a href='https://chrisizworski.com/chris-izworski/'>Chris Izworski</a>. © 2026 Chris Izworski. NWS forecasts update as fresh grids become available; this page does not claim actual current frost.</p>
       </footer>

@@ -1,0 +1,64 @@
+name: Submit a Michigan frost photograph
+description: Public photo-supported frost observation for independent review (not automatically published).
+title: "Frost field sighting: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Help verify the Michigan Frosty Morning Predictor. This is a public GitHub issue for independent review; it will not automatically become an observation. You need a GitHub account. Do not post exact GPS, private addresses, faces, names or personal information. A generic webcam homepage or forecast is not proof of frost.
+  - type: dropdown
+    id: site
+    attributes:
+      label: Nearest forecast area
+      options:
+        - Bay City / Saginaw Bay
+        - Bad Axe / Thumb
+        - Grand Rapids
+        - Lansing
+        - Kalamazoo
+        - Ann Arbor
+        - Traverse City
+        - Gaylord
+        - Alpena
+        - Marquette
+        - Munising
+        - Ironwood
+    validations:
+      required: true
+  - type: input
+    id: date
+    attributes:
+      label: Observation date (Michigan local YYYY-MM-DD)
+      placeholder: "2026-11-18"
+    validations:
+      required: true
+  - type: input
+    id: time
+    attributes:
+      label: Approximate observation time (Eastern)
+      placeholder: "7:45 AM ET"
+    validations:
+      required: true
+  - type: input
+    id: evidence
+    attributes:
+      label: Original dated public frost photograph or source (HTTPS)
+      placeholder: "https://..."
+      description: Public original dated image, video or institutional field report; never a weather model output.
+    validations:
+      required: true
+  - type: textarea
+    id: appearance
+    attributes:
+      label: What did the ice crystals look like?
+      description: What surface was coated? Describe shapes and possible freezing fog. No private-site details.
+      placeholder: "Thin feathery white ice on exposed grasses, with no fog visible..."
+    validations:
+      required: true
+  - type: checkboxes
+    id: attestation
+    attributes:
+      label: Public, reviewed submission
+      options:
+        - label: I understand this is public, requires independent review, and a forecast score does not prove frost.
+          required: true
