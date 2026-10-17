@@ -282,7 +282,7 @@ assert.match(smokeApiV5,/getText\(NDBC_LATEST_URL,6500\)/,'One NDBC request shou
 assert.match(smokeApiV5,/glsea\|\|direct\|\|buoyForSite/,'Use local NOAA grid before a buoy fallback');
 assert.match(smokeApiV5,/buoyBackedLocations/);
 assert.match(smokeApiV5,/iceAdjustedOutlook/,'Ice gate remains intact for buoy-backed sites');
-assert.match(smokePageV5,/NOAA buoy \{picked.water.stationId\}/);
+assert.match(smokePageV5,/NOAA buoy '\+picked.water.stationId/,'NOAA buoy links remain station-specific');
 assert.match(smokePageV5,/picked.water.scope/);
 console.log('Lake smoke live NOAA buoy fallback same-lake, distance, age, provenance and ice source gates passed');
 
