@@ -42,5 +42,9 @@ assert.ok(css.includes('.fm-carto-canvas{position:absolute;inset:0'),'Leaflet ge
 assert.ok(css.includes('.fm-carto-canvas img,.fm-carto-canvas .leaflet-tile{max-width:none!important;max-height:none!important}'),'Global responsive image CSS cannot distort map tiles');
 assert.ok(css.includes('.fm-carto-canvas .leaflet-tile{width:256px!important;height:256px!important}'),'Leaflet raster tiles must be 256px');
 assert.ok(css.includes('@media(max-width:650px){.fm-carto-frame{height:400px}'),'Real mobile map height required');
+assert.match(css,/\.fm-carto-canvas \.leaflet-tooltip\{[^}]*white-space:normal!important/,'Marker tooltips must override Leaflet nowrap styling');
+assert.match(css,/\.fm-carto-canvas \.leaflet-tooltip\{[^}]*overflow-wrap:anywhere/,'Long weather descriptions must wrap within the bubble');
+assert.ok(css.includes('max-width:min(240px,calc(100vw - 48px))'),'Map bubble width must remain responsive to mobile viewports');
+assert.ok(css.includes('.fm-carto-selected>div:first-child{min-width:0;overflow-wrap:anywhere}'),'Selected marker summary must not overflow narrow layouts');
 assert.ok(!css.includes('.fm-map svg'),'Do not carry the old pseudo map styles forward');
 console.log('Michigan frosty morning CARTO Voyager map, data markers, interactions, attribution, failure states and mobile CSS verified');
