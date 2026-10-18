@@ -275,7 +275,7 @@ function LakeSmokeCameraPlayer({camera}){
       <strong>No verified embeddable player at this location.</strong>
       <span>Use the operator's original page below. A still image or a frame from an unrelated camera would be misleading.</span>
     </div>}
-    {activeCamera?.note&&<p className='smoke-camera-notice'>{activeCamera.note}</p>}
+    {activeCamera?.note&&cameraIndex>0&&<p className='smoke-camera-notice'>{activeCamera.note}</p>}
     {camera?.unavailableCameras?.length>0&&<div className='smoke-camera-unavailable' role='note' aria-label='Unavailable Frankfort camera sources'>
       {camera.unavailableCameras.map(source=><div key={source.url}>
         <strong>{source.name} — {source.status}</strong>
