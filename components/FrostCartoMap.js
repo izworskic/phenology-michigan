@@ -9,10 +9,10 @@ const CARTO_KEY='cb1_2y8f_1_1ee5e3a872c91d0ebf5d7b88';
 const ATTRIBUTION='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attribution/" target="_blank" rel="noopener noreferrer">CARTO</a>';
 const MICHIGAN_BOUNDS=[[41.63,-90.55],[48.24,-82.13]];
 const tone=n=>!Number.isFinite(n)?'unknown':n>=75?'strong':n>=55?'possible':n>=30?'limited':'low';
-const scoreFor=(s,board,selected,location)=>{
+const scoreFor=(s,board,selected,location,date)=>{
   const row=board?.find(b=>b.id===s.id);
-  if(row)return row.best?.score??null;
-  return selected===s.id&&location?.id===s.id?location.best?.score??null:null;
+  if(row)return row.mornings?.find(m=>m.date===date)?.score??null;
+  return selected===s.id&&location?.id===s.id?location.mornings?.find(m=>m.date===date)?.score??null:null;
 };
 const icon=(L,score,active)=>{
   const value=Number.isFinite(score)?String(Math.round(score)):'—';
@@ -29,7 +29,7 @@ const todayText=date=>{
   if(!date||!/^\d{4}-\d{2}-\d{2}$/.test(date))return 'Upcoming dawns';
   return new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',timeZone:'UTC'}).format(new Date(date+'T12:00:00Z'));
 };
-export default function FrostCartoMap({chosen,onChoose,board,location}){
+export default function FrostCartoMap({chosen,onChoose,board,location,date}){
   const target=useRef(null),mapRef=useRef(null),tilesRef=useRef(null);
   const markersRef=useRef(new Map()),chooseRef=useRef(onChoose),firstSelection=useRef(true);
   const [leafletReady,setLeafletReady]=useState(false);
@@ -40,7 +40,8 @@ export default function FrostCartoMap({chosen,onChoose,board,location}){
   const selectedSite=SITES.find(s=>s.id===chosen)||SITES[0];
   const selectedRow=board?.find(r=>r.id===selectedSite.id);
   const selectedResult=selectedRow||((location?.id===selectedSite.id)?location:null);
-  const currentScore=selectedResult?.best?.score??null;
+  const selectedMorning=selectedResult?.mornings?.find(m=>m.date===date);
+  const currentScore=selectedMorning?.score??null;
 
   // Initialize once. Marker instances are preserved while scores and basemaps change.
   useEffect(()=>{
@@ -112,13 +113,13 @@ export default function FrostCartoMap({chosen,onChoose,board,location}){
     const L=window.L;
     SITES.forEach(s=>{
       const marker=markersRef.current.get(s.id);
-      const score=scoreFor(s,board,chosen,location);
+      const score=scoreFor(s,board,chosen,location,date);
       marker?.setIcon(icon(L,score,chosen===s.id));
       marker?.setZIndexOffset(chosen===s.id?1100:0);
-      const text=s.name+(score!=null?' · '+score+'/100 weather setup':' · forecast not loaded / not statewide ranked');
+      const text=s.name+' · '+todayText(date)+(score!=null?' · '+score+'/100 weather setup':' · missing dawn forecast');
       marker?.setTooltipContent(text);
     });
-  },[leafletReady,board,chosen,location]);
+  },[leafletReady,board,chosen,location,date]);
 
   useEffect(()=>{
     const map=mapRef.current;
@@ -138,7 +139,7 @@ export default function FrostCartoMap({chosen,onChoose,board,location}){
       onReady={()=>setLeafletReady(true)}
       onError={()=>setMapError('The mapping library did not load. Use the location list beside the map.')}/>
     <div className='fm-carto-toolbar'>
-      <div><strong>Michigan frost outlook</strong><small>12 NWS forecast points · interactive CARTO map</small></div>
+      <div><strong>Michigan frost outlook</strong><small>12 NWS forecast points · selected dawn: {todayText(date)}</small></div>
       <div className='fm-carto-controls'>
         <div className='fm-carto-switch' role='group' aria-label='Map basemap style'>
           <button type='button' aria-pressed={style==='voyager'} onClick={()=>setStyle('voyager')}>Terrain & roads</button>
@@ -153,11 +154,11 @@ export default function FrostCartoMap({chosen,onChoose,board,location}){
       {!leafletReady&&!mapError&&<div className='fm-carto-loading' role='status'>Loading the CARTO basemap…</div>}
       {mapError&&<div className='fm-carto-error' role='status'>{mapError}</div>}
       {!mapError&&!tilesLoaded&&leafletReady&&<div className='fm-carto-loading fm-carto-loading-small' role='status'>Loading map tiles…</div>}
-      <div className='fm-carto-map-caption'>Weather setup scores · not observed hoarfrost</div>
+      <div className='fm-carto-map-caption'>{todayText(date)} weather setup · not observed hoarfrost</div>
     </div>
     <div className='fm-carto-selected' aria-live='polite'>
       <div><small>Selected weather point</small><strong>{selectedSite.name}</strong>
-        <span>{Number.isFinite(currentScore)?(selectedResult?.best?.label||'Weather setup')+' · '+todayText(selectedResult?.best?.date):'Detailed forecast available in the panel below'}</span></div>
+        <span>{Number.isFinite(currentScore)?(selectedMorning?.label||'Weather setup')+' · '+todayText(date):'Detailed forecast available in the panel below'}</span></div>
       <div className='fm-carto-selected-right'><span className={'fm-carto-score '+tone(currentScore)}>{Number.isFinite(currentScore)?Math.round(currentScore):'—'}<small>{Number.isFinite(currentScore)?'/100':'no score'}</small></span>
         <a href='#forecast'>View hourly outlook ↓</a></div>
     </div>
