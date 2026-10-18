@@ -66,7 +66,7 @@ const page=readFileSync(new URL('../pages/frosty-mornings.js',import.meta.url),'
 const api=readFileSync(new URL('../pages/api/frosty-mornings.js',import.meta.url),'utf8');
 const css=readFileSync(new URL('../public/frosty-mornings.css',import.meta.url),'utf8');
 const sitemap=readFileSync(new URL('../pages/sitemap.xml.js',import.meta.url),'utf8');
-for(const marker of ['rel=','canonical','MapPanel','HourlyChart','Person','Frosty Morning Predictor','hoarfrost','rime','sunrise-guide','fm-photo-steps','photoTime','NOAA sunrise'])assert.ok(page.includes(marker),marker);
+for(const marker of ['rel=','canonical','FrostCartoMap','HourlyChart','Person','Frosty Morning Predictor','hoarfrost','rime','sunrise-guide','fm-photo-steps','photoTime','NOAA sunrise'])assert.ok(page.includes(marker),marker);
 for(const marker of ['forecastGridData','X-Robots-Tag','s-maxage=1800','status:',"mode==='board'"])assert.ok(api.includes(marker),marker);
 assert.ok(css.includes('@media(max-width:650px)'),'Mobile layout required');
 assert.match(css,/fm-photo-plan/,'Sunrise planner mobile styles required');
