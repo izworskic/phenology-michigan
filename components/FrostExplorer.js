@@ -101,7 +101,7 @@ export default function FrostExplorer({site,morning,locations,date,onChoose,chos
         <p>Select any row to move the map, charts and sunrise advice to that place.</p>
         {rows.length?<div className='fx-ranks'>{rows.map(row=><button key={row.id} type='button' aria-pressed={row.id===chosen}
           className={row.id===chosen?'active':''} onClick={()=>onChoose(row.id)}>
-          <span className='fx-rank-label'>{row.name}<small>{row.sustainedHours} sustained hour{row.sustainedHours===1?'':'s'}</small></span>
+          <span className='fx-rank-label'>{row.name}<small>{row.sustainedHours} sustained hour{row.sustainedHours===1?'':'s'} · {row.overnightHeadline}</small></span>
           <span className='fx-rank-track'><i style={{width:(row.score??0)+'%'}}/></span>
           <strong>{row.score??'—'}</strong></button>)}</div>:<p>Statewide results unavailable; select a location using the map.</p>}
         <small className='fx-small'>Ranks reflect a date-specific suitability index, not observed frost or the likelihood of seeing it. Missing locations are unranked.</small>
