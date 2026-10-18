@@ -85,6 +85,6 @@ const ui=fs.readFileSync(new URL('../components/SalamanderObservations.js',impor
 assert.ok(wf.includes("cron: '5 19,21 * 3-5 *'")&&wf.includes('workflow_dispatch')&&wf.includes('npm test'));
 assert.ok(wf.includes('git push origin HEAD:main')&&wf.includes('git pull --rebase origin main'));
 assert.ok(capture.includes('SNAPSHOT_SOURCE')&&capture.includes('already_recorded'));
-assert.ok(api.includes('checkedArchive')&&api.includes('forecastArchive:{...forecastCoverage,issueTimeline}'));
+assert.ok(api.includes('checkedArchive')&&api.includes('forecastArchive:{...forecastCoverage,issueTimeline,health:operations}'));
 assert.ok(ui.includes('What did the tracker predict at the time?')&&ui.includes('No archived spring forecast issues yet.'));
 console.log('Salamander archive: true pre-night timestamps, no backfill/overwrite, 9x7 structure, partial outage, privacy, source freshness, effort matching and UI tests passed.');
