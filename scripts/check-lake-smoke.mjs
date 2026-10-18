@@ -380,7 +380,7 @@ assert.match(lakePage,/onClick=\{\(\)=>setPlaying\(true\)\}/,'Video requires use
 assert.match(lakePage,/key=\{picked.id\} camera=\{selectedCamera\}/,'New location resets prior camera player');
 assert.match(lakePage,/picked\?\.camera\|\|cameraFor\(picked\?\.id\)/,'Show camera immediately before NOAA weather finishes');
 assert.match(lakePage,/snapshotUrl/,'Still-image operator feeds can be refreshed when allowed');
-assert.match(lakePage,/camera\?\.operatorPage/,'Operator camera options retain original provider links');
+assert.match(lakePage,/activeCamera\?\.operatorPage/,'Selected player must retain its original operator page link');
 assert.match(lakeCss,/aspect-ratio:16\/9/,'Embeds have responsive widescreen layout');
 assert.ok(lakePage.indexOf("id='cameras'")<lakePage.indexOf('<ShorelineViewing site={picked}/>'),
   'Embed appears near selected-location forecast, before history');
