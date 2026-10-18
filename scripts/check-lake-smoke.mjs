@@ -392,6 +392,7 @@ assert.match(lakePage,/smoke-list-cam-flag/,'Lookout list must show camera avail
 assert.match(lakePage,/smoke-top-camera-hint/,'Forecast ranking must reveal camera availability');
 assert.match(lakePage,/player\.kind==='youtube'/,'Vendor-specific source avoids forcing incompatible autoplay parameters');
 assert.match(lakePage,/stream status unverified/,'No false live-camera uptime claims');
+assert.match(lakePage,/player\?\.kind==='youtube'\?'Open live stream on YouTube/,'Only YouTube links may claim a YouTube destination');
 assert.match(lakeCss,/\.smoke-camera-picks\{/);
 
 console.log('Lake-smoke authentic photo, five verified operator camera URLs, and no-autoplay watch board passed');
