@@ -1,9 +1,9 @@
 name: Archive salamander forecast as issued
 on:
   schedule:
-    # 19:05 UTC is 2–3 p.m. in Michigan during March–May, before evening movement.
-    # GitHub schedule is best-effort; skipped runs are documented as gaps, never backfilled.
-    - cron: '5 19 * 3-5 *'
+    # Twice each Michigan spring afternoon: 2/3 p.m. and 4/5 p.m. (EST/EDT).
+    # Second attempt only fills a SAME-DAY missed first capture; never rewrites/backfills.
+    - cron: '5 19,21 * 3-5 *'
   workflow_dispatch:
 permissions:
   contents: write
@@ -22,11 +22,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: npm ci
-      - run: npm test
+      - name: Determine whether a same-day archive attempt is needed
+        id: due
+        run: node scripts/salamander-archive-window.mjs
+      - if: steps.due.outputs.capture_required == 'true'
+        run: npm ci
+      - if: steps.due.outputs.capture_required == 'true'
+        run: npm test
       - name: Capture currently issued spring forecasts only
+        if: steps.due.outputs.capture_required == 'true'
         run: node scripts/archive-salamander-forecast.mjs
       - name: Commit immutable-by-day forecast issue archive
+        if: steps.due.outputs.capture_required == 'true'
         run: |
           git add data/salamander-forecast-issues.json
           if git diff --cached --quiet; then
