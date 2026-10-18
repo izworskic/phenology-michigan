@@ -1,0 +1,46 @@
+/* Frost Explorer: overnight cooling trajectory */
+.fnj{margin:34px 0 52px;scroll-margin-top:20px}
+.fnj-title{display:flex;justify-content:space-between;align-items:flex-end;gap:22px;margin-bottom:16px}
+.fnj-title h2{font-size:clamp(27px,3.1vw,37px);margin:7px 0 7px}
+.fnj-title p{max-width:710px;font-size:13px;color:#5c7883;margin:0}
+.fnj-coverage{padding:8px 10px;text-align:right;min-width:160px}
+.fnj-coverage strong{display:block;font:700 33px Georgia,serif;color:#2c746b}
+.fnj-coverage small{display:block;font-size:10px;color:#587681}
+.fnj-verdict{display:flex;justify-content:space-between;gap:22px;align-items:center;background:linear-gradient(110deg,#eef8f6,#f8fbfb);border:1px solid #c8dcde;border-radius:14px;padding:23px 24px;margin-bottom:13px}
+.fnj-verdict.is-missing{background:#f3f5f5}
+.fnj-verdict h3{font-size:24px;margin:7px 0}
+.fnj-verdict p{color:#526f78;font-size:12px;margin:0;max-width:540px}
+.fnj-stat-row{display:grid;grid-template-columns:repeat(3,minmax(90px,1fr));gap:11px;max-width:490px;flex:1}
+.fnj-stat-row>div{background:#fff;border:1px solid #d5e6e7;border-radius:9px;padding:12px 13px;min-width:0}
+.fnj-stat-row small{font-size:10px;color:#65818d;display:block}
+.fnj-stat-row strong{font-size:16px;color:#2b5863;display:block;white-space:nowrap;margin-top:3px}
+.fnj-body{display:grid;grid-template-columns:minmax(0,1.85fr) minmax(270px,.75fr);gap:13px}
+.fnj-graph,.fnj-details{background:#fff;border:1px solid #d6e0e3;border-radius:14px;padding:19px;min-width:0}
+.fnj-controls{display:flex;gap:9px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.fnj-controls>div{display:flex;flex-wrap:wrap;gap:3px;background:#edf3f4;border:1px solid #e2eaec;padding:3px;border-radius:9px}
+.fnj-controls button{background:transparent;border:0;color:#56727e;font-size:11px;font-weight:700;border-radius:7px;padding:7px 10px}
+.fnj-controls button[aria-pressed=true]{background:#265c69;color:#fff}
+.fnj-chart{margin:18px -10px 0}
+.fnj-hour-grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;margin:9px 0 12px}
+.fnj-hour-grid button{border:1px solid #e1eaeb;border-radius:7px;background:#f5f9f9;padding:7px 2px;display:flex;align-items:center;flex-direction:column;gap:2px;color:#4a6875;min-width:0}
+.fnj-hour-grid button[aria-pressed=true]{background:#e2f1ee;border-color:#428c85}
+.fnj-hour-grid button:hover,.fnj-hour-grid button:focus-visible{border-color:#599e99}
+.fnj-hour-grid span{font-size:10px}.fnj-hour-grid strong{font-size:11px}
+.fnj-note{font-size:10px!important;line-height:1.5;color:#769098!important;margin:8px 0 0}
+.fnj-no-data{padding:65px 12px;color:#63808a;text-align:center}
+.fnj-details h3{font-size:21px;margin:6px 0 15px}
+.fnj-details h4{font-size:12px;margin:18px 0 8px;color:#315b66}
+.fnj-details p{font-size:12px;color:#5d7781}
+.fnj-details ul{font-size:11px;line-height:1.5;color:#55727c;padding-left:17px;margin:0 0 15px}
+.fnj-details li+li{margin-top:6px}
+.fnj-details a{display:inline-block;margin-top:14px;font-size:11px;font-weight:700}
+.fnj-data{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.fnj-data div{background:#f0f6f6;border-radius:9px;padding:11px 9px}
+.fnj-data small{display:block;font-size:10px;color:#73909b}
+.fnj-data strong{font-size:16px;color:#285d67}
+.fm-decision-overnight{padding:12px 17px;background:#f0f7f5;border:1px solid #d4e6e1;border-radius:10px;margin-top:13px;color:#325b64;font-size:12px}
+.fm-decision-overnight strong{display:block;margin-bottom:4px}
+.fm-decision-overnight span{display:block;color:#617d87}
+.fm-decision-overnight a{display:inline-block;margin-top:5px;font-weight:700;font-size:11px}
+@media(max-width:1050px){.fnj-verdict{display:block}.fnj-stat-row{max-width:none;margin-top:15px}.fnj-body{grid-template-columns:1fr}.fnj-data{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:650px){.fnj-title{display:block}.fnj-coverage{text-align:left;padding:11px 0}.fnj-verdict{padding:17px}.fnj-verdict h3{font-size:21px}.fnj-stat-row{grid-template-columns:1fr 1fr;gap:5px}.fnj-stat-row>div{padding:9px}.fnj-stat-row strong{font-size:13px;white-space:normal}.fnj-graph,.fnj-details{padding:13px}.fnj-controls>div{width:100%}.fnj-controls button{flex:1;font-size:10px;padding:8px 4px}.fnj-chart{margin:12px -9px 0}.fnj-hour-grid{grid-template-columns:repeat(6,minmax(0,1fr))}.fnj-data{grid-template-columns:repeat(2,minmax(0,1fr))}}

@@ -26,6 +26,11 @@ export default function FrostDawnDecision({morning,site,loading,error,issuedAt})
           'NWS visibility forecast unavailable; do not assume roads or views will be clear.'}</p>
         <div><a href='#sunrise-guide'>Photography timing ↓</a><a href='https://www.weather.gov/alerts' target='_blank' rel='noopener noreferrer'>NWS alerts ↗</a></div>
       </div>
+      {morning.night&&<div className='fm-decision-overnight'>
+        <strong>Overnight cooling: {morning.night.headline}</strong>
+        <span>{morning.night.explanation} {morning.night.coveragePct}% of required evening-to-dawn forecast hours are complete.</span>
+        <a href='#overnight-journey'>Inspect the full overnight trajectory ↓</a>
+      </div>}
     </>}
     {issuedAt&&<small className='fm-decision-provenance'>Grid update: {new Date(issuedAt).toLocaleString('en-US',{timeZone:'America/Detroit',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})} Eastern. An experimental weather-setup index is not a verified hoarfrost forecast.</small>}
   </section>;

@@ -116,7 +116,9 @@ export default function FrostCartoMap({chosen,onChoose,board,location,date}){
       const score=scoreFor(s,board,chosen,location,date);
       marker?.setIcon(icon(L,score,chosen===s.id));
       marker?.setZIndexOffset(chosen===s.id?1100:0);
-      const text=s.name+' · '+todayText(date)+(score!=null?' · '+score+'/100 weather setup':' · missing dawn forecast');
+      const row=board?.find(b=>b.id===s.id)||((chosen===s.id&&location?.id===s.id)?location:null);
+       const night=row?.mornings?.find(m=>m.date===date)?.night;
+       const text=s.name+' · '+todayText(date)+(score!=null?' · '+score+'/100 weather setup':' · missing dawn forecast')+(night?.status==='ready'?' · '+night.headline:' · overnight evidence incomplete');
       marker?.setTooltipContent(text);
     });
   },[leafletReady,board,chosen,location,date]);
