@@ -1,9 +1,11 @@
 import Head from 'next/head';
+import dynamic from 'next/dynamic';
 import {useEffect,useState} from 'react';
 import {SITES,closestFrostSite} from '../lib/frostMorning.mjs';
 import FrostDawnDecision from '../components/FrostDawnDecision';
 import FrostVerificationHistory from '../components/FrostVerificationHistory';
 import FrostCartoMap from '../components/FrostCartoMap';
+const FrostExplorer=dynamic(()=>import('../components/FrostExplorer'),{ssr:false});
 const URL='https://phenology.chrisizworski.com/frosty-mornings';
 const TITLE='Michigan Frosty Morning Predictor: Hoarfrost Forecast';
 const DESCRIPTION='Will tomorrow bring a frosty morning in Michigan? Compare dawn temperatures, dew points, wind and clouds in live NWS forecasts at 12 locations.';
@@ -46,6 +48,7 @@ export default function FrostyMornings(){
   const [location,setLocation]=useState(null),[loading,setLoading]=useState(true);
   const [error,setError]=useState('');
   const [morningIndex,setMorningIndex]=useState(0);
+   const [focusDate,setFocusDate]=useState('');
   const [locating,setLocating]=useState(false),[geoError,setGeoError]=useState('');
   const [boardAttempt,setBoardAttempt]=useState(0);
   useEffect(()=>{const id=new URLSearchParams(window.location.search).get('location');if(SITES.some(s=>s.id===id))setChosen(id);},[]);
@@ -81,7 +84,9 @@ export default function FrostyMornings(){
   };
   const site=SITES.find(s=>s.id===chosen)||SITES[0];
   const mornings=location?.mornings||[];
-  const selectedMorning=mornings[morningIndex]||mornings[0]||null;
+  const availableDates=[...new Set((board?.locations||[]).flatMap(s=>(s.mornings||[]).map(m=>m.date)))].sort().slice(0,3);
+   const activeDate=focusDate||availableDates[0]||mornings[0]?.date||'';
+   const selectedMorning=mornings.find(m=>m.date===activeDate)||mornings[morningIndex]||mornings[0]||null;
   const scored=(board?.locations||[]).filter(s=>s.best?.score!=null).sort((a,b)=>b.best.score-a.best.score||a.name.localeCompare(b.name));
   const photoLeaders=(board?.locations||[]).filter(s=>s.bestPhoto).sort((a,b)=>({'strong':3,'possible':2,'limited':1}[b.bestPhoto.photo.status]-{'strong':3,'possible':2,'limited':1}[a.bestPhoto.photo.status])||a.bestPhoto.date.localeCompare(b.bestPhoto.date));
   const featured=photoLeaders.length?photoLeaders:scored;
@@ -91,8 +96,8 @@ export default function FrostyMornings(){
       <meta name='robots' content='index,follow,max-image-preview:large'/><meta property='og:type' content='website'/><meta property='og:title' content={TITLE}/>
       <meta property='og:description' content={DESCRIPTION}/><meta property='og:url' content={URL}/><meta name='twitter:card' content='summary'/>
       <link rel='stylesheet' href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'/>
-      <link rel='stylesheet' href='/frosty-mornings.css'/><script type='application/ld+json' dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}}/></Head>
-    <div className='fm-top'><a href='/'>MICHIGAN PHENOLOGY</a><nav aria-label='Page sections'><a href='#forecast'>The forecast</a><a href='#sunrise-guide'>Sunrise plan</a><a href='#frost-verification'>Evidence history</a><a href='#places'>Michigan map</a><a href='#science'>How it works</a><a href='/lake-smoke'>Lake smoke ↗</a></nav></div>
+      <link rel='stylesheet' href='/frosty-mornings.css'/><link rel='stylesheet' href='/frost-explorer.css'/><script type='application/ld+json' dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}}/></Head>
+    <div className='fm-top'><a href='/'>MICHIGAN PHENOLOGY</a><nav aria-label='Page sections'><a href='#forecast'>The forecast</a><a href='#frost-explorer'>Explore the data</a><a href='#sunrise-guide'>Sunrise plan</a><a href='#frost-verification'>Evidence history</a><a href='#places'>Michigan map</a><a href='#science'>How it works</a><a href='/lake-smoke'>Lake smoke ↗</a></nav></div>
     <header className='fm-hero'>
       <img className='fm-hero-image' src='https://commons.wikimedia.org/wiki/Special:FilePath/Frosty_morning%2C_tree_with_frost_covered_branches_%2848788814943%29.jpg?width=1400'
         alt='Reference photograph of a frost-covered tree from the U.S. Fish and Wildlife Service, not a current Michigan observation'/>
@@ -109,7 +114,7 @@ export default function FrostyMornings(){
         <div className='fm-status-row'><div><h2>{!board&&!boardErr?'Checking forecast conditions across Michigan…':boardErr?'Regional forecasts unavailable':scored.length?'Michigan dawn-weather forecast':'No locations currently qualify for a reliable ranking'}</h2>
           <p>{boardErr||'This board compares NWS forecast ingredients, not confirmed hoarfrost, live field conditions or the probability of seeing white trees.'}</p></div>
           <div className='fm-status-total'><strong>{board?scored.length:'—'} / {SITES.length}</strong><small>forecast locations with complete dawn inputs</small><small>{board?.generatedAt?'Checked '+stamp(board.generatedAt):'Waiting for source data'}</small></div></div>
-        {featured.length>0&&<><p className='fm-board-heading'>{photoLeaders.length?'Best upcoming sunrise weather':'Available frost setups · sunrise conditions not ranked'}</p><div className='fm-top-three'>{featured.slice(0,3).map((s,i)=>{const m=s.bestPhoto||s.best;return <button key={s.id} type='button' onClick={()=>{choose(s.id);document.getElementById('forecast')?.scrollIntoView({behavior:'smooth'});}}>
+        {featured.length>0&&<><p className='fm-board-heading'>{photoLeaders.length?'Best upcoming sunrise weather':'Available frost setups · sunrise conditions not ranked'}</p><div className='fm-top-three'>{featured.slice(0,3).map((s,i)=>{const m=s.bestPhoto||s.best;return <button key={s.id} type='button' onClick={()=>{setFocusDate(m.date);choose(s.id);document.getElementById('forecast')?.scrollIntoView({behavior:'smooth'});}}>
           <small>#{i+1} · {day(m.date)}</small><strong>{s.name}</strong><div><Score value={m.score}/><span>{m.photo?.label||m.label}</span></div><small>{m.photo?.sunriseAt?'Sunrise ~ '+photoTime(m.photo.sunriseAt,s.tz)+' · arrive ~ '+photoTime(m.photo.arriveAt,s.tz):'Sunrise unavailable'}</small></button>;})}</div></>}
         {board&&scored.length===0&&<p className='fm-empty'>No complete morning forecasts to rank. No historical averages are substituted.</p>}
         {boardErr&&<button className='fm-retry-button' type='button' onClick={()=>setBoardAttempt(n=>n+1)}>Retry NWS forecasts</button>}
@@ -117,14 +122,17 @@ export default function FrostyMornings(){
       <FrostDawnDecision morning={selectedMorning} site={site} loading={loading} error={error||location?.status==='unavailable'?error||location?.note:''} issuedAt={location?.issuedAt}/>
       <section id='places' className='fm-section'><div className='fm-section-heading'><div><div className='fm-eyebrow dark'>Pick your frost lookout</div><h2>Explore Michigan's frost-friendly mornings</h2></div>
         <p>Zoom and pan the CARTO map, then tap a forecast marker to inspect its local outlook. Markers represent NWS grids, not verified frost sightings.</p></div>
-        <div className='fm-explore'><FrostCartoMap chosen={chosen} onChoose={choose} board={board?.locations} location={location}/>
+        <div className='fm-day-picker' role='group' aria-label='Compare Michigan forecast dates'><strong>Compare by morning</strong>
+         {(availableDates.length?availableDates:mornings.map(m=>m.date)).map(date=><button key={date} type='button' aria-pressed={activeDate===date} onClick={()=>setFocusDate(date)}>{day(date)}</button>)}
+         <small>Map markers and regional ranking follow this date, not each site's best-of-three forecast.</small></div>
+         <div className='fm-explore'><FrostCartoMap chosen={chosen} onChoose={choose} board={board?.locations} location={location} date={activeDate}/>
           <div className='fm-place-list'><label htmlFor='fm-location'>Choose a forecast location</label>
             <button type='button' className='fm-nearest-button' disabled={locating} onClick={findNearest}>{locating?'Finding nearest weather point…':'Find nearest forecast point'}</button>
             <p className='fm-private-note'>Optional device location. Exact coordinates stay in your browser; only the selected forecast location is requested.</p>
             {geoError&&<p className='fm-nearest-error' role='status'>{geoError}</p>}
             <select id='fm-location' value={chosen} onChange={e=>choose(e.target.value)}>{SITES.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select>
             <div className='fm-place-scroll'>{SITES.map(s=>{const row=board?.locations?.find(b=>b.id===s.id);return <button type='button' key={s.id} className={chosen===s.id?'selected':''} onClick={()=>choose(s.id)}>
-              <span><strong>{s.name}</strong><small>{s.region}</small></span><span className='fm-place-number'>{row?.best?.score??'—'}</span></button>;})}</div>
+              <span><strong>{s.name}</strong><small>{s.region}</small></span><span className='fm-place-number'>{row?.mornings?.find(m=>m.date===activeDate)?.score??'—'}</span></button>;})}</div>
           </div></div>
       </section>
       <section id='forecast' className='fm-section'><div className='fm-section-heading'><div><div className='fm-eyebrow dark'>Weather fit · not a frost observation</div><h2>{site.name}: next three mornings</h2></div>
@@ -139,7 +147,7 @@ export default function FrostyMornings(){
               <small>Forecast grid update: {stamp(location?.issuedAt)} · Source: NWS · Site context: {site.setting}</small>
             </div>
             <div className='fm-panel'><span className='fm-kicker'>Morning comparison</span><h3>When conditions line up</h3>
-              <div className='fm-day-list'>{mornings.length?mornings.map((m,i)=><button type='button' key={m.date} aria-pressed={morningIndex===i} className={morningIndex===i?'active':''} onClick={()=>setMorningIndex(i)}>
+              <div className='fm-day-list'>{mornings.length?mornings.map((m,i)=><button type='button' key={m.date} aria-pressed={morningIndex===i} className={morningIndex===i?'active':''} onClick={()=>{setMorningIndex(i);setFocusDate(m.date);}}>
                 <span><strong>{day(m.date)}</strong><small>{m.photo?.sunriseAt?'Sunrise ~ '+photoTime(m.photo.sunriseAt):'Sunrise unavailable'}</small></span>
                 <span className='fm-day-track'><span className={tone(m.score)} style={{width:(m.score||0)+'%'}}/></span>
                 <b>{m.score==null?'—':m.score}</b>
@@ -169,6 +177,7 @@ export default function FrostyMornings(){
           <p className='fm-fine'>Weather values shown above are for the last available dawn hour, not necessarily the best hour. Missing hourly values are left blank.</p>
         </div>}
       </section>
+      <FrostExplorer site={site} morning={selectedMorning} locations={board?.locations} date={activeDate} chosen={chosen} onChoose={choose}/>
       <FrostVerificationHistory siteId={site.id} siteName={site.name}/>
       <section className='fm-section'><div className='fm-section-heading'><div><div className='fm-eyebrow dark'>What the weather can tell you</div><h2>Four ingredients for a silver morning</h2></div></div>
         <div className='fm-science-grid'>

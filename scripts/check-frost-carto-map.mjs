@@ -17,7 +17,7 @@ assert.ok(map.includes('OpenStreetMap')&&map.includes('CARTO'),'Keep all require
 assert.ok(map.includes('leaflet@1.9.4/dist/leaflet.js'),'Load matched Leaflet JS');
 assert.ok(page.includes('leaflet@1.9.4/dist/leaflet.css'),'Load matched Leaflet CSS in Head');
 assert.ok(page.includes("import FrostCartoMap from '../components/FrostCartoMap'"),'Import CARTO map component');
-assert.ok(page.includes('<FrostCartoMap chosen={chosen} onChoose={choose} board={board?.locations} location={location}/>'),'Pass selected location and actual NWS board data to markers');
+assert.ok(page.includes('<FrostCartoMap chosen={chosen} onChoose={choose} board={board?.locations} location={location} date={activeDate}/>'),'Pass selected location and actual NWS board data to markers');
 assert.ok(!page.includes('function MapPanel('),'Retire flat static SVG map');
 assert.ok(!page.includes('great-lakes-context.geojson'),'No legacy pseudo map geometry');
 assert.ok(map.includes("SITES.forEach(s=>"),'All tracked sites must participate in map');
