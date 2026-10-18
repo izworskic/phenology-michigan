@@ -3,11 +3,11 @@ const levelColor=l=>['strong','watch','guarded','cold','dry','unknown'].includes
 const shortDay=d=>d?new Intl.DateTimeFormat('en-US',{weekday:'short',month:'short',day:'numeric',timeZone:'UTC'}).format(new Date(d+'T12:00:00Z')):'—';
 const value=v=>typeof v==='number'?v.toLocaleString('en-US'):'—';
 function Metric({label,val,detail}){return <div className="sala-action-metric"><span>{label}</span><strong>{val}</strong><small>{detail}</small></div>;}
-function NightCard({night,name,compared,highlight}){
+function NightCard({night,name,compared,highlight,sourceCurrent}){
  const drivers=night?.drivers||[];
- return <article className={'sala-action-night '+levelColor(night?.level)+(highlight?' recommended':'')}>
+ return <article className={'sala-action-night '+levelColor(night?.level)+(highlight&&sourceCurrent?' recommended':'')}>
   <div className="sala-action-night-heading"><div><span className="sala-overline">{name} · {shortDay(night?.date)}</span><h3>{night?.label||'No dependable forecast'}</h3></div>
-   <span className={'sala-action-signal '+levelColor(night?.level)}>{night?.level==='strong'?'Strong':night?.level==='watch'?'Possible':night?.level==='unknown'?'Unknown':'Limited'}</span>
+   <span className={'sala-action-signal '+(sourceCurrent?levelColor(night?.level):'unknown')}>{!sourceCurrent?'Recheck source':night?.level==='strong'?'Strong':night?.level==='watch'?'Possible':night?.level==='unknown'?'Unknown':'Limited'}</span>
   </div>
   <div className="sala-action-metrics">
    <Metric label="Night air" val={night?.temp!=null?night.temp+'°F':'—'} detail="Average forecast nighttime air"/>
@@ -42,10 +42,10 @@ export default function SalamanderBigNight({region,row,data,selected,onSelect,of
     <div className={'sala-action-source '+(guide.source?.status==='current'?'fresh':'aging')}><strong>{guide.source?.label||'Source update not checked'}</strong><small>{guide.source?.ageHours!=null?'NWS update approximately '+guide.source.ageHours+' hours old':'NWS update time unknown'}</small></div>
    </div>
    <div className="sala-action-two">
-    <NightCard night={guide.tonight} name="Tonight" compared={guide.priorIssue?.tonight} highlight={guide.bestIn48Hours==='tonight'}/>
-    <NightCard night={guide.tomorrow} name="Tomorrow" compared={guide.priorIssue?.tomorrow} highlight={guide.bestIn48Hours==='tomorrow'}/>
+    <NightCard night={guide.tonight} name="Tonight" compared={guide.priorIssue?.tonight} highlight={guide.bestIn48Hours==='tonight'} sourceCurrent={guide.source?.status==='current'}/>
+    <NightCard night={guide.tomorrow} name="Tomorrow" compared={guide.priorIssue?.tomorrow} highlight={guide.bestIn48Hours==='tomorrow'} sourceCurrent={guide.source?.status==='current'}/>
    </div>
-   <div className="sala-action-context"><div><strong>What changed since yesterday?</strong><p>{guide.priorIssue?'Compared with the original forecast archived '+guide.priorIssue.issueDay+' for these same target nights. The comparison is about forecast changes—not observed wildlife.':'No verified prior-afternoon forecast is archived for these dates. Changes are not guessed from today’s data.'}</p></div>
+   <div className="sala-action-context"><div><strong>What changed since yesterday?</strong><p>{guide.priorIssue?'Compared with the original forecast archived '+guide.priorIssue.issueDay+' for these same target nights. The comparison is about forecast changes—not observed wildlife.':guide.priorComparisonUnavailableReason||'No verified prior-afternoon forecast is archived for these dates. Changes are not guessed from today’s data.'}</p></div>
     <div><strong>Where to look, safely</strong><p>Check authorized nature-center or conservation-group programs. Never enter a roadway or disclose a sensitive vernal pool or crossing location. This tool does not verify safe access.</p></div></div>
   </div>:<div className="sala-action-off"><div className="sala-action-off-icon" aria-hidden="true">☾</div><div><strong>{loading?'Checking regional forecasts…':off?'Off-season: no Big Night alert':unavailable?'Regional forecast unavailable':'Nightly assessment not available'}</strong><p>{off?'Michigan salamander weather watch returns in March. A spring rain, not a calendar date, will determine actual conditions. Explore the thaw and timing guides below.':loading?'Looking for NWS hourly rain and temperatures and the station thaw context.':'The tracker will not guess favorable nights when NWS or NOAA inputs are unavailable.'}</p></div></div>}
   {!off&&ranking.length>0&&<div className="sala-action-statewide"><div className="sala-action-statewide-title"><div><span className="sala-overline">Statewide weather snapshot · Tonight</span><h3>Where are conditions most promising?</h3></div><small>{data?.statewide?.strongTonight??0} strong · {data?.statewide?.possibleTonight??0} possible · {data?.statewide?.regionsWithCurrentSource??0} of 9 source-checked</small></div>
