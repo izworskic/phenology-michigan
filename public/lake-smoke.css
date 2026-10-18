@@ -238,3 +238,11 @@
 .smoke-camera-source-switch button.active{background:#1d6478;color:white;border-color:#1d6478}
 .smoke-camera-source-switch button:focus-visible{outline:3px solid #267c92;outline-offset:2px}
 @media(max-width:460px){.smoke-camera-source-switch{display:grid;grid-template-columns:1fr}.smoke-camera-source-switch button{width:100%}}
+
+
+/* Frankfort: an unavailable resort feed must never be the main playable surface. */
+.smoke-camera-unavailable{background:#f7f3eb;border:1px solid #ddc9a6;border-left:4px solid #ad8754;border-radius:9px;margin-top:15px;padding:13px 15px;color:#654e2f;font-size:12px;line-height:1.6}
+.smoke-camera-unavailable strong{font-size:13px;color:#745329}
+.smoke-camera-unavailable p{margin:7px 0}
+.smoke-camera-unavailable a{color:#245a71;text-decoration:underline;text-underline-offset:2px;font-weight:700}
+.smoke-camera-unavailable a:focus-visible{outline:2px solid #207794;outline-offset:2px}
