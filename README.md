@@ -66,3 +66,15 @@ The Michigan Frosty Morning Predictor now has three **separate** evidence stream
 Read-only API: `/api/frost-history?site=bay-city`. It reads GitHub's versioned archived JSON on demand, without invoking a daily Vercel build for data-only commits. The page shows a forecast-versus-station air-temperature chart, per-morning original forecast/observed pairs, and separately curated dated photo evidence. No self-reported photo becomes verified merely by submission. A missing report is not evidence no frost occurred.
 
 Node tests: `node scripts/check-frost-verification.mjs`. No new paid service, keys, account database or visitor-tracking layer. NWS public data remains subject to rate limiting and outages; GitHub Actions cron may occasionally be delayed. Viewing the reporting form requires a GitHub account, and users should avoid personal or precisely geolocatable details in public issues.
+
+
+### Lake smoke camera watch board: verified embeddable operator sources (V8)
+
+The selected-location camera area now exposes five click-to-load operator-published embedded players and a shortcut rail:
+- **Marquette Lower Harbor / Ore Dock (Lake Superior)** — WZMQ 19 News official cameras page; live player at g1.ipcamlive.com/player/player.php?alias=6a025c9c5ea0d (the waterfront/ore dock, not the downtown studio).
+- **Munising Bay (Lake Superior)** — Pictured Rocks Cruises camera embedded as video.nest.com/embedded/live/o8aiKdKx4x by Explore Munising.
+- **Grand Marais Harbor (Lake Superior)** — Grand Marais Tavern harbor view embedded as video.nest.com/embedded/live/A2SY1WyGt4 by Explore Munising. This is *a harbor view*, not offshore Lake Superior.
+- **Grand Haven Pier (Lake Michigan)** — Grand Haven Lighthouse Conservancy's documented YouTube 360° player.
+- **Essexville Saginaw River near Bay City (Lake Huron watershed)** — Saginaw River Cam's documented YouTube player. This is *not* open Saginaw Bay.
+
+Operator/source verification is based on source-published embed tags on https://wzmq19.com/weather/cameras/ and https://www.exploremunising.com/web-cams/ checked 2026-10-17 (plus the pre-existing documented YouTube operator sources). No player is loaded until a person clicks. Third-party iframes are restricted to validated YouTube, Nest or IPCamLive identifier patterns and fixed HTTPS hostnames, not arbitrary iframe URL input. If an operator blocks or takes a stream offline, the original operator page link is the supported fallback; the site makes no automatic claims of stream uptime, a fog event, visual accuracy or real-time camera evidence. Camera shortcut choices and location-list indicators reveal availability alongside the forecast but never change its score. No ad code, payment key, restreaming or saved media is introduced.
