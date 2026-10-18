@@ -6,7 +6,7 @@ import {evaluationDiagnostics,MIN_GROUP_SESSIONS,MIN_GROUP_PROGRAMS} from '../li
 
 const asOf='2027-04-20';
 const makeIssue=(day,partial=false,override={})=>{
- const rows=(partial?REGIONS.slice(0,6):REGIONS).map((r,i)=>({id:r.id,season:'spring',thaw:{state:'unknown'},
+ const rows=(partial?REGIONS.slice(0,6):REGIONS).map((r,i)=>({id:r.id,season:'spring',nwsUpdatedAt:day+'T18:00:00Z',thaw:{state:'unknown',observationAgeDays:1},
   nights:Array.from({length:7},(_,lead)=>({date:shiftDate(day,lead),
    level:lead===0?(override[r.id]||(i===0?'strong':i===1?'watch':i===2?'unknown':'dry')):'dry',
    temp:45,rainChance:45,warmRainHours:2,thawLimited:false}))}));
