@@ -1,0 +1,38 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {summarizeDawn,rankedDawnRows,hourlyIngredientNotes} from '../lib/frostOutlook.mjs';
+import {scoreHour,lookup,localParts} from '../lib/frostMorning.mjs';
+const sample=(hour,score,extra={})=>({time:new Date(Date.UTC(2026,9,21,hour+4)).toISOString(),hour,score,
+  tempF:29,dewF:27,spreadF:2,windMph:2,skyPct:10,...extra});
+const stable=[4,5,6,7,8,9].map(h=>sample(h,90));
+assert.equal(summarizeDawn(stable).score,90,'Six-hour score should preserve a stable forecast');
+assert.equal(summarizeDawn(stable).sustainedHours,6,'Sustained window must track contiguous good hours');
+assert.equal(summarizeDawn(stable).dataCoveragePct,100);
+const spike=[90,8,8,8,8,8].map((s,i)=>sample(i+4,s));
+assert.ok(summarizeDawn(spike).score<40,'One high hour must not dominate the dawn ranking');
+assert.equal(summarizeDawn(spike).sustainedHours,1);
+const missing=[sample(4,90),sample(5,90),sample(6,90,{dewF:null}),sample(7,null),sample(8,null)];
+assert.equal(summarizeDawn(missing).score,null,'Fewer than 3 complete dawn hours must not be scored');
+const partial=[sample(4,80),sample(5,80),sample(6,80),sample(7,null)];
+assert.equal(summarizeDawn(partial).dataCoveragePct,50,'Coverage should be based on the full six-hour window');
+assert.equal(summarizeDawn(partial).sustainedHours,3);
+const warm=scoreHour({tempF:42,dewF:40,windMph:2,skyPct:10});
+assert.ok(warm.score<=10,'Warm air must never create a high frost setup score');
+assert.equal(scoreHour({tempF:28,dewF:40,windMph:2,skyPct:10}),null,'Inconsistent dew point over air temperature must be rejected');
+assert.equal(scoreHour({tempF:30,dewF:28,windMph:2,skyPct:10}).factors.temperature,29);
+assert.ok(hourlyIngredientNotes({tempF:35,dewF:33,spreadF:2,windMph:2,skyPct:15,score:70,visibilityMi:null}).some(x=>x.includes('exposed grass')));
+assert.equal(lookup('ironwood').tz,'America/Chicago');
+assert.equal(localParts(new Date('2026-10-21T11:00:00Z'),lookup('ironwood').tz).hour,6);
+const board=[{id:'bay-city',name:'Bay City',region:'Bay',mornings:[{date:'2026-10-21',score:80,sustainedHours:3},{date:'2026-10-22',score:20}]},
+  {id:'gaylord',name:'Gaylord',region:'North',mornings:[{date:'2026-10-21',score:40},{date:'2026-10-22',score:95}]}];
+assert.equal(rankedDawnRows(board,'2026-10-21')[0].id,'bay-city','Same-day map comparison must rank the date chosen');
+assert.equal(rankedDawnRows(board,'2026-10-22')[0].id,'gaylord','Switching dates must reorder statewide ranks');
+assert.equal(rankedDawnRows(board,'2026-10-23')[0].score,null,'No forecast should remain genuinely unranked');
+const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
+const page=read('pages/frosty-mornings.js'),map=read('components/FrostCartoMap.js'),explorer=read('components/FrostExplorer.js');
+const css=read('public/frost-explorer.css');
+for(const marker of ['activeDate','setFocusDate','fm-day-picker','<FrostExplorer','date={activeDate}'])assert.ok(page.includes(marker),'Missing linked page state: '+marker);
+for(const marker of ["find(m=>m.date===date)",'date','setTooltipContent','CARTO'])assert.ok(map.includes(marker),'Map not date-aware: '+marker);
+for(const marker of ['ResponsiveContainer','ComposedChart','pickedTime','onChoose(row.id)','hourlyIngredientNotes','rankedDawnRows'])assert.ok(explorer.includes(marker),'Explorer needs coordinated interaction: '+marker);
+assert.ok(css.includes('@media(max-width:650px)'),'Charts need narrow-screen layout');
+console.log('Frost Explorer dawn scoring, continuity, regional date sync, ingredient diagnostics and interactive contracts passed');
