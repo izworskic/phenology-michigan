@@ -338,22 +338,29 @@ console.log('Lake smoke NOAA direct GLSEA 1024-grid projection, Saginaw Bay, Sup
 // V7 authentic lake-smoke photo and location-specific, operator-hosted live embeds.
 const {CAMERAS:LIVE_CAMS,cameraFor:camFor,playableCamera,EMBEDDABLE_IDS}=
   await import('../lib/lakeSmokeCameras.mjs');
-assert.deepEqual([...EMBEDDABLE_IDS].sort(),['grand-haven','marquette','saginaw-bay']);
+assert.deepEqual([...EMBEDDABLE_IDS].sort(),['grand-haven','grand-marais','marquette','munising','saginaw-bay']);
 for(const id of EMBEDDABLE_IDS){
   const camera=camFor(id),playable=playableCamera(camera);
-  assert.ok(playable,'Camera embed must be available for '+id);
-  assert.match(playable.embedUrl,/^https:\/\/www\.youtube-nocookie\.com\/embed\/[a-zA-Z0-9_-]{11}\?/);
-  assert.match(camera.url,/^https:\/\/www\.youtube\.com\/watch\?v=/,'Original operator watch page must be linked');
-  assert.equal(playable.kind,'youtube');
+  assert.ok(playable,'Operator player must be configured for '+id);
+  assert.match(playable.embedUrl,/^https:\/\//,'Operator iframe URL must be HTTPS');
+  assert.ok(['youtube','nest','ipcamlive'].includes(playable.kind));
+  assert.ok(camera.url.startsWith('https://'));
 }
 assert.equal(camFor('marquette').operator,'WZMQ 19 News');
+assert.equal(playableCamera(camFor('marquette'))?.embedUrl,'https://g1.ipcamlive.com/player/player.php?alias=6a025c9c5ea0d');
+assert.equal(playableCamera(camFor('munising'))?.embedUrl,'https://video.nest.com/embedded/live/o8aiKdKx4x?autoplay=0');
+assert.equal(playableCamera(camFor('grand-marais'))?.embedUrl,'https://video.nest.com/embedded/live/A2SY1WyGt4?autoplay=0');
+assert.equal(playableCamera(camFor('grand-haven'))?.embedUrl,'https://www.youtube-nocookie.com/embed/aZoKXcoW34g?rel=0&playsinline=1');
 assert.equal(camFor('grand-haven').operator,'Grand Haven Lighthouse Conservancy');
-assert.match(camFor('saginaw-bay').view,/NOT open water/,'River cam must never be labelled as an open-bay observation');
-assert.ok(!camFor('alpena').embed,'Unverified embedded stream is intentionally withheld');
-assert.equal(playableCamera(camFor('alpena')),null,'Camera page is not necessarily an embeddable player');
-assert.equal(playableCamera({embed:{kind:'youtube',videoId:'bad'}}),null,'Invalid video IDs cannot become URLs');
-assert.equal(playableCamera({embed:{kind:'iframe',url:'https://untrusted.example'}}),null,'Arbitrary iframe hosts must not be accepted');
-assert.ok(Object.values(LIVE_CAMS).every(cam=>cam.url.startsWith('https://')),'Operator URLs must use HTTPS');
+assert.match(camFor('saginaw-bay').view,/NOT open water/,'River cam is NOT open Saginaw Bay');
+assert.match(camFor('grand-marais').view,/not exposed/,'Harbor camera is not an offshore lake observation');
+assert.ok(!camFor('alpena').embed,'Unverified embeds are omitted');
+assert.equal(playableCamera(camFor('alpena')),null);
+assert.equal(playableCamera({embed:{kind:'youtube',videoId:'bad'}}),null);
+assert.equal(playableCamera({embed:{kind:'nest',cameraId:'../evil'}}),null);
+assert.equal(playableCamera({embed:{kind:'ipcamlive',alias:'abc&src=bad'}}),null);
+assert.equal(playableCamera({embed:{kind:'iframe',url:'https://untrusted.example'}}),null);
+assert.ok(Object.values(LIVE_CAMS).every(cam=>cam.url.startsWith('https://')),'Operator links must be HTTPS');
 const licensedHero=readFileSync(new URL('../public/lake-smoke/lake-smoke-hero.jpg',import.meta.url));
 assert.ok(licensedHero.byteLength>35000 && licensedHero.byteLength<2500000,'Licensed photo must be a real locally committed image');
 assert.equal(licensedHero[0],0xff,'Hero should have JPEG magic number');
@@ -366,7 +373,7 @@ assert.match(lakePage,/smoke-hero-photo/);
 assert.match(lakePage,/Edward Stojakovic \/ Wikimedia Commons/);
 assert.match(lakePage,/CC BY 2\.0/);
 assert.match(lakePage,/Steaming_Lake_Michigan/,'Photo must cite genuine Lake Michigan steam fog');
-assert.match(lakePage,/iframe key=\{player.videoId\}/,'Embed player exists within the selected camera');
+assert.match(lakePage,/iframe key=\{player.kind\+'-'\+player.id\}/,'Operator player is keyed by validated source and ID');
 assert.match(lakePage,/allowFullScreen/,'Video player supports fullscreen viewing');
 assert.match(lakePage,/loading='lazy'/,'Heavy camera content is lazily loaded');
 assert.match(lakePage,/onClick=\{\(\)=>setPlaying\(true\)\}/,'Video requires user initiation, not autoplay on page load');
@@ -377,4 +384,14 @@ assert.match(lakePage,/camera\?\.operatorPage/,'Operator camera options retain o
 assert.match(lakeCss,/aspect-ratio:16\/9/,'Embeds have responsive widescreen layout');
 assert.ok(lakePage.indexOf("id='cameras'")<lakePage.indexOf('<ShorelineViewing site={picked}/>'),
   'Embed appears near selected-location forecast, before history');
-console.log('Lake-smoke photographic hero license, local asset build, operator video security, and responsive player passed');
+
+assert.match(lakePage,/Choose an embedded shoreline camera/,'Show operator camera selection without background stream loading');
+assert.match(lakePage,/EMBEDDABLE_IDS\.map/,'Show every published embedded camera');
+assert.match(lakePage,/chooseCamera\(id\)/,'Camera choices must switch site and scroll to player');
+assert.match(lakePage,/smoke-list-cam-flag/,'Lookout list must show camera availability');
+assert.match(lakePage,/smoke-top-camera-hint/,'Forecast ranking must reveal camera availability');
+assert.match(lakePage,/player\.kind==='youtube'/,'Vendor-specific source avoids forcing incompatible autoplay parameters');
+assert.match(lakePage,/stream status unverified/,'No false live-camera uptime claims');
+assert.match(lakeCss,/\.smoke-camera-picks\{/);
+
+console.log('Lake-smoke authentic photo, five verified operator camera URLs, and no-autoplay watch board passed');
