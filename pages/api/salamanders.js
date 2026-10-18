@@ -1,5 +1,7 @@
 import {REGIONS,isSeason,localDate,analyzeRegion,offlineRegion,SOURCE_NOTE,thawContext} from '../../lib/salamanders.mjs';
 import {acisUrl,parseAcisDaily,summarizeThaw,ACIS_DOCS} from '../../lib/salamander-thaw.mjs';
+import ISSUED from '../../data/salamander-forecast-issues.json';
+import {attachBigNightDecisions} from '../../lib/salamander-big-night.mjs';
 const UA='Michigan Salamander Migration Forecast (https://phenology.chrisizworski.com/salamander-migration)';
 async function getNws(url){
  const r=await fetch(url,{headers:{Accept:'application/geo+json','User-Agent':UA},signal:AbortSignal.timeout(6500)});
@@ -45,11 +47,15 @@ export default async function handler(req,res){
    {name:'University of New Hampshire Extension Big Night',url:'https://extension.unh.edu/blog/2026/03/what-big-night-spring-how-can-you-help-amphibians-during-time'}
   ]};
  // Do not create spurious fall/winter Big Night alerts or unnecessary provider calls.
- if(!active)return res.status(200).json({...basis,regions:REGIONS.map(offlineRegion)});
+ if(!active){
+  const guide=attachBigNightDecisions(REGIONS.map(offlineRegion),ISSUED,basis.date,now);
+  return res.status(200).json({...basis,...guide});
+ }
  const results=await Promise.allSettled(REGIONS.map(region=>regionForecast(region,now)));
  const regions=results.map((result,i)=>result.status==='fulfilled'?result.value:({...offlineRegion(REGIONS[i]),season:'unavailable',thaw:{...thawContext(),station:REGIONS[i].sid},source:'NWS forecast unavailable for this region'}));
  const successes=regions.filter(r=>r.season==='spring').length;
- return res.status(200).json({...basis,status:successes?'spring_watch':'forecast_unavailable',
+ const guide=attachBigNightDecisions(regions,ISSUED,basis.date,now);
+ return res.status(200).json({...basis,...guide,status:successes?'spring_watch':'forecast_unavailable',
   ...(successes<REGIONS.length?{error:successes?'Some regional NWS forecasts are unavailable; their values are not imputed.':'NWS forecasts temporarily unavailable. No migration assessment can be issued.'}:{}),
   regions});
 }
