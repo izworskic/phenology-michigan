@@ -278,3 +278,87 @@
 .sala-archive-ops .sala-archive-gaps{color:#f2d39b;border-left:3px solid #b78c43;padding:8px 11px;background:#4434225e}
 .sala-archive-ops>small{display:block;color:#acbea9;font:10px/1.6 system-ui,sans-serif}
 @media(max-width:700px){.sala-archive-ops-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.sala-archive-ops{padding:13px}}
+
+
+/* Big Night product: a clear 48-hour forecast decision, not a migration probability. */
+.sala-action{margin:28px 0 14px;border:1px solid #597962;border-radius:17px;padding:clamp(19px,3vw,31px);background:radial-gradient(ellipse at 96% 3%,#5d714443,transparent 40%),linear-gradient(135deg,#223e31,#172b23 75%);box-shadow:0 8px 28px #07150e44}
+.sala-action-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:24px}
+.sala-action-top>div:first-child{max-width:690px}
+.sala-action-top h2{font:500 clamp(31px,4vw,45px)/1.12 'Fraunces',Georgia,serif;letter-spacing:-.04em;margin:7px 0 10px;color:#f7eed5}
+.sala-action-top p{font:13px/1.65 system-ui,sans-serif;color:#c8d8c8;margin:0}
+.sala-action-choices{display:flex;flex-direction:column;gap:8px;width:min(100%,320px);flex:0 0 320px}
+.sala-action-choices label{font:700 10px/1.3 system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#d3e5cc}
+.sala-action-choices select,.sala-action-choices button{width:100%;border:1px solid #879d7a;border-radius:9px;padding:10px 11px;background:#132d20;color:#f1f0e0;font:600 12px/1.4 system-ui,sans-serif;min-height:43px;cursor:pointer}
+.sala-action-choices button{background:#c9e2c9;color:#1a3226;border-color:#c9e2c9}
+.sala-action-choices button:hover{background:#e2edd9}
+.sala-action-choices button:disabled{cursor:wait;opacity:.6}
+.sala-action-verdict{display:flex;align-items:center;justify-content:space-between;gap:16px;border:1px solid #618a66;border-radius:12px;background:#193729;padding:16px 18px;margin-bottom:12px}
+.sala-action-verdict>div:first-child{max-width:690px}
+.sala-action-verdict>div:first-child>span{font:700 10px/1.35 system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#b9d8af;display:block;margin-bottom:5px}
+.sala-action-verdict>div:first-child>strong{font:500 clamp(19px,2.6vw,28px)/1.25 'Fraunces',Georgia,serif;color:#f2eed7;display:block}
+.sala-action-verdict p{font:12px/1.5 system-ui,sans-serif;color:#c2d5c5;margin:7px 0 0}
+.sala-action-source{flex:0 0 205px;padding:10px 12px;border:1px solid #66866b;border-radius:9px;background:#223f2d}
+.sala-action-source.aging{background:#463d28;border-color:#af8659}
+.sala-action-source strong{display:block;font:700 11px/1.4 system-ui,sans-serif;color:#f7edc8}
+.sala-action-source small{display:block;font:10px/1.45 system-ui,sans-serif;color:#c3d6c2;margin-top:4px}
+.sala-action-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.sala-action-night{padding:21px;border:1px solid #496e52;border-radius:13px;background:#11281f;min-width:0}
+.sala-action-night.recommended{border-color:#c0b482;background:linear-gradient(145deg,#2c3b2a,#142d23);box-shadow:inset 0 2px 0 #d8c68c}
+.sala-action-night.strong{border-color:#bfa66e}
+.sala-action-night.watch{border-color:#7dac83}
+.sala-action-night-heading{display:flex;justify-content:space-between;gap:9px;align-items:flex-start}
+.sala-action-night-heading h3{font:500 clamp(21px,2.6vw,29px)/1.17 'Fraunces',Georgia,serif;color:#f2ebd6;margin:9px 0 12px}
+.sala-action-signal{display:inline-block;flex:0 0 auto;border:1px solid #6e806e;border-radius:99px;padding:5px 9px;font:700 10px/1.3 system-ui,sans-serif;color:#dce3d0;background:#2b4235}
+.sala-action-signal.strong{background:#624b2a;border-color:#ba965e;color:#fce3b2}
+.sala-action-signal.watch{background:#234934;border-color:#7fa98c;color:#d8f3da}
+.sala-action-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:13px 0 17px}
+.sala-action-metric{display:flex;flex-direction:column;gap:4px;border:1px solid #435f4c;background:#203b2b;padding:10px 9px;border-radius:9px;min-width:0}
+.sala-action-metric span{font:600 10px/1.35 system-ui,sans-serif;color:#c0d4bc}
+.sala-action-metric strong{font:500 clamp(22px,2.8vw,30px)/1.16 'Fraunces',Georgia,serif;color:#f5e4bb}
+.sala-action-metric small{font:9px/1.35 system-ui,sans-serif;color:#9fbaa6}
+.sala-action-drivers{display:flex;flex-direction:column;gap:11px;border-top:1px solid #436048;padding-top:14px}
+.sala-action-driver{display:flex;gap:11px;align-items:flex-start}
+.sala-action-driver-dot{display:inline-block;flex:0 0 10px;width:10px;height:10px;border-radius:50%;background:#8b9a8d;margin-top:4px}
+.sala-action-driver-dot.favorable{background:#9acd9c;box-shadow:0 0 0 3px #9acd9c22}
+.sala-action-driver-dot.mixed{background:#dabe85}
+.sala-action-driver-dot.limited{background:#d29b80}
+.sala-action-driver-dot.unknown{background:#84978b}
+.sala-action-driver strong{display:block;color:#e8eee0;font:700 12px/1.4 system-ui,sans-serif}
+.sala-action-driver p{font:11px/1.5 system-ui,sans-serif;color:#b5cbb9;margin:3px 0 0}
+.sala-action-advice{font:12px/1.6 system-ui,sans-serif;color:#dce4d1;border-top:1px solid #415b49;margin:13px 0 0;padding-top:13px}
+.sala-action-prior{margin:13px 0 0!important;padding:10px 12px;border-radius:8px;border:1px solid #78866a;background:#304131;font:11px/1.4 system-ui,sans-serif!important;color:#ede8c9!important}
+.sala-action-prior strong{display:block;color:#f2edcf}
+.sala-action-prior span{display:block;color:#c9d9c2;margin-top:4px}
+.sala-action-context{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:13px}
+.sala-action-context>div{padding:14px 15px;border:1px solid #4b6a51;border-radius:9px;background:#1b3226}
+.sala-action-context strong{font:600 12px/1.4 system-ui,sans-serif;color:#f0e5be}
+.sala-action-context p{font:11px/1.6 system-ui,sans-serif;color:#bed0bb;margin:6px 0 0}
+.sala-action-off{border:1px solid #5f7e68;border-radius:13px;padding:27px;background:radial-gradient(ellipse at 0 0,#6c7c3e33,transparent 70%),#173328;display:flex;align-items:center;gap:18px}
+.sala-action-off-icon{font:50px/1 Georgia,serif;color:#d1ca9d}
+.sala-action-off strong{font:500 clamp(20px,3vw,27px)/1.3 'Fraunces',Georgia,serif;color:#f1ebd5}
+.sala-action-off p{font:12px/1.6 system-ui,sans-serif;color:#c4d4c4;margin:8px 0 0}
+.sala-action-statewide{margin-top:23px;border-top:1px solid #54725c;padding-top:21px}
+.sala-action-statewide-title{display:flex;align-items:end;justify-content:space-between;gap:15px;margin-bottom:14px}
+.sala-action-statewide-title h3{font:500 24px/1.2 'Fraunces',Georgia,serif;margin:7px 0 0}
+.sala-action-statewide-title small{font:11px/1.45 system-ui,sans-serif;color:#c0d5b5}
+.sala-action-regions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.sala-action-regions>button{width:100%;min-width:0;display:flex;align-items:center;gap:11px;text-align:left;border:1px solid #506e54;border-radius:9px;background:#132b22;color:#e7e9d8;padding:12px 10px;min-height:63px;cursor:pointer}
+.sala-action-regions>button:hover,.sala-action-regions>button.active{border-color:#b8c89d;background:#294636}
+.sala-action-region-dot{display:inline-block;flex:0 0 10px;width:10px;height:10px;border-radius:50%;background:#9baba0}
+.sala-action-region-dot.strong{background:#eed095}
+.sala-action-region-dot.watch{background:#9bcfa7}
+.sala-action-region-dot.guarded{background:#bfb0cd}
+.sala-action-region-dot.cold,.sala-action-region-dot.dry{background:#8aabb0}
+.sala-action-regions>button>span:nth-child(2){flex:1;min-width:0}
+.sala-action-regions>button strong,.sala-action-regions>button small{display:block;font-family:system-ui,sans-serif}
+.sala-action-regions>button strong{font-size:12px;line-height:1.4}
+.sala-action-regions>button small{font-size:10px;color:#b4c9b5;line-height:1.4;margin-top:3px}
+.sala-action-region-hours{white-space:nowrap;font:10px/1.3 system-ui,sans-serif;color:#c8d3bc}
+.sala-action-more{margin-top:10px;border-radius:9px}
+.sala-action-more summary{font:700 11px/1.4 system-ui,sans-serif;cursor:pointer;color:#d2e6cb;padding:10px 1px}
+.sala-action-more[open] .sala-action-regions{margin-top:7px}
+.sala-action-board-note{font:11px/1.5 system-ui,sans-serif;color:#b8cbb9;margin:12px 0 0}
+.sala-action-updated{margin:17px 0 0;font:11px/1.6 system-ui,sans-serif;color:#afc2b2}
+@media(max-width:1000px){.sala-action-top{flex-direction:column}.sala-action-choices{flex:0 0 auto;width:100%;max-width:480px}.sala-action-two{grid-template-columns:1fr}}
+@media(max-width:700px){.sala-action-verdict{flex-direction:column;align-items:stretch}.sala-action-source{flex:0 0 auto}.sala-action-context{grid-template-columns:1fr}.sala-action-statewide-title{flex-direction:column;align-items:flex-start}.sala-action-regions{grid-template-columns:1fr}.sala-action-night{padding:16px}}
+@media(max-width:400px){.sala-action{padding:16px}.sala-action-metrics{gap:4px}.sala-action-metric{padding:8px 6px}.sala-action-metric strong{font-size:21px}.sala-action-region-hours{font-size:9px}}
