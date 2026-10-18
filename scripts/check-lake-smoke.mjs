@@ -398,19 +398,29 @@ assert.match(lakeCss,/\.smoke-camera-picks\{/);
 console.log('Lake-smoke authentic photo, five verified operator camera URLs, and no-autoplay watch board passed');
 
 
-// Frankfort must display the operator's actual embedded camera, not a source-only card.
+// Frankfort: display a current, local operator source instead of nonworking resort cam.
 const harbor=camFor('frankfort');
-assert.equal(harbor.operator,'Harbor Lights Resort / Angelcam');
-assert.equal(harbor.url,'https://frankfort-harbor-lights-beach.click2stream.com/');
-assert.equal(playableCamera(harbor).embedUrl,'https://v.angelcam.com/iframe?v=xbrmn45vy2&autoplay=0');
+assert.equal(harbor.operator,'Oliver Art Center');
+assert.equal(harbor.name,'Lake Michigan View — Oliver Art Center');
+assert.equal(harbor.autoEmbed,true,'Frankfort must load its viable lake-view embed by default');
+assert.equal(harbor.url,'https://oliverartcenterfrankfort.org/webcam');
+assert.equal(playableCamera(harbor).embedUrl,'https://rtsp.me/embed/SQ2GeaQN/');
 assert.equal(harbor.alternates.length,1);
 assert.equal(harbor.alternates[0].operator,'Oliver Art Center');
-assert.equal(playableCamera(harbor.alternates[0]).embedUrl,'https://rtsp.me/embed/SQ2GeaQN/');
-assert.match(harbor.note,/Connecting to camera/,'Warn when original beach camera fails to connect');
+assert.match(harbor.alternates[0].view,/NOT exposed Lake Michigan/,'Inland harbor view cannot imply open Lake Michigan');
+assert.equal(playableCamera(harbor.alternates[0]).embedUrl,'https://rtsp.me/embed/A9ST7n4N/');
+assert.equal(harbor.unavailableCameras.length,1);
+assert.equal(harbor.unavailableCameras[0].name,'Harbor Lights Beach');
+assert.match(harbor.unavailableCameras[0].note,/Connecting to camera/);
+assert.equal(harbor.unavailableCameras[0].url,'https://frankfort-harbor-lights-beach.click2stream.com/');
+assert.notEqual(playableCamera(harbor).kind,'angelcam','Never default to the stalled resort player');
 assert.equal(playableCamera({embed:{kind:'angelcam',cameraId:'javascript:alert(1)'}}),null);
 assert.equal(playableCamera({embed:{kind:'rtspme',streamId:'../../evil'}}),null);
-assert.match(lakePage,/smoke-camera-source-switch/,'Visitor can switch between both Frankfort camera players');
-assert.match(lakePage,/setCameraIndex\(index\)/,'Camera switch should reset player without leaving selected Frankfort lookout');
-assert.match(lakePage,/activeCamera\.url/,'Always link to the actual selected camera operator');
-assert.match(lakeCss,/\.smoke-camera-source-switch/);
-console.log('Frankfort Harbor Lights beach camera and Oliver Art Center alternate embed verified');
+assert.match(lakePage,/smoke-camera-source-switch/,'Visitor can switch between independent views');
+assert.match(lakePage,/setCameraIndex\(index\)/,'Camera switch must stay on same Frankfort lookout');
+assert.match(lakePage,/activeCamera\.url/,'Camera link remains operator-specific');
+assert.match(lakePage,/camera\?\.autoEmbed/,'First selected Frankfort camera loads inline');
+assert.match(lakePage,/source\.status/,'The broken Harbor Lights feed is explicitly marked unavailable');
+assert.match(lakePage,/unavailableCameras/);
+assert.match(lakeCss,/\.smoke-camera-unavailable/);
+console.log('Frankfort Oliver Lake Michigan embed first; offline Harbor Lights source correctly demoted');
