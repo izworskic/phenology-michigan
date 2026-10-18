@@ -32,7 +32,7 @@ assert.ok(map.includes('scrollWheelZoom:false'),'Map cannot trap ordinary page s
 assert.ok(map.includes('keyboard:true'),'Markers support keyboard access');
 assert.ok(map.includes('new ResizeObserver'),'Resize detection is necessary in responsive layout');
 assert.ok(map.includes('map.invalidateSize'),'Prevent blank halves or gray maps on resize');
-assert.ok(map.includes("tiles.on('tileload',success)")&&map.includes("tiles.on('tileerror',failure)"),'Detect CARTO success/failure with genuine tile events');
+assert.ok(map.includes("layer.on('tileload',success)")&&map.includes("layer.on('tileerror',failure)"),'Detect CARTO success/failure with genuine tile events');
 assert.ok(map.includes('if(successes===0&&failures>0)'),'Do not declare service down if only one tile fails');
 assert.ok(map.includes('Use the location list'),'Provide fallback if CARTO/Leaflet is unavailable');
 assert.ok(map.includes('not observed hoarfrost'),'Forecast markers must not imply verified ice crystals');
