@@ -4,7 +4,7 @@ import {SITES,SOURCE_LINKS} from '../lib/lakeSmoke.mjs';
 import {rankShorelineViews,compass} from '../lib/lakeSmokeWind.mjs';
 import {GREAT_LAKES} from '../lib/lakeSmokeGeography.mjs';
 import {historyForSite,easternDay} from '../lib/lakeSmokeArchive.mjs';
-import {playableCamera,cameraFor} from '../lib/lakeSmokeCameras.mjs';
+import {playableCamera,cameraFor,EMBEDDABLE_IDS,CAMERA_REVIEW_DATE} from '../lib/lakeSmokeCameras.mjs';
 const BASE='https://phenology.chrisizworski.com';
 const CANONICAL=BASE+'/lake-smoke';
 const TITLE='Great Lakes Lake Smoke Forecast: Where & When to See Steam Fog';
@@ -239,16 +239,16 @@ function LakeSmokeCameraPlayer({camera}){
   const imageLink=snapshot?(snapshot+(snapshot.includes('?')?'&':'?')+'smokeRefresh='+refreshCount):null;
   return <div className='smoke-player-block'>
     {player?<>
-      {playing?<div className='smoke-camera-player' role='group' aria-label={'Embedded operator live camera — '+camera.name}>
-        <iframe key={player.videoId} src={player.embedUrl+'&autoplay=1&mute=1'} title={camera.name+' — live camera, supplied by '+camera.operator}
+      {playing?<div className='smoke-camera-player' role='group' aria-label={'Embedded operator camera — '+camera.name}>
+        <iframe key={player.kind+'-'+player.id} src={player.kind==='youtube'?player.embedUrl+'&autoplay=1&mute=1':player.embedUrl} title={camera.name+' — embedded camera, supplied by '+camera.operator}
           allow='autoplay; encrypted-media; picture-in-picture; fullscreen'
           referrerPolicy='strict-origin-when-cross-origin' loading='lazy' allowFullScreen/>
       </div>:<button type='button' className='smoke-camera-start' onClick={()=>setPlaying(true)}
         aria-label={'Play embedded '+camera.name+' camera'}>
-        {!posterFailed&&<img src={player.posterUrl} alt='' loading='lazy' onError={()=>setPosterFailed(true)}/>}
-        <span className='smoke-camera-play'><span aria-hidden='true'>▶</span> Watch live camera</span>
+        {player.posterUrl&&!posterFailed&&<img src={player.posterUrl} alt='' loading='lazy' onError={()=>setPosterFailed(true)}/>}<span className='smoke-camera-preview-title'>{camera.view}</span>
+        <span className='smoke-camera-play'><span aria-hidden='true'>▶</span> {player.kind==='youtube'?'Watch live camera':'Load operator camera'}</span>
       </button>}
-      <div className='smoke-camera-player-meta'><span>{playing?'Operator video player loaded':'Load camera only when selected'}</span><span>Playback may require another click or be unavailable seasonally</span></div>
+      <div className='smoke-camera-player-meta'><span>{playing?'Operator player requested — stream status unverified':'Loads only on request; no background video'}</span><span>Provider may require another click or may be offline</span></div>
     </>:snapshot?<>
       <div className='smoke-camera-player'>
         {shotOn&&!snapshotFailed?<img src={imageLink} alt={'Latest operator camera still at '+camera.name} loading='lazy'
@@ -257,11 +257,11 @@ function LakeSmokeCameraPlayer({camera}){
       <button type='button' className='smoke-camera-refresh' onClick={()=>{setShotOn(true);setSnapshotFailed(false);setRefreshCount(x=>x+1);}}>Refresh operator snapshot</button>
       <p className='smoke-camera-fine'>If provided by the operator, this still refreshes once per minute while displayed. Camera timestamps must be checked at source.</p>
     </>:<div className='smoke-camera-noembed'>
-      <strong>No embeddable camera confirmed at this location.</strong>
+      <strong>No verified embeddable player at this location.</strong>
       <span>Use the operator's original page below. A still image or a frame from an unrelated camera would be misleading.</span>
     </div>}
     {camera?.url&&<a className='smoke-camera-link' href={camera.url} target='_blank' rel='noopener noreferrer'>
-      {player?'Open live stream on YouTube ↗':'Open operator camera ↗'}</a>}
+      {player?.kind==='youtube'?'Open live stream on YouTube ↗':'Open operator camera page ↗'}</a>}
     {camera?.operatorPage&&<a className='smoke-camera-link secondary' href={camera.operatorPage} target='_blank' rel='noopener noreferrer'>More cameras from operator ↗</a>}
   </div>;
 }
@@ -382,6 +382,10 @@ export default function LakeSmoke(){
     url.searchParams.set('location',id);
     window.history.replaceState(null,'',url.pathname+url.search+url.hash);
   };
+  const chooseCamera=id=>{
+    choose(id);
+    window.requestAnimationFrame(()=>document.getElementById('cameras')?.scrollIntoView({behavior:'smooth',block:'start'}));
+  };
   const locations=data?.locations||SITES.map(site=>({...site,status:{label:'Awaiting data',tone:'unknown'},outlook:{windows:[],hourly:[],best:null}}));
   const picked=locations.find(site=>site.id===selected)||locations[0];
   // Cameras do not depend on the slower NOAA/NWS forecast API loading.
@@ -430,7 +434,7 @@ export default function LakeSmoke(){
           {featured.length>0?<div className='smoke-top-grid'>{featured.map((s,i)=>{
             const window=rankedBy==='views'?s.outlook.bestView:s.outlook.best;
             return <button key={s.id} type='button' className='smoke-top-card' onClick={()=>{choose(s.id);document.getElementById('forecast')?.scrollIntoView({behavior:'smooth'});}}>
-              <span className='smoke-top-kicker'>#{i+1} · Lake {s.lake}</span><strong>{s.name}</strong>
+              <span className='smoke-top-kicker'>#{i+1} · Lake {s.lake}</span><strong>{s.name}</strong>{cameraFor(s.id)&&<span className='smoke-top-camera-hint'>{playableCamera(cameraFor(s.id))?'Camera player available · See below':'Camera source available · See below'}</span>}
               <div><Score value={window.score}/>{rankedBy==='views'?<span className={'smoke-drift-label '+window.viewing.status}>{window.viewing.label}</span>:<Tone status={s.status}/>}</div>
               <small>{shortDay(window.time,s.tz)} · {window.viewing?.windFrom?'wind from '+window.viewing.windFrom+' · ':''}{window.spreadC>0?'+':''}{window.spreadC}°C water–air</small>
             </button>})}</div>:<div className='smoke-empty'>No qualifying location has enough current data for a credible forecast ranking.</div>}
@@ -441,7 +445,7 @@ export default function LakeSmoke(){
           <div className='smoke-explore-grid'>
             <MapPanel results={locations} selected={selected} onChoose={choose}/>
             <div className='smoke-sidebar'><div className='smoke-sidebar-heading'><h3>15 Great Lakes lookouts</h3><label htmlFor='lake-filter'>Filter by lake</label><select id='lake-filter' value={filter} onChange={e=>setFilter(e.target.value)}>{['All lakes','Superior','Michigan','Huron','Erie','Ontario'].map(x=><option key={x}>{x}</option>)}</select></div>
-              <div className='smoke-location-list'>{filtered.map(s=><button type='button' className={'smoke-location '+(selected===s.id?'selected':'')} key={s.id} onClick={()=>choose(s.id)} aria-pressed={selected===s.id}><span><strong>{s.name}</strong><small>Lake {s.lake} · {s.status?.label}{s.outlook?.bestView?' · '+s.outlook.bestView.viewing.label:''}</small></span><span className='smoke-location-score'>{s.outlook?.best?.score??'—'}</span></button>)}</div>
+              <div className='smoke-location-list'>{filtered.map(s=><button type='button' className={'smoke-location '+(selected===s.id?'selected':'')} key={s.id} onClick={()=>choose(s.id)} aria-pressed={selected===s.id}><span><strong>{s.name}</strong><small>Lake {s.lake} · {s.status?.label}{s.outlook?.bestView?' · '+s.outlook.bestView.viewing.label:''}</small>{cameraFor(s.id)&&<small className='smoke-list-cam-flag'>{playableCamera(cameraFor(s.id))?'◉ Camera player':'◉ Camera link'}</small>}</span><span className='smoke-location-score'>{s.outlook?.best?.score??'—'}</span></button>)}</div>
             </div>
           </div>
         </section>
@@ -467,13 +471,24 @@ export default function LakeSmoke(){
           </div>
         </section>
         <section id='cameras' className='smoke-cameras' aria-label='Shoreline camera verification'>
-          <div className='smoke-section-line'><div><div className='smoke-overline dark'>Before you make the drive</div><h2>Watch the shoreline camera</h2></div><p>Choose a lookout for its operator-hosted live player where available. Camera feeds can be offline or pointed away from the lake.</p></div>
+          <div className='smoke-section-line'><div><div className='smoke-overline dark'>Before you make the drive</div><h2>Watch the shoreline camera</h2></div><p>{EMBEDDABLE_IDS.length} operator-published embedded players across the Great Lakes. Select a shoreline below. These are links to live services, not independently verified live pictures.</p></div>
+          <div className='smoke-camera-picks' role='group' aria-label='Choose an embedded shoreline camera'>
+            {EMBEDDABLE_IDS.map(id=>{
+              const site=SITES.find(x=>x.id===id),cam=cameraFor(id);
+              return <button key={id} type='button' className={'smoke-camera-pick '+(id===picked.id?'selected':'')}
+                aria-pressed={id===picked.id} onClick={()=>chooseCamera(id)}>
+                <span className='smoke-camera-pick-lake'>Lake {site.lake}</span>
+                <strong>{site.name}</strong>
+                <small>{cam?.view}</small>
+              </button>;
+            })}
+          </div>
           <div className='smoke-cameras-grid'>
             <div className='smoke-camera-card'>
-              <div className='smoke-camera-kicker'>Selected location · {picked.name}</div>
+              <div className='smoke-camera-kicker'>Selected location · {picked.name} · Camera sources reviewed {CAMERA_REVIEW_DATE}</div>
               {selectedCamera?<><h3>{selectedCamera.name}</h3><p><strong>Camera operator:</strong> {selectedCamera.operator}</p><p><strong>View:</strong> {selectedCamera.view}</p><LakeSmokeCameraPlayer key={picked.id} camera={selectedCamera}/>
                 {selectedCamera.note&&<p className='smoke-camera-notice'>{selectedCamera.note}</p>}
-                <p className='smoke-camera-fine'>Streams are supplied directly by their original providers in an embedded player. Playback, availability and viewing direction are not monitored or verified by this forecast tool. No footage is copied, recorded or automatically analyzed.</p></>
+                <p className='smoke-camera-fine'>These camera sources are operator-published, but the tool does not check whether video is playing today. Some cameras show sheltered harbors or a river, not open-lake visibility. Video is not copied, recorded or automatically analyzed.</p></>
               :<><h3>No verified camera at this spot</h3><p>We could not confirm a public shoreline-facing camera from an original operator for this lookout. Avoid relying on unrelated city or traffic cameras as evidence of lake smoke.</p>
                 <a className='smoke-camera-link secondary' href='https://www.michigan.org/webcams' target='_blank' rel='noopener noreferrer'>Explore Michigan webcams ↗</a></>}
             </div>
