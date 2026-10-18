@@ -25,11 +25,11 @@ export default function FrostExplorer({site,morning,locations,date,onChoose,chos
     if(row?.time)setPickedTime(row.time);
   };
   return <section className='fx-root' id='frost-explorer' aria-label='Interactive Michigan dawn weather explorer'>
-    <div className='fx-heading'><div><span className='fm-kicker'>Explore the evidence</span>
-      <h2>What changes between one frosty dawn and the next?</h2>
-      <p>Choose a location on the map, compare dates above, and inspect each forecast hour below. All views share the same location and morning.</p>
+    <div className='fx-heading'><div><span className='fm-kicker'>Look closer · hour by hour</span>
+      <h2>Why might one sunrise be frostier than another?</h2>
+      <p>Follow the same morning through three lenses: the air's temperature, the wind and clouds, and the ingredients behind the frost setup score. Tap any hour to ask what that forecast means outdoors.</p>
     </div><div className='fx-coverage'><strong>{morning?.dataCoveragePct!=null?morning.dataCoveragePct+'%':'—'}</strong>
-      <span>required-hour data coverage</span><small>{available} of 6 dawn hours available · not forecast certainty</small></div></div>
+      <span>dawn weather hours available</span><small>{available} of 6 dawn hours available · not a confidence percentage</small></div></div>
     <div className='fx-chart-layout'>
       <div className='fx-chart-shell'>
         <div className='fx-chart-bar'><div><h3>{site.name} · {date||'upcoming dawn'}</h3>
@@ -39,7 +39,7 @@ export default function FrostExplorer({site,morning,locations,date,onChoose,chos
           </div>
         </div>
         {available===0?<div className='fx-no-data'>Required forecast fields are missing for this dawn. No chart points are estimated.</div>:
-        <div className='fx-chart' role='group' aria-label='Interactive dawn weather charts'>
+        <div className='fx-chart' role='group' aria-label='Explore sunrise-weather clues'>
           <ResponsiveContainer width='100%' height={284}>
             <ComposedChart data={data} margin={{top:15,right:17,left:0,bottom:8}} onMouseMove={selectFromGraph} onClick={selectFromGraph}>
               <CartesianGrid vertical={false} stroke='#dfe7e9' strokeDasharray='3 4'/>
@@ -64,22 +64,22 @@ export default function FrostExplorer({site,morning,locations,date,onChoose,chos
             </ComposedChart>
           </ResponsiveContainer>
         </div>}
-        <div className='fx-hour-buttons' role='group' aria-label='Inspect an hour'>
+        <div className='fx-hour-buttons' role='group' aria-label='A closer look at one hour'>
           {data.map(h=><button key={h.time} type='button' className={picked?.time===h.time?'active':''}
             onClick={()=>setPickedTime(h.time)} aria-pressed={picked?.time===h.time}>
             <strong>{hourLabel(h.hour)}</strong><span>{h.score==null?'No data':h.score+'/100'}</span></button>)}
         </div>
-        <div className='fx-chart-note'>The dashed 32°F line is an air-temperature reference, not a measured grass or branch temperature. Gaps mean missing data.</div>
+        <div className='fx-chart-note'>The dashed line marks 32°F in the forecast air—not the temperature of grass or twigs. A blade of grass may be colder than the air; blank hours mean missing weather data.</div>
       </div>
       <aside className='fx-inspector' aria-live='polite'>
         <span className='fm-kicker'>Inspect an hour</span><h3>{picked?hourLabel(picked.hour):'No hourly forecast'} · {site.name}</h3>
-        <div className='fx-inspector-score'><strong>{picked?.score??'—'}</strong><span>{picked?.score!=null?'/ 100 weather fit':'Forecast incomplete'}</span></div>
+        <div className='fx-inspector-score'><strong>{picked?.score??'—'}</strong><span>{picked?.score!=null?'/ 100 forecast-ingredient index':'Forecast incomplete'}</span></div>
         {picked?.score!=null?<><div className='fx-inspector-metrics'>
           <div><small>Air / dew point</small><strong>{number(picked.tempF)}° / {number(picked.dewF)}°</strong></div>
           <div><small>Humidity gap</small><strong>{number(picked.spreadF,1)}°F</strong></div>
           <div><small>Wind</small><strong>{number(picked.windMph,1)} mph</strong></div>
           <div><small>Clouds</small><strong>{number(picked.skyPct)}%</strong></div></div>
-          <h4>What contributes to this index?</h4>
+          <h4>Which ingredients are helping?</h4>
           <div className='fx-factor-list'>{Object.entries(labels).map(([key,label])=>{
             const score=picked.factors?.[key]??0;
             return <div key={key}><div><span>{label}</span><b>{score} / {maxima[key]}</b></div>
@@ -91,20 +91,20 @@ export default function FrostExplorer({site,morning,locations,date,onChoose,chos
       </aside>
     </div>
     <div className='fx-bottom-grid'>
-      <article className='fx-explainer'><span className='fm-kicker'>Morning consistency</span><h3>{morning?.sustainedHours??'—'} consecutive favorable hour{morning?.sustainedHours===1?'':'s'}</h3>
+      <article className='fx-explainer'><span className='fm-kicker'>Will the favorable weather last?</span><h3>{morning?.sustainedHours??'—'} consecutive favorable hour{morning?.sustainedHours===1?'':'s'}</h3>
         <p>{morning?.explanation||'No complete dawn forecast.'}</p>
         <div className='fx-stats'><span>Minimum air: <b>{number(morning?.tempMinF,1)}°F</b></span><span>Mean wind: <b>{number(morning?.windMeanMph,1)} mph</b></span><span>Mean cloud: <b>{number(morning?.cloudMeanPct)}%</b></span></div>
         <p className='fx-small'>{morning?.moistureMode||'Ice crystal type is unknown.'}. These are forecast ingredients, not confirmation of hoarfrost, rime, or frozen dew.</p>
         {!!morning?.drivers?.length&&<ul>{morning.drivers.map((s,i)=><li key={i}>{s}</li>)}</ul>}
       </article>
-      <article className='fx-comparison'><span className='fm-kicker'>Statewide comparison · {date||'select a dawn'}</span><h3>Where are conditions most favorable?</h3>
-        <p>Select any row to move the map, charts and sunrise advice to that place.</p>
+      <article className='fx-comparison'><span className='fm-kicker'>Compare Michigan · {date||'select a dawn'}</span><h3>Which regions deserve a closer look?</h3>
+        <p>Select a region to carry its morning through the map and all the weather stories.</p>
         {rows.length?<div className='fx-ranks'>{rows.map(row=><button key={row.id} type='button' aria-pressed={row.id===chosen}
           className={row.id===chosen?'active':''} onClick={()=>onChoose(row.id)}>
           <span className='fx-rank-label'>{row.name}<small>{row.sustainedHours} sustained hour{row.sustainedHours===1?'':'s'} · {row.overnightHeadline}</small></span>
           <span className='fx-rank-track'><i style={{width:(row.score??0)+'%'}}/></span>
           <strong>{row.score??'—'}</strong></button>)}</div>:<p>Statewide results unavailable; select a location using the map.</p>}
-        <small className='fx-small'>Ranks reflect a date-specific suitability index, not observed frost or the likelihood of seeing it. Missing locations are unranked.</small>
+        <small className='fx-small'>The ranking follows the date you selected. It compares weather ingredients—not confirmed frost or a percentage chance. Unavailable areas are left unranked.</small>
       </article>
     </div>
   </section>;

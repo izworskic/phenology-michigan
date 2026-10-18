@@ -141,7 +141,7 @@ export default function FrostCartoMap({chosen,onChoose,board,location,date}){
       onReady={()=>setLeafletReady(true)}
       onError={()=>setMapError('The mapping library did not load. Use the location list beside the map.')}/>
     <div className='fm-carto-toolbar'>
-      <div><strong>Michigan frost outlook</strong><small>12 NWS forecast points · selected dawn: {todayText(date)}</small></div>
+      <div><strong>A field guide to Michigan mornings</strong><small>12 NWS forecast points · selected dawn: {todayText(date)}</small></div>
       <div className='fm-carto-controls'>
         <div className='fm-carto-switch' role='group' aria-label='Map basemap style'>
           <button type='button' aria-pressed={style==='voyager'} onClick={()=>setStyle('voyager')}>Terrain & roads</button>
@@ -156,13 +156,13 @@ export default function FrostCartoMap({chosen,onChoose,board,location,date}){
       {!leafletReady&&!mapError&&<div className='fm-carto-loading' role='status'>Loading the CARTO basemap…</div>}
       {mapError&&<div className='fm-carto-error' role='status'>{mapError}</div>}
       {!mapError&&!tilesLoaded&&leafletReady&&<div className='fm-carto-loading fm-carto-loading-small' role='status'>Loading map tiles…</div>}
-      <div className='fm-carto-map-caption'>{todayText(date)} weather setup · not observed hoarfrost</div>
+      <div className='fm-carto-map-caption'>{todayText(date)} forecast conditions · not observed hoarfrost</div>
     </div>
     <div className='fm-carto-selected' aria-live='polite'>
       <div><small>Selected weather point</small><strong>{selectedSite.name}</strong>
         <span>{Number.isFinite(currentScore)?(selectedMorning?.label||'Weather setup')+' · '+todayText(date):'Detailed forecast available in the panel below'}</span></div>
       <div className='fm-carto-selected-right'><span className={'fm-carto-score '+tone(currentScore)}>{Number.isFinite(currentScore)?Math.round(currentScore):'—'}<small>{Number.isFinite(currentScore)?'/100':'no score'}</small></span>
-        <a href='#forecast'>View hourly outlook ↓</a></div>
+        <a href='#forecast'>Read this dawn's forecast ↓</a></div>
     </div>
     <div className='fm-map-foot fm-carto-legend' aria-label='Forecast weather setup scale'>
       <span><i className='strong'/>75–100 strong</span>
