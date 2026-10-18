@@ -20,7 +20,7 @@ const warm=scoreHour({tempF:42,dewF:40,windMph:2,skyPct:10});
 assert.ok(warm.score<=10,'Warm air must never create a high frost setup score');
 assert.equal(scoreHour({tempF:28,dewF:40,windMph:2,skyPct:10}),null,'Inconsistent dew point over air temperature must be rejected');
 assert.equal(scoreHour({tempF:30,dewF:28,windMph:2,skyPct:10}).factors.temperature,29);
-assert.ok(hourlyIngredientNotes({tempF:35,dewF:33,spreadF:2,windMph:2,skyPct:15,score:70,visibilityMi:null}).some(x=>x.includes('exposed grass')));
+assert.ok(hourlyIngredientNotes({tempF:35,dewF:33,spreadF:2,windMph:2,skyPct:15,score:70,visibilityMi:null}).some(x=>x.includes('Exposed grass')));
 assert.equal(lookup('ironwood').tz,'America/Chicago');
 assert.equal(localParts(new Date('2026-10-21T11:00:00Z'),lookup('ironwood').tz).hour,6);
 const board=[{id:'bay-city',name:'Bay City',region:'Bay',mornings:[{date:'2026-10-21',score:80,sustainedHours:3},{date:'2026-10-22',score:20}]},
