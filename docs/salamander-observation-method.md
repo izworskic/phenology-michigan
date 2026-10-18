@@ -127,3 +127,24 @@ The scheduler executes full existing tests before capture, then fetches the live
 ### Scientific method references
 
 USGS: *Occupancy models to study wildlife*, DOI 10.3133/fs20053096 — https://pubs.usgs.gov/publication/fs20053096. USGS: *Sampling design trade-offs in occupancy studies with imperfect detection* — https://www.usgs.gov/publications/sampling-design-trade-offs-occupancy-studies-imperfect-detection-examples-and. NOAA SWPC: *Forecast Verification Glossary* — https://www.swpc.noaa.gov/sites/default/files/images/u30/Forecast%20Verification%20Glossary.pdf. A proper future forecast-verification study needs a predeclared event definition, repeated standardized site monitoring/detection assumptions, sampling-effort control, multi-season holdout and statistical uncertainty before publishing skill measures.
+
+
+## v6: Spring archive reliability, stale-upstream detection and missing-day alerts
+
+### Same-day retry and source freshness
+
+- Existing GitHub Action *Archive salamander forecast as issued* now runs at **19:05 and 21:05 UTC** each March–May day (14:05 / 16:05 EST, 15:05 / 17:05 EDT). The second run is strictly a **same-day retry**, not a retrospective backfill. An initial guard checks the actual archived date, skips package installation/tests/source API work if already recorded, and refuses invalid old archive entries. No new paid services or manual setup required.
+- The existing NWS hourly response now passes \`properties.updateTime\` through \`/api/salamanders\` as \`nwsUpdatedAt\`. This does **not alter** the site's scoring or forecasting. Snapshot creation requires at least 6 distinct regions with complete seven-night outcomes and **NWS grid data actually updated within the prior 18 hours**. A newly fetched HTTP response with old NWS grid data is insufficient. Missing, stale or future NWS grid timestamps make that individual region ineligible; 5 or fewer eligible regions cause an explicit failed capture rather than inventing missing forecasts.
+- NOAA RCC ACIS thaw evidence remains contextual: each archived region stores only its *station observation age in days*, not exact animal monitoring sites. An issue with fewer than six regions reporting temperature observations within three days is labelled \`thaw_data_limited\`; archived values are **not** upgraded to ground-thaw certainty. Archive root \`upstream\` includes counts of NWS-fresh regions and NOAA-recent regions. NWS freshness and NOAA thaw data are independent concepts.
+- The user-facing archive shows permanent missed-day count, last issued date, days with partial regions and archived issues with limited NOAA thaw evidence. During October/other off-season months it correctly says paused. Missing seasonal days only count as missed **after 6 p.m. Michigan local time**; pending current-day capture never raises a false missing-day alert. Collection begins prospectively **March 1, 2027**. Older dates cannot be inferred or backfilled.
+
+### Operator watchdog
+
+- A second GitHub Action, *Detect missed salamander spring forecast issues*, runs at **23:20 UTC** March–May, after 6 p.m. in Michigan (both DST and standard time). It reads the versioned forecast archive without making any live environmental API requests.
+- If the completed current spring day has no valid issue, it opens a descriptive, **deduplicated GitHub Issue** called \`[Salamander archive] Missed spring forecast YYYY-MM-DD\`. Missing days remain visible and immutable; the issue advises checking source freshness, schedule delays, Actions logs and repository write failures. It never runs the forecast-archiving command after the evening deadline and never invents a prior afternoon prediction.
+- The watchdog runs with GitHub's built-in action credential scoped to public issue creation, not a new personal token. Whether someone receives an external notification depends on their GitHub repository notification settings. Scheduled GitHub Actions are best-effort, and a severely delayed or skipped watchdog is **not guaranteed** to alert; public archive health computes independently from the ledger.
+- For a failed afternoon run, inspect GitHub Actions → *Archive salamander forecast as issued*. For missed day alerts, inspect GitHub Issues. Do not edit previously archived forecasts in place, silently mark missing days as successful, or fill gaps with NWS hindcasts.
+
+### Regression acceptance
+
+\`scripts/check-salamander-archive-health.mjs\` validates both EST and EDT, off-season pause, pending vs. genuinely missed days, repeated issue protection, skipped setup for already-archived days, malformed/suspicious NWS updates, NOAA-limited provenance, permanent gaps, precise watchdog outputs, and source-safe UI. Tests are part of \`npm test\` so routine GitHub CI checks behavior before merge.
