@@ -3,6 +3,7 @@ import {useEffect,useMemo,useState} from 'react';
 import {useRouter} from 'next/router';
 import SalamanderMap from '../components/SalamanderMap';
 import SalamanderObservations from '../components/SalamanderObservations';
+import SalamanderBigNight from '../components/SalamanderBigNight';
 import {REGIONS,isSeason} from '../lib/salamanders.mjs';
 
 const URL='https://phenology.chrisizworski.com/salamander-migration';
@@ -75,9 +76,10 @@ function SpringCalendar(){
  </div>;
 }
 export default function SalamanderMigration(){
- const router=useRouter(),[selected,setSelected]=useState('saginaw-bay'),[data,setData]=useState(null),[error,setError]=useState(''),[loading,setLoading]=useState(true);
+ const router=useRouter(),[selected,setSelected]=useState('saginaw-bay'),[data,setData]=useState(null),[error,setError]=useState(''),[loading,setLoading]=useState(true),[refreshing,setRefreshing]=useState(false);
  useEffect(()=>{if(router.isReady&&typeof router.query.region==='string'&&REGIONS.some(r=>r.id===router.query.region))setSelected(router.query.region);},[router.isReady,router.query.region]);
- useEffect(()=>{let alive=true;fetch('/api/salamanders').then(r=>{if(!r.ok)throw Error('Forecast service unavailable');return r.json();}).then(v=>{if(alive){setData(v);setLoading(false);}}).catch(()=>{if(alive){setError('Unable to load the regional weather service.');setLoading(false);}});return()=>{alive=false;};},[]);
+ useEffect(()=>{let alive=true;fetch('/api/salamanders').then(r=>{if(!r.ok)throw Error('Forecast service unavailable');return r.json();}).then(v=>{if(alive){setData(v);setError('');setLoading(false);}}).catch(()=>{if(alive){setError('Unable to load the regional weather service.');setLoading(false);}});return()=>{alive=false;};},[]);
+ const refreshForecast=()=>{setRefreshing(true);fetch('/api/salamanders',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Forecast service unavailable');return r.json();}).then(v=>{setData(v);setError('');}).catch(()=>setError('Latest forecast check failed. Previously loaded conditions may be outdated.')).finally(()=>setRefreshing(false));};
  const choose=id=>{setSelected(id);router.replace({pathname:'/salamander-migration',query:id==='saginaw-bay'?{}:{region:id}},undefined,{shallow:true,scroll:false});};
  const region=REGIONS.find(r=>r.id===selected)||REGIONS[4];
  const row=data?.regions?.find(r=>r.id===selected)||null;
@@ -86,8 +88,8 @@ export default function SalamanderMigration(){
  const regionRows=useMemo(()=>REGIONS.map(r=>data?.regions?.find(x=>x.id===r.id)||r),[data]);
  const best=row?.best,tonight=row?.tonight;
  const thawCaution=!off&&row?.nights?.some(n=>n.thawLimited);
- const headline=off?'The forest is waiting for spring':unavailable?'Weather outlook unavailable':best?.level==='strong'?'Warm-rain window ahead':best?.level==='watch'?'Possible movement ahead':thawCaution?'Warm rain, but thaw may be delayed':'Watching for the first warm rain';
- const status=off?'Outside spring migration season':unavailable?'Forecast not available':best?.label||'No strong migration signal in seven nights';
+ const headline=off?'The forest is waiting for spring':unavailable?'Weather outlook unavailable':tonight?.level==='strong'?'Strong warm-rain signal tonight':tonight?.level==='watch'?'Possible movement weather tonight':row?.nights?.[1]?.level==='strong'?'Tomorrow night looks stronger':best?.level==='strong'?'A promising night lies ahead':thawCaution?'Warm rain, but thaw may be delayed':'Watching for the first warm rain';
+ const status=off?'Outside spring migration season':unavailable?'Forecast not available':tonight?.label||'Tonight’s assessment incomplete';
  const updated=data?.generatedAt?new Intl.DateTimeFormat('en-US',{dateStyle:'medium',timeStyle:'short',timeZone:'America/Detroit'}).format(new Date(data.generatedAt)):null;
  const structured={'@context':'https://schema.org','@graph':[
   {'@type':'WebPage','@id':URL+'#webpage',url:URL,name:TITLE,description:DESC,author:{'@id':'https://chrisizworski.com/#person'},isPartOf:{'@id':'https://phenology.chrisizworski.com/#website'}},
@@ -97,14 +99,15 @@ export default function SalamanderMigration(){
  ]};
  return <div className="sala">
   <Head><title>{TITLE} | Chris Izworski</title><meta name="description" content={DESC}/><link rel="canonical" href={URL}/><meta name="robots" content="index,follow,max-image-preview:large"/><meta property="og:type" content="website"/><meta property="og:title" content={TITLE}/><meta property="og:description" content={DESC}/><meta property="og:url" content={URL}/><meta name="twitter:card" content="summary"/><link rel="stylesheet" href="/salamander-migration.css"/><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/><script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(structured)}}/></Head>
-  <header className="sala-top"><div className="sala-wrap sala-top-inner"><a href="/">MICHIGAN PHENOLOGY <span>/ SALAMANDERS</span></a><nav aria-label="Tool navigation"><a href="#forecast">7 nights</a><a href="#thaw">Thaw</a><a href="#observations">Sightings</a><a href="#regions">Regional map</a><a href="#field-guide">Field guide</a><a href="/firefly-tracker">Fireflies</a></nav></div></header>
+  <header className="sala-top"><div className="sala-wrap sala-top-inner"><a href="/">MICHIGAN PHENOLOGY <span>/ SALAMANDERS</span></a><nav aria-label="Tool navigation"><a href="#big-night">Tonight / tomorrow</a><a href="#forecast">7 nights</a><a href="#thaw">Thaw</a><a href="#observations">Sightings</a><a href="#regions">Regional map</a><a href="#field-guide">Field guide</a><a href="/firefly-tracker">Fireflies</a></nav></div></header>
   <main>
    <section className="sala-hero"><div className="sala-wrap sala-hero-layout">
     <div><div className="sala-overline"><span className="sala-live-dot"/> Michigan's living calendar · Spring after dark</div><h1>When will the salamanders move?</h1><p className="sala-lead">A quiet forest. A warm spring rain. Then hundreds of hidden amphibians may make their way toward woodland pools. Track the rain, temperature, snow and thaw clues—and see when Michigan observers begin documenting salamanders.</p><div className="sala-pills"><span>9 forecast regions</span><span>7-night rain & temperature</span><span>Conservation-first</span></div></div>
-    <aside className="sala-hero-card"><span className="sala-overline">Your region · {region.name}</span><div className="sala-hero-status">{headline}</div><Stamp level={off?'off':best?.level||'unknown'}>{status}</Stamp><p>{off?'Migration generally returns with the first suitable spring thaws and rains. No current activity is implied.':best?'Next notable window: '+dateFmt(best.date)+'. '+best.details:'A suitable night needs sustained warm rain and locally thawed ground.'}</p><div className="sala-hero-meter"><span>Spring watch</span><span>{off?'Paused until spring':unavailable?'Data unavailable':'Forecast updated '+(updated||'recently')}</span></div></aside>
+    <aside className="sala-hero-card"><span className="sala-overline">Your region · {region.name}</span><div className="sala-hero-status">{headline}</div><Stamp level={off?'off':tonight?.level||'unknown'}>{status}</Stamp><p>{off?'Migration generally returns with the first suitable spring thaws and rains. No current activity is implied.':unavailable?'No dependable regional forecast is available.':tonight?.details||'Sustained warm rain and local thaw must line up; movement is never confirmed from a forecast.'}</p><div className="sala-hero-meter"><span>Spring watch</span><span>{off?'Paused until spring':unavailable?'Data unavailable':'Forecast updated '+(updated||'recently')}</span></div></aside>
    </div></section>
    <div className="sala-wrap">
     <div className="sala-trust"><strong>Forecast, not sightings.</strong> NWS temperature/rain forecasts and preliminary NOAA Regional Climate Center station observations are separate sources. Station snow depth is observed; woodland soil thaw, breeding-pool conditions, and salamander movement are not.</div>
+    <SalamanderBigNight region={region} row={row} data={data} selected={selected} onSelect={choose} off={off} unavailable={unavailable} loading={loading} onRefresh={refreshForecast} refreshing={refreshing}/>
     <section className="sala-section sala-location" id="regions"><div className="sala-section-title"><div><span className="sala-overline">Where spring is waking</span><h2>Explore Michigan's nine watch regions</h2></div><p>Select a marker or region. This map intentionally excludes individual vernal pools, animal locations, and road-crossing sites.</p></div>
      <div className="sala-layout"><div className="sala-map-panel"><SalamanderMap selected={selected} onSelect={choose} rows={data?.regions}/><div className="sala-legend"><span><i className="strong"/>Strong weather</span><span><i className="watch"/>Possible</span><span><i className="off"/>Unfavorable / off-season</span></div></div>
      <div className="sala-current">
