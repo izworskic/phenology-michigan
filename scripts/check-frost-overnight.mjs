@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {assessOvernight,nightSlots,partsAt,shiftDate,dateForNightHour} from '../lib/frostOvernight.mjs';
 import {evaluateGrid,lookup} from '../lib/frostMorning.mjs';
+import {rankedDawnRows} from '../lib/frostOutlook.mjs';
 const date='2026-10-21',tz='America/Detroit';
 assert.equal(shiftDate('2026-10-21',-1),'2026-10-20');
 assert.equal(dateForNightHour('2026-10-20',18),'2026-10-21');
@@ -54,6 +55,8 @@ assert.ok(report.mornings.every(m=>m.night),'Every dawn includes overnight conte
 assert.equal(report.mornings[1].night.expectedHours,16);
 assert.equal(report.mornings[1].night.coveragePct,100,'Tomorrow has all previous evening and overnight forecast hours');
 assert.ok(report.mornings[0].night.coveragePct<100,'Past overnight forecast hours are not treated as historical observations');
+const regional=rankedDawnRows([{id:'bay-city',name:'Bay City',mornings:[{date,score:78,night:strong}]}],date);
+assert.equal(regional[0].overnightHeadline,strong.headline,'Ranking must display the date-specific overnight regime');
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const page=read('pages/frosty-mornings.js');
 const decision=read('components/FrostDawnDecision.js'),component=read('components/FrostNightJourney.js');
