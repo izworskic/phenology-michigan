@@ -1,0 +1,68 @@
+/* Frost Explorer v2: coordinated charts, evidence inspector and statewide comparison */
+.fx-root{margin:40px 0 62px;scroll-margin-top:22px}
+.fx-heading{display:flex;justify-content:space-between;align-items:center;gap:22px;margin-bottom:18px}
+.fx-heading h2{font-size:clamp(27px,3.2vw,36px);max-width:710px;margin:7px 0 10px}
+.fx-heading p{color:#5d7882;font-size:13px;max-width:720px;margin:0}
+.fx-coverage{min-width:175px;text-align:right;padding:12px 0}
+.fx-coverage strong{display:block;font:700 34px Georgia,serif;color:#246a70}
+.fx-coverage span{display:block;font-size:11px;font-weight:700;color:#365965}
+.fx-coverage small{display:block;font-size:10px;color:#718d96}
+.fx-chart-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(275px,.85fr);gap:14px}
+.fx-chart-shell,.fx-inspector,.fx-explainer,.fx-comparison{background:#fff;border:1px solid #d6e0e3;border-radius:15px;box-shadow:0 8px 27px #1a50620c}
+.fx-chart-shell{padding:19px;min-width:0}
+.fx-chart-bar{display:flex;align-items:center;justify-content:space-between;gap:13px;flex-wrap:wrap}
+.fx-chart-bar h3{font-size:20px;margin:0 0 3px}
+.fx-chart-bar small{color:#73909a;font-size:11px}
+.fx-chart-switch{display:flex;flex-wrap:wrap;gap:3px;background:#edf3f2;padding:4px;border-radius:11px}
+.fx-chart-switch button{font-size:11px;font-weight:700;color:#456878;padding:8px 10px;border:0;border-radius:8px;background:transparent}
+.fx-chart-switch button.active,.fx-chart-switch button[aria-pressed=true]{color:#fff;background:#28596a}
+.fx-chart{margin:18px -7px 4px;min-height:284px}
+.fx-no-data{padding:80px 12px;text-align:center;color:#5d7882;font-size:13px}
+.fx-hour-buttons{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:8px 0 10px}
+.fx-hour-buttons button{border:1px solid #d9e5e6;border-radius:8px;background:#f5faf9;padding:9px 3px;color:#405f6a;display:flex;flex-direction:column;align-items:center;gap:2px}
+.fx-hour-buttons button:hover,.fx-hour-buttons button:focus-visible{border-color:#3c8a8e}
+.fx-hour-buttons button.active{background:#e1efee;border-color:#4e9b95;box-shadow:inset 0 0 0 1px #4e9b95}
+.fx-hour-buttons strong{font-size:11px}.fx-hour-buttons span{font-size:10px;color:#62828e}
+.fx-chart-note{font-size:11px;color:#748b93;line-height:1.5}
+.fx-inspector{padding:20px;min-width:0;background:#fafdfe}
+.fx-inspector h3{font-size:21px;margin:5px 0 11px}
+.fx-inspector-score{display:flex;align-items:baseline;gap:8px;padding-bottom:13px;border-bottom:1px solid #dfe8ea}
+.fx-inspector-score strong{font:700 50px Georgia,serif;color:#227366;line-height:1}
+.fx-inspector-score span{font-size:11px;color:#67838f}
+.fx-inspector-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:15px 0}
+.fx-inspector-metrics div{padding:10px;background:#f0f6f6;border-radius:8px}
+.fx-inspector-metrics small{display:block;font-size:10px;color:#6c858c}
+.fx-inspector-metrics strong{font-size:15px;color:#224a54;white-space:nowrap}
+.fx-inspector h4{font-size:12px;color:#486575;margin:17px 0 9px}
+.fx-factor-list{display:flex;flex-direction:column;gap:9px}
+.fx-factor-list>div>div:first-child{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#506d78}
+.fx-factor-list b{color:#244f56}
+.fx-factor-track{height:6px;background:#deeaed;border-radius:10px;overflow:hidden;margin-top:3px}
+.fx-factor-track span{height:100%;display:block;background:linear-gradient(90deg,#5a9ba6,#277263);border-radius:10px}
+.fx-penalty{font-size:11px;color:#9a5e3a;margin:10px 0}
+.fx-inspector ul,.fx-explainer ul{padding-left:18px;color:#536f78;font-size:11px;margin:15px 0 0}
+.fx-inspector li+li,.fx-explainer li+li{margin-top:6px}
+.fx-bottom-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}
+.fx-explainer,.fx-comparison{padding:22px}
+.fx-explainer h3,.fx-comparison h3{font-size:23px;margin:6px 0 9px}
+.fx-explainer p,.fx-comparison p{font-size:12px;color:#587580}
+.fx-stats{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.fx-stats span{padding:8px 11px;background:#e8f0f0;border-radius:8px;font-size:11px}
+.fx-stats b{color:#1c5855}
+.fx-small{font-size:11px!important;color:#77909a!important;line-height:1.5}
+.fx-ranks{display:flex;flex-direction:column;gap:5px;max-height:320px;overflow-y:auto;padding-right:3px}
+.fx-ranks button{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(60px,.8fr) 28px;align-items:center;gap:10px;border:1px solid transparent;border-radius:8px;padding:7px 9px;background:#f6f9f9;text-align:left;color:#35545e}
+.fx-ranks button:hover,.fx-ranks button:focus-visible{background:#e8f2f0}
+.fx-ranks button.active{border-color:#65a9a6;background:#e5f2ed}
+.fx-rank-label{font-size:12px;font-weight:700;min-width:0}
+.fx-rank-label small{display:block;font-size:9px;color:#728992;font-weight:400}
+.fx-rank-track{height:8px;border-radius:20px;background:#dce7e7;overflow:hidden}
+.fx-rank-track i{display:block;height:100%;background:#428f7b;border-radius:20px}
+.fx-ranks strong{font-size:13px;text-align:right}
+.fm-day-picker{display:flex;flex-wrap:wrap;gap:8px;padding:12px;margin:0 0 16px;background:#e6efef;border:1px solid #d6e0e3;border-radius:12px;align-items:center}
+.fm-day-picker>strong{font-size:11px;color:#47707a;margin-right:9px}
+.fm-day-picker button{border:1px solid #cbdde0;border-radius:9px;background:#fff;padding:8px 13px;color:#355e69;font-size:12px;font-weight:700}
+.fm-day-picker button[aria-pressed=true]{background:#234e5d;color:#fff;border-color:#234e5d}
+.fm-day-picker small{font-size:11px;color:#67858f;margin-left:auto}
+@media(max-width:920px){.fx-chart-layout{grid-template-columns:1fr}.fx-bottom-grid{grid-template-columns:1fr}.fx-inspector-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}.fx-inspector{padding:17px}}
+@media(max-width:650px){.fx-heading{display:block}.fx-heading h2{font-size:27px}.fx-coverage{text-align:left;padding-top:15px}.fx-chart-shell{padding:12px}.fx-chart{margin:13px -9px 4px}.fx-chart-switch{width:100%}.fx-chart-switch button{flex:1;font-size:10px;padding:8px 5px}.fx-chart-bar h3{font-size:19px}.fx-hour-buttons{gap:3px}.fx-hour-buttons button{padding:9px 0}.fx-hour-buttons strong{font-size:10px}.fx-hour-buttons span{font-size:9px}.fx-inspector-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.fx-explainer,.fx-comparison{padding:17px}.fm-day-picker small{margin-left:0;width:100%}}
