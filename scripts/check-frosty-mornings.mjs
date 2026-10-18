@@ -71,5 +71,10 @@ for(const marker of ['rel=','canonical','FrostCartoMap','HourlyChart','Person','
 for(const marker of ['forecastGridData','X-Robots-Tag','s-maxage=1800','status:',"mode==='board'"])assert.ok(api.includes(marker),marker);
 assert.ok(css.includes('@media(max-width:650px)'),'Mobile layout required');
 assert.match(css,/fm-photo-plan/,'Sunrise planner mobile styles required');
+assert.ok(page.includes('Erlenbusch_Sunrise_on_a_Frosty_Morning_%2815798533428%29.jpg'),'Authentic USFWS sunrise photograph should be the hero, not AI imagery');
+assert.ok(page.includes('Krista Lundgren')&&page.includes('North Dakota')&&page.includes('CC BY 2.0'),'Credit real photographer, geographic origin and image license');
+assert.ok(!page.includes('Frosty_morning%2C_tree_with_frost_covered_branches'),'Retire the old hero photograph');
+assert.ok(css.includes('.fm-hero-image{position:absolute;z-index:-2;inset:0;width:100%'),'Photograph should fill the full hero, not just its right side');
+assert.ok(css.includes('filter:none'),'Preserve the authentic frost colors of the photograph');
 assert.ok(sitemap.includes('/frosty-mornings'),'Sitemap discovery required');
 console.log('Michigan frosty morning engine, source-completeness, weather fit, map, page and SEO contracts passed');
