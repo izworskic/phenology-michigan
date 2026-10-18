@@ -6,6 +6,7 @@ import FrostDawnDecision from '../components/FrostDawnDecision';
 import FrostVerificationHistory from '../components/FrostVerificationHistory';
 import FrostCartoMap from '../components/FrostCartoMap';
 const FrostExplorer=dynamic(()=>import('../components/FrostExplorer'),{ssr:false});
+const FrostNightJourney=dynamic(()=>import('../components/FrostNightJourney'),{ssr:false});
 const URL='https://phenology.chrisizworski.com/frosty-mornings';
 const TITLE='Michigan Frosty Morning Predictor: Hoarfrost Forecast';
 const DESCRIPTION='Will tomorrow bring a frosty morning in Michigan? Compare dawn temperatures, dew points, wind and clouds in live NWS forecasts at 12 locations.';
@@ -96,8 +97,8 @@ export default function FrostyMornings(){
       <meta name='robots' content='index,follow,max-image-preview:large'/><meta property='og:type' content='website'/><meta property='og:title' content={TITLE}/>
       <meta property='og:description' content={DESCRIPTION}/><meta property='og:url' content={URL}/><meta name='twitter:card' content='summary'/>
       <link rel='stylesheet' href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'/>
-      <link rel='stylesheet' href='/frosty-mornings.css'/><link rel='stylesheet' href='/frost-explorer.css'/><script type='application/ld+json' dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}}/></Head>
-    <div className='fm-top'><a href='/'>MICHIGAN PHENOLOGY</a><nav aria-label='Page sections'><a href='#forecast'>The forecast</a><a href='#frost-explorer'>Explore the data</a><a href='#sunrise-guide'>Sunrise plan</a><a href='#frost-verification'>Evidence history</a><a href='#places'>Michigan map</a><a href='#science'>How it works</a><a href='/lake-smoke'>Lake smoke ↗</a></nav></div>
+      <link rel='stylesheet' href='/frosty-mornings.css'/><link rel='stylesheet' href='/frost-explorer.css'/><link rel='stylesheet' href='/frost-night.css'/><script type='application/ld+json' dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}}/></Head>
+    <div className='fm-top'><a href='/'>MICHIGAN PHENOLOGY</a><nav aria-label='Page sections'><a href='#forecast'>The forecast</a><a href='#frost-explorer'>Explore the data</a><a href='#overnight-journey'>Overnight cooling</a><a href='#sunrise-guide'>Sunrise plan</a><a href='#frost-verification'>Evidence history</a><a href='#places'>Michigan map</a><a href='#science'>How it works</a><a href='/lake-smoke'>Lake smoke ↗</a></nav></div>
     <header className='fm-hero'>
       <img className='fm-hero-image' src='https://commons.wikimedia.org/wiki/Special:FilePath/Frosty_morning%2C_tree_with_frost_covered_branches_%2848788814943%29.jpg?width=1400'
         alt='Reference photograph of a frost-covered tree from the U.S. Fish and Wildlife Service, not a current Michigan observation'/>
@@ -177,6 +178,7 @@ export default function FrostyMornings(){
           <p className='fm-fine'>Weather values shown above are for the last available dawn hour, not necessarily the best hour. Missing hourly values are left blank.</p>
         </div>}
       </section>
+      <FrostNightJourney night={selectedMorning?.night} site={site} morning={selectedMorning}/>
       <FrostExplorer site={site} morning={selectedMorning} locations={board?.locations} date={activeDate} chosen={chosen} onChoose={choose}/>
       <FrostVerificationHistory siteId={site.id} siteName={site.name}/>
       <section className='fm-section'><div className='fm-section-heading'><div><div className='fm-eyebrow dark'>What the weather can tell you</div><h2>Four ingredients for a silver morning</h2></div></div>
