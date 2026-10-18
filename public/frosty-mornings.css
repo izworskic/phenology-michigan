@@ -47,7 +47,7 @@
 .fm-carto-canvas .leaflet-control-attribution{font-size:9px;background:rgba(255,255,255,.88);padding:2px 5px}
 .fm-carto-canvas .leaflet-control-zoom{border:1px solid #cbdadd;box-shadow:0 4px 15px rgba(31,69,82,.1)}
 .fm-carto-canvas .leaflet-control-zoom a{color:#2f5d6b;background:#fff}
-.fm-carto-canvas .leaflet-tooltip{font:700 11px Arial,sans-serif;color:#2d4c59;max-width:220px;border:1px solid #cee0e3;border-radius:7px;box-shadow:0 3px 10px rgba(0,0,0,.12)}
+.fm-carto-canvas .leaflet-tooltip{font:700 11px/1.45 Arial,sans-serif;color:#2d4c59;box-sizing:border-box;width:max-content;max-width:min(240px,calc(100vw - 48px));white-space:normal!important;overflow-wrap:anywhere;word-break:normal;text-align:left;padding:9px 11px;border:1px solid #cee0e3;border-radius:9px;box-shadow:0 3px 10px rgba(0,0,0,.12)}
 .fm-carto-canvas .leaflet-tooltip:before{border-top-color:#cee0e3}
 .fm-carto-marker-container{background:transparent;border:none}
 .fm-carto-marker{position:relative;display:flex;align-items:center;justify-content:center;width:35px;height:35px;border:3px solid #fff;border-radius:50%;box-shadow:0 3px 12px rgba(19,50,64,.42);font:800 12px Arial,sans-serif;color:#fff;transition:transform .15s ease,box-shadow .15s ease;transform:translate(4px,4px)}
@@ -61,7 +61,7 @@
 .fm-carto-loading-small{top:70px;left:50%;font-size:10px;padding:8px 11px}
 .fm-carto-map-caption{position:absolute;top:12px;left:12px;z-index:500;max-width:65%;background:rgba(253,255,255,.92);border-radius:7px;padding:8px 10px;color:#3d6b7c;font:800 10px Arial,sans-serif;letter-spacing:.025em;box-shadow:0 2px 8px rgba(28,56,64,.1);pointer-events:none}
 .fm-carto-selected{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 7px 12px;border-bottom:1px solid #edf1f1}
-.fm-carto-selected>div:first-child{min-width:0}
+.fm-carto-selected>div:first-child{min-width:0;overflow-wrap:anywhere}
 .fm-carto-selected small,.fm-carto-selected strong,.fm-carto-selected span{display:block}
 .fm-carto-selected>div:first-child small{font-size:9px;text-transform:uppercase;font-weight:800;letter-spacing:.09em;color:#62838f}
 .fm-carto-selected>div:first-child strong{font:700 19px/1.2 Georgia,serif;color:#24475a;margin:4px 0}
