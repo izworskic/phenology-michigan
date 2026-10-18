@@ -49,6 +49,7 @@ const stale=region();stale.nwsUpdatedAt='2027-04-09T12:00:00Z';
 assert.equal(bigNightDecision(stale,null,day,now).status,'stale');
 assert.equal(bigNightDecision(stale,null,day,now).source.status,'stale');
 assert.equal(bigNightDecision(stale,null,day,now).tonight.advice.startsWith('Update needed'),true);
+
 assert.equal(bigNightDecision({...REGIONS[0],season:'off',nights:[]},null,day,now).status,'off_season');
 assert.equal(bigNightDecision({...REGIONS[0],season:'unavailable',nights:[]},null,day,now).status,'unavailable');
 const priorDay='2027-04-09';
@@ -59,6 +60,7 @@ const priorInput={status:'spring_watch',generatedAt:'2027-04-09T19:00:00Z',regio
 }))};
 const issue=createForecastIssue(priorInput,new Date('2027-04-09T19:10:00Z'));
 const changed=bigNightDecision(region(),issue,day,now);
+assert.equal(bigNightDecision(stale,issue,day,now).priorIssue,null,'Never compare an out-of-date current grid to a valid yesterday archive');
 assert.equal(changed.priorIssue.issueDay,'2027-04-09');
 assert.equal(changed.priorIssue.tonight.previousLevel,'dry');
 assert.equal(changed.priorIssue.tonight.currentLevel,'strong');
@@ -70,7 +72,8 @@ assert.equal(changed.priorIssue.tonight.tempDelta,0);
 assert.equal(changed.priorIssue.tonight.rainDelta,20);
 const skipped=bigNightDecision(region(),{...issue,issueDay:'2027-04-08'},day,now);
 assert.equal(skipped.priorIssue,null,'Wrong-day archive must not masquerade as yesterday');
-const ranked=attachBigNightDecisions([region('saginaw-bay','strong','watch'),region('west','watch','strong'),stale],[],day,now);
+const staleOther=region('central-up');staleOther.nwsUpdatedAt='2027-04-09T12:00:00Z';
+const ranked=attachBigNightDecisions([region('saginaw-bay','strong','watch'),region('west','watch','strong'),staleOther],[],day,now);
 assert.equal(ranked.statewide.strongTonight,1);
 assert.equal(ranked.statewide.possibleTonight,1);
 assert.equal(ranked.statewide.regionsWithCurrentSource,2);
@@ -93,7 +96,7 @@ for(const [path,phrase] of [
  ['components/SalamanderBigNight.js','No verified prior-afternoon forecast'],
  ['components/SalamanderBigNight.js','Peak rain chance'],
  ['components/SalamanderBigNight.js','Show all nine Michigan regions'],
- ['components/SalamanderMap.js','const level=row?.tonight?.level'],
+ ['components/SalamanderMap.js',"const level=row?.season==='spring'"],
  ['public/salamander-migration.css','.sala-action-two']
 ])assert.ok(fs.readFileSync(new URL('../'+path,import.meta.url),'utf8').includes(phrase),'Big Night contract missing: '+path);
 assert.deepEqual(JSON.parse(fs.readFileSync(new URL('../data/salamander-forecast-issues.json',import.meta.url),'utf8')),[],'Never invent yesterday comparison history');
