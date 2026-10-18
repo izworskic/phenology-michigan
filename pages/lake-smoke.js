@@ -471,7 +471,7 @@ export default function LakeSmoke(){
           </div>
         </section>
         <section id='cameras' className='smoke-cameras' aria-label='Shoreline camera verification'>
-          <div className='smoke-section-line'><div><div className='smoke-overline dark'>Before you make the drive</div><h2>Watch the shoreline camera</h2></div><p>${EMBEDDABLE_IDS.length} operator-published embedded players across the Great Lakes. Select a shoreline below. These are links to live services, not independently verified live pictures.</p></div>
+          <div className='smoke-section-line'><div><div className='smoke-overline dark'>Before you make the drive</div><h2>Watch the shoreline camera</h2></div><p>{EMBEDDABLE_IDS.length} operator-published embedded players across the Great Lakes. Select a shoreline below. These are links to live services, not independently verified live pictures.</p></div>
           <div className='smoke-camera-picks' role='group' aria-label='Choose an embedded shoreline camera'>
             {EMBEDDABLE_IDS.map(id=>{
               const site=SITES.find(x=>x.id===id),cam=cameraFor(id);
