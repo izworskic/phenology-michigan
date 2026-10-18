@@ -41,13 +41,15 @@ export default async function handler(req,res){
   if(mode==='board'){
     const sites=BOARD_IDS.map(id=>lookup(id));
     const locations=[];
-    for(let i=0;i<sites.length;i+=3){
-      const batch=await Promise.all(sites.slice(i,i+3).map(site=>siteForecast(site,now)));
+    // Limit NWS concurrency, but cover all 12 sites with only three 4-site batches.
+    // Each site's /points and grid calls remain sequential to follow NWS links.
+    for(let i=0;i<sites.length;i+=4){
+      const batch=await Promise.all(sites.slice(i,i+4).map(site=>siteForecast(site,now)));
       locations.push(...batch);
     }
-    res.setHeader('Cache-Control','public, s-maxage=1800, stale-while-revalidate=900');
+    res.setHeader('Cache-Control',locations.every(s=>s.status==='unavailable')?'public, s-maxage=120':'public, s-maxage=1800, stale-while-revalidate=900');
     return res.status(200).json({generatedAt:now.toISOString(),locations,allLocations:SITES.map(({id,name,region,lat,lon})=>({id,name,region,lat,lon})),
-      usable:locations.filter(s=>s.best).length,observation:false,
+      usable:locations.filter(s=>s.best).length,requested:sites.length,observation:false,
       summary:'Ranked by forecast atmospheric suitability, not observed frost or likelihood percentages.'});
   }
   return res.status(400).json({error:'Unknown request mode'});
