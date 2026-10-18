@@ -338,7 +338,7 @@ console.log('Lake smoke NOAA direct GLSEA 1024-grid projection, Saginaw Bay, Sup
 // V7 authentic lake-smoke photo and location-specific, operator-hosted live embeds.
 const {CAMERAS:LIVE_CAMS,cameraFor:camFor,playableCamera,EMBEDDABLE_IDS}=
   await import('../lib/lakeSmokeCameras.mjs');
-assert.deepEqual([...EMBEDDABLE_IDS].sort(),['grand-haven','grand-marais','marquette','munising','saginaw-bay']);
+assert.deepEqual([...EMBEDDABLE_IDS].sort(),['frankfort','grand-haven','grand-marais','marquette','munising','saginaw-bay']);
 for(const id of EMBEDDABLE_IDS){
   const camera=camFor(id),playable=playableCamera(camera);
   assert.ok(playable,'Operator player must be configured for '+id);
@@ -396,3 +396,21 @@ assert.match(lakePage,/player\?\.kind==='youtube'\?'Open live stream on YouTube/
 assert.match(lakeCss,/\.smoke-camera-picks\{/);
 
 console.log('Lake-smoke authentic photo, five verified operator camera URLs, and no-autoplay watch board passed');
+
+
+// Frankfort must display the operator's actual embedded camera, not a source-only card.
+const harbor=camFor('frankfort');
+assert.equal(harbor.operator,'Harbor Lights Resort / Angelcam');
+assert.equal(harbor.url,'https://frankfort-harbor-lights-beach.click2stream.com/');
+assert.equal(playableCamera(harbor).embedUrl,'https://v.angelcam.com/iframe?v=xbrmn45vy2&autoplay=0');
+assert.equal(harbor.alternates.length,1);
+assert.equal(harbor.alternates[0].operator,'Oliver Art Center');
+assert.equal(playableCamera(harbor.alternates[0]).embedUrl,'https://rtsp.me/embed/SQ2GeaQN/');
+assert.match(harbor.note,/Connecting to camera/,'Warn when original beach camera fails to connect');
+assert.equal(playableCamera({embed:{kind:'angelcam',cameraId:'javascript:alert(1)'}}),null);
+assert.equal(playableCamera({embed:{kind:'rtspme',streamId:'../../evil'}}),null);
+assert.match(lakePage,/smoke-camera-source-switch/,'Visitor can switch between both Frankfort camera players');
+assert.match(lakePage,/setCameraIndex\(index\)/,'Camera switch should reset player without leaving selected Frankfort lookout');
+assert.match(lakePage,/activeCamera\.url/,'Always link to the actual selected camera operator');
+assert.match(lakeCss,/\.smoke-camera-source-switch/);
+console.log('Frankfort Harbor Lights beach camera and Oliver Art Center alternate embed verified');
