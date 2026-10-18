@@ -21,14 +21,14 @@ async function nwsPeriods(region){
  const hourly=await getNws(url);
  const periods=hourly?.properties?.periods;
  if(!Array.isArray(periods)||periods.length<6)throw Error('Empty hourly forecast');
- return periods;
+ return {periods,updatedAt:typeof hourly?.properties?.updateTime==='string'?hourly.properties.updateTime:null};
 }
 async function regionForecast(region,now){
  // Missing climate station data must not break the live NWS layer; do not fake snow-free readings.
  const [wx,climate]=await Promise.allSettled([nwsPeriods(region),stationHistory(region,now)]);
  const thaw=climate.status==='fulfilled'?climate.value:{...thawContext(),station:region.sid,source:'NOAA RCC ACIS unavailable',dataUnavailable:true};
  if(wx.status!=='fulfilled')return {...offlineRegion(region),season:'unavailable',thaw,source:'NWS hourly forecast unavailable for this region'};
- return analyzeRegion(region,wx.value,now,thaw);
+ return {...analyzeRegion(region,wx.value.periods,now,thaw),nwsUpdatedAt:wx.value.updatedAt};
 }
 export default async function handler(req,res){
  if(req.method!=='GET'){res.setHeader('Allow','GET');return res.status(405).json({error:'Method not allowed'});}
