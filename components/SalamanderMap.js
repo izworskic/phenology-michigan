@@ -54,7 +54,7 @@ export default function SalamanderMap({selected,onSelect,rows}){
   REGIONS.forEach((r,i)=>{
    const m=markers.current.get(r.id),row=rows?.find(x=>x.id===r.id);
    // Map matches the new Tonight board; seven-night best appears separately in the outlook strip.
-   const level=row?.tonight?.level||'off';
+   const level=row?.season==='spring'?(row?.bigNight?.source?.status==='current'?row?.tonight?.level||'unknown':'unknown'):'off';
    m?.setIcon(pin(window.L,i+1,level,r.id===selected));
    m?.setZIndexOffset(r.id===selected?1000:0);
   });
