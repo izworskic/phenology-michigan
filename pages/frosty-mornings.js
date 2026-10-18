@@ -101,8 +101,9 @@ export default function FrostyMornings(){
       <link rel='stylesheet' href='/frosty-mornings.css'/><link rel='stylesheet' href='/frost-explorer.css'/><link rel='stylesheet' href='/frost-night.css'/><link rel='stylesheet' href='/frost-field-guide.css'/><script type='application/ld+json' dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}}/></Head>
     <div className='fm-top'><a href='/'>MICHIGAN PHENOLOGY</a><nav aria-label='Page sections'><a href='#field-guide'>Field guide</a><a href='#forecast'>The forecast</a><a href='#frost-explorer'>Explore the data</a><a href='#overnight-journey'>Overnight cooling</a><a href='#sunrise-guide'>Sunrise plan</a><a href='#frost-verification'>Evidence history</a><a href='#places'>Michigan map</a><a href='#science'>How it works</a><a href='/lake-smoke'>Lake smoke ↗</a></nav></div>
     <header className='fm-hero'>
-      <img className='fm-hero-image' src='https://commons.wikimedia.org/wiki/Special:FilePath/Frosty_morning%2C_tree_with_frost_covered_branches_%2848788814943%29.jpg?width=1400'
-        alt='Reference photograph of a frost-covered tree from the U.S. Fish and Wildlife Service, not a current Michigan observation'/>
+      <img className='fm-hero-image' loading='eager' decoding='async'
+        src='https://commons.wikimedia.org/wiki/Special:FilePath/Erlenbusch_Sunrise_on_a_Frosty_Morning_%2815798533428%29.jpg?width=1920'
+        alt='Authentic photograph: crystalline hoarfrost covers prairie grasses and a lone tree beneath a pink and lavender winter sunrise in North Dakota'/>
       <div className='fm-hero-shade'/>
       <div className='fm-wrap fm-hero-content'><div className='fm-eyebrow'>Michigan's living calendar · a sunrise worth noticing</div>
         <h1>Will tomorrow be a <em>frosty morning?</em></h1>
@@ -111,7 +112,7 @@ export default function FrostyMornings(){
       </div>
     </header>
     <main className='fm-wrap'>
-      <p className='fm-image-credit'>Reference image: U.S. Fish &amp; Wildlife Service, Midwest Region (public domain), photographed in Wisconsin. Not a live frost report. <a href='https://commons.wikimedia.org/wiki/File:Frosty_morning,_tree_with_frost_covered_branches_(48788814943).jpg' target='_blank' rel='noreferrer'>Image source</a>.</p>
+      <p className='fm-image-credit'>Actual photograph, not AI-generated: <strong>Krista Lundgren / U.S. Fish &amp; Wildlife Service</strong>, Erlenbusch Waterfowl Production Area, North Dakota (December 9, 2014). A reference photograph, not a current Michigan frost observation. <a href='https://commons.wikimedia.org/wiki/File:Erlenbusch_Sunrise_on_a_Frosty_Morning_(15798533428).jpg' target='_blank' rel='noopener noreferrer'>Original image and photographer credit</a> · <a href='https://creativecommons.org/licenses/by/2.0/' target='_blank' rel='noopener noreferrer'>CC BY 2.0</a>.</p>
       <section className='fm-status' aria-label='Michigan frosty morning outlook'><div className='fm-eyebrow dark'>First, choose a morning worth exploring</div>
         <div className='fm-status-row'><div><h2>{!board&&!boardErr?'Checking forecast conditions across Michigan…':boardErr?'Regional forecasts unavailable':scored.length?'Where might the next silver morning be?':'No locations currently qualify for a reliable ranking'}</h2>
           <p>{boardErr||'Look for places where cold air, moisture and quiet skies may come together. Scores compare weather ingredients—not the chance of seeing frost.'}</p></div>
