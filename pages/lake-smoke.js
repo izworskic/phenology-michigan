@@ -228,13 +228,14 @@ function LakeSmokeCameraPlayer({camera}){
   const activeCamera=cameraIndex===0?camera:camera?.alternates?.[cameraIndex-1]||camera;
   const player=playableCamera(activeCamera);
   const switchCamera=index=>{
-    setPlaying(false);
+    setPlaying(Boolean(camera?.autoEmbed));
     setPosterFailed(false);
     setSnapshotFailed(false);
     setShotOn(false);
     setCameraIndex(index);
   };
-  const [playing,setPlaying]=useState(false);
+  // Frankfort loads a lake-facing operator player instead of the unavailable Harbor Lights iframe.
+  const [playing,setPlaying]=useState(Boolean(camera?.autoEmbed));
   const [posterFailed,setPosterFailed]=useState(false);
   const [snapshotFailed,setSnapshotFailed]=useState(false);
   const [refreshCount,setRefreshCount]=useState(0);
@@ -250,7 +251,7 @@ function LakeSmokeCameraPlayer({camera}){
     {camera?.alternates?.length>0&&<div className='smoke-camera-source-switch' role='group' aria-label='Frankfort camera choices'>
       {[camera,...camera.alternates].map((choice,index)=><button type='button' key={choice.name}
         aria-pressed={index===cameraIndex} className={index===cameraIndex?'active':''}
-        onClick={()=>switchCamera(index)}>{index===0?'Harbor Lights Beach':'Oliver Art Center — Lake Michigan'}</button>)}
+        onClick={()=>switchCamera(index)}>{choice.name}</button>)}
     </div>}
     {player?<>
       {playing?<div className='smoke-camera-player' role='group' aria-label={'Embedded operator camera — '+activeCamera.name}>
@@ -274,7 +275,14 @@ function LakeSmokeCameraPlayer({camera}){
       <strong>No verified embeddable player at this location.</strong>
       <span>Use the operator's original page below. A still image or a frame from an unrelated camera would be misleading.</span>
     </div>}
-    {activeCamera?.note&&cameraIndex>0&&<p className='smoke-camera-notice'>{activeCamera.note}</p>}
+    {activeCamera?.note&&<p className='smoke-camera-notice'>{activeCamera.note}</p>}
+    {camera?.unavailableCameras?.length>0&&<div className='smoke-camera-unavailable' role='note' aria-label='Unavailable Frankfort camera sources'>
+      {camera.unavailableCameras.map(source=><div key={source.url}>
+        <strong>{source.name} — {source.status}</strong>
+        <p>{source.note}</p>
+        <a href={source.url} target='_blank' rel='noopener noreferrer'>Check Harbor Lights operator's original page ↗</a>
+      </div>)}
+    </div>}
     {activeCamera?.url&&<a className='smoke-camera-link' href={activeCamera.url} target='_blank' rel='noopener noreferrer'>
       {player?.kind==='youtube'?'Open live stream on YouTube ↗':'Open operator camera page ↗'}</a>}
     {activeCamera?.operatorPage&&<a className='smoke-camera-link secondary' href={activeCamera.operatorPage} target='_blank' rel='noopener noreferrer'>More cameras from operator ↗</a>}
