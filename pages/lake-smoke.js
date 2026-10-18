@@ -224,34 +224,48 @@ function ShorelineViewing({site}){
 
 
 function LakeSmokeCameraPlayer({camera}){
-  const player=playableCamera(camera);
+  const [cameraIndex,setCameraIndex]=useState(0);
+  const activeCamera=cameraIndex===0?camera:camera?.alternates?.[cameraIndex-1]||camera;
+  const player=playableCamera(activeCamera);
+  const switchCamera=index=>{
+    setPlaying(false);
+    setPosterFailed(false);
+    setSnapshotFailed(false);
+    setShotOn(false);
+    setCameraIndex(index);
+  };
   const [playing,setPlaying]=useState(false);
   const [posterFailed,setPosterFailed]=useState(false);
   const [snapshotFailed,setSnapshotFailed]=useState(false);
   const [refreshCount,setRefreshCount]=useState(0);
   const [shotOn,setShotOn]=useState(false);
   useEffect(()=>{
-    if(!camera?.snapshotUrl||!shotOn)return;
+    if(!activeCamera?.snapshotUrl||!shotOn)return;
     const id=setInterval(()=>setRefreshCount(v=>v+1),60000);
     return()=>clearInterval(id);
-  },[camera?.snapshotUrl,shotOn]);
-  const snapshot=/^https:\/\//.test(camera?.snapshotUrl||'')?camera.snapshotUrl:null;
+  },[activeCamera?.snapshotUrl,shotOn]);
+  const snapshot=/^https:\/\//.test(activeCamera?.snapshotUrl||'')?activeCamera.snapshotUrl:null;
   const imageLink=snapshot?(snapshot+(snapshot.includes('?')?'&':'?')+'smokeRefresh='+refreshCount):null;
   return <div className='smoke-player-block'>
+    {camera?.alternates?.length>0&&<div className='smoke-camera-source-switch' role='group' aria-label='Frankfort camera choices'>
+      {[camera,...camera.alternates].map((choice,index)=><button type='button' key={choice.name}
+        aria-pressed={index===cameraIndex} className={index===cameraIndex?'active':''}
+        onClick={()=>switchCamera(index)}>{index===0?'Harbor Lights Beach':'Oliver Art Center — Lake Michigan'}</button>)}
+    </div>}
     {player?<>
-      {playing?<div className='smoke-camera-player' role='group' aria-label={'Embedded operator camera — '+camera.name}>
-        <iframe key={player.kind+'-'+player.id} src={player.kind==='youtube'?player.embedUrl+'&autoplay=1&mute=1':player.embedUrl} title={camera.name+' — embedded camera, supplied by '+camera.operator}
+      {playing?<div className='smoke-camera-player' role='group' aria-label={'Embedded operator camera — '+activeCamera.name}>
+        <iframe key={player.kind+'-'+player.id} src={player.kind==='youtube'?player.embedUrl+'&autoplay=1&mute=1':player.embedUrl} title={activeCamera.name+' — embedded camera, supplied by '+activeCamera.operator}
           allow='autoplay; encrypted-media; picture-in-picture; fullscreen'
           referrerPolicy='strict-origin-when-cross-origin' loading='lazy' allowFullScreen/>
       </div>:<button type='button' className='smoke-camera-start' onClick={()=>setPlaying(true)}
-        aria-label={'Play embedded '+camera.name+' camera'}>
-        {player.posterUrl&&!posterFailed&&<img src={player.posterUrl} alt='' loading='lazy' onError={()=>setPosterFailed(true)}/>}<span className='smoke-camera-preview-title'>{camera.view}</span>
+        aria-label={'Play embedded '+activeCamera.name+' camera'}>
+        {player.posterUrl&&!posterFailed&&<img src={player.posterUrl} alt='' loading='lazy' onError={()=>setPosterFailed(true)}/>}<span className='smoke-camera-preview-title'>{activeCamera.view}</span>
         <span className='smoke-camera-play'><span aria-hidden='true'>▶</span> {player.kind==='youtube'?'Watch live camera':'Load operator camera'}</span>
       </button>}
       <div className='smoke-camera-player-meta'><span>{playing?'Operator player requested — stream status unverified':'Loads only on request; no background video'}</span><span>Provider may require another click or may be offline</span></div>
     </>:snapshot?<>
       <div className='smoke-camera-player'>
-        {shotOn&&!snapshotFailed?<img src={imageLink} alt={'Latest operator camera still at '+camera.name} loading='lazy'
+        {shotOn&&!snapshotFailed?<img src={imageLink} alt={'Latest operator camera still at '+activeCamera.name} loading='lazy'
           onError={()=>setSnapshotFailed(true)}/>:<div className='smoke-camera-snapshot-empty'>{snapshotFailed?'Operator still image unavailable. Try the original source.':'A recent operator still image can be requested below.'}</div>}
       </div>
       <button type='button' className='smoke-camera-refresh' onClick={()=>{setShotOn(true);setSnapshotFailed(false);setRefreshCount(x=>x+1);}}>Refresh operator snapshot</button>
@@ -260,9 +274,10 @@ function LakeSmokeCameraPlayer({camera}){
       <strong>No verified embeddable player at this location.</strong>
       <span>Use the operator's original page below. A still image or a frame from an unrelated camera would be misleading.</span>
     </div>}
-    {camera?.url&&<a className='smoke-camera-link' href={camera.url} target='_blank' rel='noopener noreferrer'>
+    {activeCamera?.note&&cameraIndex>0&&<p className='smoke-camera-notice'>{activeCamera.note}</p>}
+    {activeCamera?.url&&<a className='smoke-camera-link' href={activeCamera.url} target='_blank' rel='noopener noreferrer'>
       {player?.kind==='youtube'?'Open live stream on YouTube ↗':'Open operator camera page ↗'}</a>}
-    {camera?.operatorPage&&<a className='smoke-camera-link secondary' href={camera.operatorPage} target='_blank' rel='noopener noreferrer'>More cameras from operator ↗</a>}
+    {activeCamera?.operatorPage&&<a className='smoke-camera-link secondary' href={activeCamera.operatorPage} target='_blank' rel='noopener noreferrer'>More cameras from operator ↗</a>}
   </div>;
 }
 
