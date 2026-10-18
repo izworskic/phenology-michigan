@@ -4,7 +4,7 @@ import {SITES,BOARD_IDS,lookup,localParts,expandGrid,scoreHour,evaluateGrid,sola
 assert.equal(SITES.length,12);
 assert.equal(new Set(SITES.map(s=>s.id)).size,SITES.length);
 assert.ok(SITES.every(s=>Number.isFinite(s.lat)&&Number.isFinite(s.lon)&&s.tz==='America/Detroit'));
-assert.equal(BOARD_IDS.length,9);
+assert.equal(BOARD_IDS.length,SITES.length,'Every CARTO map pin needs a statewide forecast, not just 9 of 12');
 assert.ok(BOARD_IDS.every(id=>lookup(id)));
 assert.equal(localParts(new Date('2026-10-17T11:00:00Z')).hour,7);
 assert.equal(localParts(new Date('2026-11-01T12:00:00Z')).hour,7,'DST change must be local');
