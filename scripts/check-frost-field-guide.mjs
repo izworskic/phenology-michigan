@@ -29,7 +29,7 @@ for(const key of ['crystals','beads','rime','none']){
   assert.ok(fieldFinds[key].title&&fieldFinds[key].message&&fieldFinds[key].question,'Field clue must reveal a tangible observation and an open question');
 }
 assert.match(fieldFinds.rime.message,/fog droplets/i);
-assert.match(fieldFinds.beads.message,/liquid/);
+assert.match(fieldFinds.beads.message,/liquid/i);
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const page=read('pages/frosty-mornings.js'),component=read('components/FrostFieldGuide.js'),css=read('public/frost-field-guide.css');
 for(const token of ['FrostFieldGuide','field-guide','frost-field-guide.css','Questions to take into the field','How a landscape becomes a frost garden','What kind of frost did you find?'])assert.ok(page.includes(token),'Integrate field interpretation '+token);
