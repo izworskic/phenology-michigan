@@ -156,7 +156,7 @@ export default function FrostCartoMap({chosen,onChoose,board,location,date}){
       {!leafletReady&&!mapError&&<div className='fm-carto-loading' role='status'>Loading the CARTO basemap…</div>}
       {mapError&&<div className='fm-carto-error' role='status'>{mapError}</div>}
       {!mapError&&!tilesLoaded&&leafletReady&&<div className='fm-carto-loading fm-carto-loading-small' role='status'>Loading map tiles…</div>}
-      <div className='fm-carto-map-caption'>{todayText(date)} forecast conditions · not frost sightings</div>
+      <div className='fm-carto-map-caption'>{todayText(date)} forecast conditions · not observed hoarfrost</div>
     </div>
     <div className='fm-carto-selected' aria-live='polite'>
       <div><small>Selected weather point</small><strong>{selectedSite.name}</strong>
