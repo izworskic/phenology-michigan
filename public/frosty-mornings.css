@@ -200,3 +200,40 @@
 .fm-verify-chart-empty{font-size:12px;color:#6e8790;background:#f5f9f8;padding:12px;border-radius:8px;margin:16px 0}
 
 @media(max-width:650px){.fm-carto-frame{height:400px}.fm-carto-toolbar strong{font-size:19px}.fm-carto-controls{width:100%;justify-content:space-between}.fm-carto-switch button{font-size:9px;padding:8px}.fm-carto-selected{flex-wrap:wrap}.fm-carto-map-caption{font-size:9px}.fm-carto-legend{font-size:9px}.fm-carto-canvas .leaflet-control-zoom{margin-bottom:35px}}
+
+
+/* First-screen decision: real NWS ingredients, not a frost sighting promise. */
+.fm-dawn-decision{background:linear-gradient(130deg,#e4f0f1,#f9fbf8);border:1px solid #c6dcd9;border-left:5px solid #78979f;border-radius:15px;padding:22px 25px;margin:0 0 35px;scroll-margin-top:15px}
+.fm-dawn-decision.promising{border-left-color:#277c63}.fm-dawn-decision.possible{border-left-color:#c1973e}
+.fm-dawn-decision.caution{border-left-color:#b76540;background:linear-gradient(130deg,#fff0e6,#f9fbf8)}
+.fm-dawn-decision.low,.fm-dawn-decision.limited,.fm-dawn-decision.past,.fm-dawn-decision.unavailable{border-left-color:#8da4ae}
+.fm-decision-head{display:flex;align-items:center;justify-content:space-between;gap:15px}
+.fm-decision-head>div:first-child{max-width:720px;min-width:0}
+.fm-decision-head h2{font-size:clamp(23px,2.7vw,33px);margin:7px 0 8px}
+.fm-decision-head p{font-size:13px;line-height:1.65;color:#526f7a;margin:0}
+.fm-decision-score{flex-shrink:0;border-radius:13px;padding:12px 15px;background:#fff;text-align:center;box-shadow:0 3px 14px rgba(46,72,80,.06)}
+.fm-decision-score strong{display:block;font:700 43px/1 Georgia,serif;color:#346677}
+.fm-dawn-decision.promising .fm-decision-score strong{color:#287d61}
+.fm-decision-score strong small{font:600 13px Arial,sans-serif;color:#79929c;margin-left:2px}
+.fm-decision-score span{display:block;font-size:9px;max-width:86px;color:#688994;line-height:1.25;margin-top:6px}
+.fm-decision-ingredients{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:19px}
+.fm-decision-ingredients>div{background:rgba(255,255,255,.9);border:1px solid #d3e4e6;border-radius:10px;padding:13px 12px;min-width:0}
+.fm-decision-ingredients small,.fm-decision-ingredients strong,.fm-decision-ingredients span{display:block}
+.fm-decision-ingredients small{font-size:10px;color:#6d8791;text-transform:uppercase;letter-spacing:.035em;font-weight:800}
+.fm-decision-ingredients strong{font:700 clamp(17px,2vw,23px)/1.25 Georgia,serif;margin:8px 0 6px;color:#244b59;overflow-wrap:anywhere}
+.fm-decision-ingredients span{font-size:10px;color:#6e8790}
+.fm-decision-bottom{margin-top:13px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.fm-decision-bottom p{margin:0;max-width:720px;font-size:12px;color:#506e78}
+.fm-decision-bottom p strong{color:#335966}
+.fm-decision-bottom>div{display:flex;gap:12px;flex-wrap:wrap}
+.fm-decision-bottom a{font-weight:800;font-size:11px}
+.fm-decision-provenance{display:block;margin-top:12px;font-size:10px;color:#748c93}
+.fm-nearest-button,.fm-retry-button{width:100%;background:#e0f0f0;color:#21566a;font-weight:800;border:1px solid #b6d5d8;border-radius:8px;padding:10px 12px;margin:0 0 9px;text-align:center;font-size:12px}
+.fm-nearest-button:hover,.fm-retry-button:hover{background:#cee8eb}
+.fm-nearest-button:disabled{cursor:wait;opacity:.6}
+.fm-private-note,.fm-nearest-error{font-size:10px!important;color:#738b92!important;margin:0 0 13px!important}
+.fm-nearest-error{color:#a4523c!important}
+.fm-retry-button{max-width:225px;margin:12px 0 0}
+.fm-photo-status.fog-watch{background:#fbe1d1;color:#9e5737}
+@media(max-width:960px){.fm-decision-ingredients{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.fm-dawn-decision{padding:17px 15px;margin-bottom:26px}.fm-decision-head{align-items:flex-start}.fm-decision-score{padding:10px;max-width:80px}.fm-decision-score strong{font-size:30px}.fm-decision-score span{font-size:8px}.fm-decision-ingredients{gap:7px}.fm-decision-ingredients>div{padding:12px 10px}.fm-decision-ingredients strong{font-size:17px}.fm-decision-bottom{display:block}.fm-decision-bottom>div{margin-top:11px}.fm-decision-head h2{font-size:23px}}
