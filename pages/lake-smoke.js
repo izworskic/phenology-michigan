@@ -261,7 +261,7 @@ function LakeSmokeCameraPlayer({camera}){
       <span>Use the operator's original page below. A still image or a frame from an unrelated camera would be misleading.</span>
     </div>}
     {camera?.url&&<a className='smoke-camera-link' href={camera.url} target='_blank' rel='noopener noreferrer'>
-      {player?'Open live stream on YouTube ↗':'Open operator camera ↗'}</a>}
+      {player?.kind==='youtube'?'Open live stream on YouTube ↗':'Open operator camera page ↗'}</a>}
     {camera?.operatorPage&&<a className='smoke-camera-link secondary' href={camera.operatorPage} target='_blank' rel='noopener noreferrer'>More cameras from operator ↗</a>}
   </div>;
 }
