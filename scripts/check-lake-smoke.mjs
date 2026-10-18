@@ -343,7 +343,7 @@ for(const id of EMBEDDABLE_IDS){
   const camera=camFor(id),playable=playableCamera(camera);
   assert.ok(playable,'Operator player must be configured for '+id);
   assert.match(playable.embedUrl,/^https:\/\//,'Operator iframe URL must be HTTPS');
-  assert.ok(['youtube','nest','ipcamlive'].includes(playable.kind));
+  assert.ok(['youtube','nest','ipcamlive','angelcam','rtspme'].includes(playable.kind));
   assert.ok(camera.url.startsWith('https://'));
 }
 assert.equal(camFor('marquette').operator,'WZMQ 19 News');
