@@ -24,19 +24,19 @@ export default function FrostNightJourney({night,site,morning}){
   return <section className='fnj' id='overnight-journey' aria-label='Overnight frost-weather cooling timeline'>
     <div className='fnj-title'>
       <div><span className='fm-kicker'>From evening to sunrise</span>
-        <h2>The overnight cooling journey</h2>
-        <p>How temperatures, atmospheric moisture, winds and clouds evolve from 6 p.m. through 9 a.m. local time. This is a sequence of NWS hourly forecasts, not recorded weather.</p>
+        <h2>How the night sets the stage</h2>
+        <p>A frosty sunrise often begins hours earlier. Trace the forecast from evening to dawn and watch for clearing skies, calming wind and cooling air. These are forecasts—not a record of what actually happened.</p>
       </div>
       <div className='fnj-coverage' aria-label='Forecast coverage'><strong>{night?.coveragePct!=null?night.coveragePct+'%':'—'}</strong>
-        <small>{night?.validHours??0} / {night?.expectedHours??16} hours with all required forecast ingredients</small></div>
+        <small>{night?.validHours??0} / {night?.expectedHours??16} hours with enough NWS weather detail</small></div>
     </div>
     <div className={'fnj-verdict '+(status?'is-ready':'is-missing')}>
-      <div><span className='fm-kicker'>Overnight pattern assessment</span><h3>{night?.headline||'No overnight forecast'}</h3>
+      <div><span className='fm-kicker'>What the night may be telling us</span><h3>{night?.headline||'No overnight forecast'}</h3>
       <p>{night?.explanation||'Forecast data is unavailable for this morning.'}</p></div>
       <div className='fnj-stat-row'>
-        <div><small>Evening → pre-dawn air</small><strong>{status?fmt(night.eveningTempF,'°')+' → '+fmt(night.predawnTempF,'°'):'—'}</strong></div>
-        <div><small>Air temperature change</small><strong>{status?(night.deltaF>=0?'−':'+')+fmt(Math.abs(night.deltaF),'°F'):'—'}</strong></div>
-        <div><small>Nighttime wind / clouds</small><strong>{status?fmt(night.coreWindMph,' mph')+' / '+fmt(night.coreSkyPct,'%'):'—'}</strong></div>
+        <div><small>Evening → near-dawn air</small><strong>{status?fmt(night.eveningTempF,'°')+' → '+fmt(night.predawnTempF,'°'):'—'}</strong></div>
+        <div><small>Forecast cooling since evening</small><strong>{status?(night.deltaF>=0?'−':'+')+fmt(Math.abs(night.deltaF),'°F'):'—'}</strong></div>
+        <div><small>Wind / clouds near dawn</small><strong>{status?fmt(night.coreWindMph,' mph')+' / '+fmt(night.coreSkyPct,'%'):'—'}</strong></div>
       </div>
     </div>
     <div className='fnj-body'>
@@ -73,24 +73,24 @@ export default function FrostNightJourney({night,site,morning}){
                 contentStyle={{borderRadius:10,borderColor:'#bfd0d3',fontSize:12}}/>
             </ComposedChart>
           </ResponsiveContainer>
-        </div>:<p className='fnj-no-data'>The requested overnight forecast hours are unavailable.</p>}
+        </div>:<p className='fnj-no-data'>We do not have enough forecast hours to show how this night develops.</p>}
         <div className='fnj-hour-grid' role='group' aria-label='Select an hour for forecast details'>
           {rows.map(h=><button key={h.time} type='button' aria-pressed={selection?.time===h.time}
             onClick={()=>setPicked(h.time)} title={timeText(h.time,timezone)}>
             <span>{labelHour(h.time,timezone)}</span><strong>{h.visible?fmt(h.tempF,'°'):'—'}</strong></button>)}
         </div>
-        <p className='fnj-note'>All plotted values are NWS forecast air conditions. Missing or elapsed hours remain blank, including periods around time changes. No surface temperature, frost event or rate of radiative heat loss is calculated.</p>
+        <p className='fnj-note'>Trace the line as a forecast, not a weather diary. Blank spaces mean missing or elapsed hours. The chart does not measure grass, predict exactly when ice forms or explain the physical cause of cooling.</p>
       </div>
       <aside className='fnj-details' aria-live='polite'>
-        <span className='fm-kicker'>Explore the forecast hours</span><h3>{selection?timeText(selection.time,timezone):'Select an hour'}</h3>
+        <span className='fm-kicker'>Pick an hour and read the clues</span><h3>{selection?timeText(selection.time,timezone):'Select an hour'}</h3>
         {selection?.visible?<div className='fnj-data'>
           <div><small>Air temperature</small><strong>{fmt(selection.tempF,'°F')}</strong></div>
           <div><small>Dew point</small><strong>{fmt(selection.dewF,'°F')}</strong></div>
           <div><small>Wind speed</small><strong>{fmt(selection.windMph,' mph')}</strong></div>
           <div><small>Sky coverage</small><strong>{fmt(selection.skyPct,'%')}</strong></div>
-        </div>:<p>Not enough current NWS forecast information for this hour. Elapsed hours are not replaced with historical weather observations.</p>}
-        {night?.notes?.length>0&&<><h4>Why this pattern matters</h4><ul>{night.notes.map((note,i)=><li key={i}>{note}</li>)}</ul></>}
-        {night?.regime==='late-improvement'&&<p className='fnj-note'>Late clearing can create a shorter, potentially photogenic window, but frost accumulation is not guaranteed.</p>}
+        </div>:<p>This hour has no complete forecast. We leave it blank rather than invent what happened.</p>}
+        {night?.notes?.length>0&&<><h4>Clues to notice before sunrise</h4><ul>{night.notes.map((note,i)=><li key={i}>{note}</li>)}</ul></>}
+        {night?.regime==='late-improvement'&&<p className='fnj-note'>If clouds part late, an otherwise ordinary-looking night may become interesting near dawn. Whether ice develops remains a local question.</p>}
         <a href='https://www.weather.gov/arx/why_frost' rel='noopener noreferrer' target='_blank'>NWS: Why frost forms ↗</a>
       </aside>
     </div>
