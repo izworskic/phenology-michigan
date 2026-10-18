@@ -66,3 +66,11 @@ The Michigan Frosty Morning Predictor now has three **separate** evidence stream
 Read-only API: `/api/frost-history?site=bay-city`. It reads GitHub's versioned archived JSON on demand, without invoking a daily Vercel build for data-only commits. The page shows a forecast-versus-station air-temperature chart, per-morning original forecast/observed pairs, and separately curated dated photo evidence. No self-reported photo becomes verified merely by submission. A missing report is not evidence no frost occurred.
 
 Node tests: `node scripts/check-frost-verification.mjs`. No new paid service, keys, account database or visitor-tracking layer. NWS public data remains subject to rate limiting and outages; GitHub Actions cron may occasionally be delayed. Viewing the reporting form requires a GitHub account, and users should avoid personal or precisely geolocatable details in public issues.
+
+### CARTO interactive Michigan forecast map (October 17, 2026)
+
+The `/frosty-mornings` page now uses `components/FrostCartoMap.js` and Leaflet 1.9.4 with **genuine CARTO raster tiles** rather than the original hand-drawn Michigan SVG. Default is **Voyager** (labeled roads/places) with an optional **Night / Dark Matter** basemap. The already-authorized, publicly embedded domain-restricted CARTO key is **reused** from the live Bloom Tracker, Firefly and Hummingbird tools; no additional key or credentials are required. Maintain the on-map © OpenStreetMap contributors / © CARTO attribution.
+
+The map displays all 12 weather-grid point markers with the best upcoming forecast setup score, highlighting the selected point, with a full Michigan reset, zoom, drag/pan and tooltips. The statewide board covers nine sites; three other sites get an actual NWS score only after selection. The source remains forecast atmospheric suitability, *not* observed frost. The original SVG/Census map was removed from this page; it remains available to any other tools that use it. Tile and library failures show an honest fallback message, and the adjacent forecast location list remains interactive. Leaflet CSS is isolated from global responsive image rules and recalculates size as the grid resizes.
+
+Map guard: `node scripts/check-frost-carto-map.mjs`, included in `npm test`.

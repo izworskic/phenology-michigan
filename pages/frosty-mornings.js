@@ -1,7 +1,8 @@
 import Head from 'next/head';
-import {useEffect,useMemo,useState} from 'react';
+import {useEffect,useState} from 'react';
 import {SITES} from '../lib/frostMorning.mjs';
 import FrostVerificationHistory from '../components/FrostVerificationHistory';
+import FrostCartoMap from '../components/FrostCartoMap';
 const URL='https://phenology.chrisizworski.com/frosty-mornings';
 const TITLE='Michigan Frosty Morning Predictor: Hoarfrost Forecast';
 const DESCRIPTION='Will tomorrow bring a frosty morning in Michigan? Compare dawn temperatures, dew points, wind and clouds in live NWS forecasts at 12 locations.';
@@ -27,44 +28,6 @@ const hour=h=>h==null?'—':(h%12||12)+(h>=12?' p.m.':' a.m.');
 const photoTime=(s,tz='America/Detroit')=>s?new Intl.DateTimeFormat('en-US',{timeZone:tz,hour:'numeric',minute:'2-digit'}).format(new Date(s)):'—';
 const tone=n=>n==null?'unknown':n>=75?'strong':n>=55?'possible':n>=30?'limited':'low';
 function Score({value}){return <span className={'fm-score '+tone(value)}>{value==null?'—':value}<small>{value==null?'unavailable':' / 100'}</small></span>;}
-const x=lon=>(lon+91.5)*520/10;
-const y=lat=>(48.2-lat)*500/7;
-function MapPanel({chosen,onChoose,board}){
-  const [outline,setOutline]=useState(null);
-  useEffect(()=>{
-    const controller=new AbortController();
-    fetch('/maps/great-lakes-context.geojson',{signal:controller.signal}).then(r=>{if(!r.ok)throw Error('No map file');return r.json()})
-      .then(geo=>{if(Array.isArray(geo?.features))setOutline(geo.features);}).catch(()=>{});
-    return ()=>controller.abort();
-  },[]);
-  const paths=useMemo(()=>outline?.map((feature,i)=>{
-    const geo=feature.geometry,polys=geo?.type==='MultiPolygon'?geo.coordinates:geo?.type==='Polygon'?[geo.coordinates]:[];
-    return {name:feature.properties?.name||'Land',path:polys.flatMap(poly=>poly.map(ring=>ring.map(([lon,lat],j)=>(j?'L':'M')+x(lon).toFixed(1)+' '+y(lat).toFixed(1)).join(' ')+' Z')).join(' ')};
-  })||[],[outline]);
-  return <div className='fm-map' aria-label='Michigan state outline and forecast location map'>
-    <svg viewBox='0 0 520 500' role='img' aria-label='US Census simplified Michigan geographic outline with selectable forecast points'>
-      <defs><linearGradient id='fm-water' x1='0' y1='0' x2='1' y2='1'><stop stopColor='#d5e9ee'/><stop offset='1' stopColor='#accfdb'/></linearGradient></defs>
-      <rect width='520' height='500' fill='url(#fm-water)' rx='14'/>
-      {[42,44,46,48].map(lat=><line key={lat} x1='0' x2='520' y1={y(lat)} y2={y(lat)} stroke='#fff' strokeDasharray='4 8' opacity='.5'/>)}
-      {paths.map((p,i)=><path key={i} d={p.path} fill={p.name==='Michigan'?'#eaf0df':'#edf2ee'} stroke='#9bb9b5' strokeWidth='1.6'/>)}
-      <text x='18' y='32' className='fm-map-heading'>MICHIGAN</text>
-      <text x='18' y='51' className='fm-map-sub'>Forecast points · not frost observations</text>
-      {SITES.map(s=>{
-        const v=board?.find(b=>b.id===s.id)?.best?.score;
-        return <g key={s.id} role='button' tabIndex='0' aria-label={'Select '+s.name} aria-pressed={chosen===s.id}
-          onClick={()=>onChoose(s.id)} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onChoose(s.id);}}}
-          className={'fm-pin '+(chosen===s.id?'chosen':'')}>
-          <circle cx={x(s.lon)} cy={y(s.lat)} r={chosen===s.id?11:8} fill={tone(v)==='strong'?'#287966':tone(v)==='possible'?'#c28d37':v==null?'#78919d':'#81949a'} stroke='white' strokeWidth='2.5'/>
-          <circle cx={x(s.lon)} cy={y(s.lat)} r='17' fill='transparent'/>
-          <title>{s.name+(v!=null?' · '+v+'/100':' · forecast unavailable or not ranked')}</title>
-        </g>;
-      })}
-    </svg>
-    {!outline&&<p className='fm-map-note'>Map outline temporarily unavailable. All locations remain selectable below.</p>}
-    <div className='fm-map-foot'><span>● Strong setup</span><span>● Possible</span><span>● Unavailable / other</span></div>
-    <small>State outlines: U.S. Census Bureau TIGERweb (simplified). Markers show forecast-grid reference points, not actual frost sightings.</small>
-  </div>;
-}
 function HourlyChart({morning}){
   if(!morning?.hourly?.length)return <div className='fm-empty'>Hourly weather inputs are unavailable.</div>;
   return <div className='fm-hours' role='list' aria-label='Dawn hourly frost-friendly conditions'>
@@ -109,6 +72,7 @@ export default function FrostyMornings(){
     <Head><title>{TITLE} | Chris Izworski</title><meta name='description' content={DESCRIPTION}/><link rel='canonical' href={URL}/>
       <meta name='robots' content='index,follow,max-image-preview:large'/><meta property='og:type' content='website'/><meta property='og:title' content={TITLE}/>
       <meta property='og:description' content={DESCRIPTION}/><meta property='og:url' content={URL}/><meta name='twitter:card' content='summary'/>
+      <link rel='stylesheet' href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'/>
       <link rel='stylesheet' href='/frosty-mornings.css'/><script type='application/ld+json' dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}}/></Head>
     <div className='fm-top'><a href='/'>MICHIGAN PHENOLOGY</a><nav aria-label='Page sections'><a href='#forecast'>The forecast</a><a href='#sunrise-guide'>Sunrise plan</a><a href='#frost-verification'>Evidence history</a><a href='#places'>Michigan map</a><a href='#science'>How it works</a><a href='/lake-smoke'>Lake smoke ↗</a></nav></div>
     <header className='fm-hero'>
@@ -131,9 +95,9 @@ export default function FrostyMornings(){
           <small>#{i+1} · {day(m.date)}</small><strong>{s.name}</strong><div><Score value={m.score}/><span>{m.photo?.label||m.label}</span></div><small>{m.photo?.sunriseAt?'Sunrise ~ '+photoTime(m.photo.sunriseAt,s.tz)+' · arrive ~ '+photoTime(m.photo.arriveAt,s.tz):'Sunrise unavailable'}</small></button>;})}</div></>}
         {board&&scored.length===0&&<p className='fm-empty'>No complete regional forecast to rank. The site does not fill weather gaps with historical averages.</p>}
       </section>
-      <section id='places' className='fm-section'><div className='fm-section-heading'><div><div className='fm-eyebrow dark'>Pick your frost lookout</div><h2>Where might the landscape turn white?</h2></div>
-        <p>The modeled reference point is a forecast grid, not a specific park or verified roadside viewing area.</p></div>
-        <div className='fm-explore'><MapPanel chosen={chosen} onChoose={choose} board={board?.locations}/>
+      <section id='places' className='fm-section'><div className='fm-section-heading'><div><div className='fm-eyebrow dark'>Pick your frost lookout</div><h2>Explore Michigan's frost-friendly mornings</h2></div>
+        <p>Zoom and pan the CARTO map, then tap a forecast marker to inspect its local outlook. Markers represent NWS grids, not verified frost sightings.</p></div>
+        <div className='fm-explore'><FrostCartoMap chosen={chosen} onChoose={choose} board={board?.locations} location={location}/>
           <div className='fm-place-list'><label htmlFor='fm-location'>Choose a forecast location</label><select id='fm-location' value={chosen} onChange={e=>choose(e.target.value)}>{SITES.map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select>
             <div className='fm-place-scroll'>{SITES.map(s=>{const row=board?.locations?.find(b=>b.id===s.id);return <button type='button' key={s.id} className={chosen===s.id?'selected':''} onClick={()=>choose(s.id)}>
               <span><strong>{s.name}</strong><small>{s.region}</small></span><span className='fm-place-number'>{row?.best?.score??'—'}</span></button>;})}</div>

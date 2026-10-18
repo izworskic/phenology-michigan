@@ -56,8 +56,18 @@ assert.throws(()=>validateReviewedReport(report,[report]),/duplicate/i);
 const read=p=>readFileSync(new URL(p,import.meta.url),'utf8');
 const doc=JSON.parse(read('../data/frost-forecast-issues.json'));
 const sightings=JSON.parse(read('../data/frost-reviewed-sightings.json'));
-assert.equal(doc.issues.length,0,'Do not seed fake past forecast records');
-assert.equal(sightings.reports.length,0,'Do not seed fake photo sightings');
+assert.ok(Array.isArray(doc.issues),'The forecast archive must be a valid records array');
+assert.ok(doc.issues.every(i=>
+  lookup(i.siteId)&&validDate(i.date)&&Number.isFinite(Date.parse(i.issuedAt))&&
+  Number.isFinite(Date.parse(i.sunriseAt))&&Date.parse(i.issuedAt)<Date.parse(i.sunriseAt)&&
+  Number.isFinite(i.predicted?.score)&&i.predicted.score>=0&&i.predicted.score<=100&&
+  ['pending','station_weather_compared'].includes(i.verification?.status)
+),'Any saved forecasts must carry valid prospective provenance, sunrise times and legitimate weather data');
+assert.equal(new Set(doc.issues.map(i=>key(i.siteId,i.date))).size,doc.issues.length,'Archive may not duplicate site-date forecast issues');
+assert.ok(Array.isArray(sightings.reports),'Reviewed frost sightings must use a valid records array');
+sightings.reports.forEach((r,index)=>assert.equal(validateReviewedReport(r,sightings.reports.slice(0,index)),true),
+  'Every reviewed sighting requires unique human-reviewed evidence');
+
 assert.ok(read('../scripts/archive-frost-weather.mjs').includes('issueTomorrow'));
 assert.ok(read('../scripts/archive-frost-weather.mjs').includes('verifyPast'));
 assert.ok(read('../.github/workflows/frost-weather-history.yml').includes('schedule:'));
