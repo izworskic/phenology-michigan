@@ -53,7 +53,8 @@ export default function SalamanderMap({selected,onSelect,rows}){
   if(!ready||!window.L)return;
   REGIONS.forEach((r,i)=>{
    const m=markers.current.get(r.id),row=rows?.find(x=>x.id===r.id);
-   const level=row?.best?.level||row?.tonight?.level||'off';
+   // Map matches the new Tonight board; seven-night best appears separately in the outlook strip.
+   const level=row?.tonight?.level||'off';
    m?.setIcon(pin(window.L,i+1,level,r.id===selected));
    m?.setZIndexOffset(r.id===selected?1000:0);
   });
@@ -65,7 +66,7 @@ export default function SalamanderMap({selected,onSelect,rows}){
  },[selected,ready]);
  return <div className="sala-map-shell">
   <Script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" strategy="afterInteractive" onReady={()=>setReady(true)} onError={()=>setFailure('Map library unavailable. Use the region list below.')}/>
-  <div className="sala-map-toolbar"><span>Regional forecast map</span><div><button type="button" aria-pressed={base==='voyager'} onClick={()=>setBase('voyager')}>Day</button><button type="button" aria-pressed={base==='dark_all'} onClick={()=>setBase('dark_all')}>Night</button><button type="button" onClick={()=>map.current?.fitBounds(BOUNDS,{padding:[15,15]})}>Reset</button></div></div>
+  <div className="sala-map-toolbar"><span>Tonight’s regional weather map</span><div><button type="button" aria-pressed={base==='voyager'} onClick={()=>setBase('voyager')}>Day</button><button type="button" aria-pressed={base==='dark_all'} onClick={()=>setBase('dark_all')}>Night</button><button type="button" onClick={()=>map.current?.fitBounds(BOUNDS,{padding:[15,15]})}>Reset</button></div></div>
   <div className="sala-map-canvas" ref={host} role="region" aria-label="Interactive map with nine approximate Michigan regional weather forecast points"/>
   {!ready&&!failure&&<div className="sala-map-message">Loading map…</div>}
   {failure&&<div className="sala-map-message" role="status">{failure}</div>}
