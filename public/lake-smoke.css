@@ -230,3 +230,11 @@
 @media(max-width:1000px){.smoke-camera-picks{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:650px){.smoke-camera-picks{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.smoke-camera-pick{min-height:96px;padding:10px}.smoke-camera-pick.selected{padding:9px}}
 @media(prefers-reduced-motion:reduce){.smoke-camera-pick{transition:none}}
+
+
+/* Frankfort's original beach player plus a second verified Lake Michigan view */
+.smoke-camera-source-switch{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.smoke-camera-source-switch button{cursor:pointer;border:1px solid #acc8d2;background:#f0f6f7;color:#245c6b;border-radius:8px;padding:10px 12px;font-size:12px;font-weight:700;line-height:1.3}
+.smoke-camera-source-switch button.active{background:#1d6478;color:white;border-color:#1d6478}
+.smoke-camera-source-switch button:focus-visible{outline:3px solid #267c92;outline-offset:2px}
+@media(max-width:460px){.smoke-camera-source-switch{display:grid;grid-template-columns:1fr}.smoke-camera-source-switch button{width:100%}}

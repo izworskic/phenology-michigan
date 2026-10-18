@@ -96,3 +96,8 @@ Operator/source verification is based on source-published embed tags on https://
 - The statewide forecast has a failure/retry control instead of a permanent error label. All existing CARTO styles, forecasts, sunrise and audit records remain intact.
 
 Use `node scripts/check-frost-decision.mjs` for these regression and safety gates, bundled into `npm test`. This is a weather-suitability decision aid, *not* a validated hoarfrost occurrence forecast, probability of ice crystals, NWS advisory or road-safety clearance. Real-world photo verification still requires independent review.
+
+### Frankfort Beach camera correction (V9)
+
+Frankfort now has an **embedded Harbor Lights Beach player**, using the operator-published Angelcam iframe `https://v.angelcam.com/iframe?v=xbrmn45vy2&autoplay=0` discovered on the named Harbor Lights Beach Click2Stream page `https://frankfort-harbor-lights-beach.click2stream.com/`. The original beach player was visibly showing *Connecting to camera* at inspection time; the site does NOT claim it is actively broadcasting. The selectable second in-page camera is the **Lake Michigan view from the Oliver Art Center in Frankfort**, using its own website's officially embedded RTSP.ME iframe `https://rtsp.me/embed/SQ2GeaQN/`. The alternate had a visible image at inspection, but its displayed timestamp was from an earlier date, so it is NOT considered verified-live. Both sources are close to Frankfort and show the correct Lake Michigan geography; there is no random webcam substitution. Playback remains visitor-triggered, the player has no background autoplay, both operator URLs stay available, and forecasts, map, safety, photo credits and ads are unchanged.
+
