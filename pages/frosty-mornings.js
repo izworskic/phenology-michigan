@@ -87,7 +87,7 @@ export default function FrostyMornings(){
   const mornings=location?.mornings||[];
   const availableDates=[...new Set((board?.locations||[]).flatMap(s=>(s.mornings||[]).map(m=>m.date)))].sort().slice(0,3);
    const activeDate=focusDate||availableDates[0]||mornings[0]?.date||'';
-   const selectedMorning=mornings.find(m=>m.date===activeDate)||mornings[morningIndex]||mornings[0]||null;
+   const selectedMorning=activeDate?(mornings.find(m=>m.date===activeDate)||null):(mornings[morningIndex]||mornings[0]||null);
   const scored=(board?.locations||[]).filter(s=>s.best?.score!=null).sort((a,b)=>b.best.score-a.best.score||a.name.localeCompare(b.name));
   const photoLeaders=(board?.locations||[]).filter(s=>s.bestPhoto).sort((a,b)=>({'strong':3,'possible':2,'limited':1}[b.bestPhoto.photo.status]-{'strong':3,'possible':2,'limited':1}[a.bestPhoto.photo.status])||a.bestPhoto.date.localeCompare(b.bestPhoto.date));
   const featured=photoLeaders.length?photoLeaders:scored;
@@ -148,7 +148,7 @@ export default function FrostyMornings(){
               <small>Forecast grid update: {stamp(location?.issuedAt)} · Source: NWS · Site context: {site.setting}</small>
             </div>
             <div className='fm-panel'><span className='fm-kicker'>Morning comparison</span><h3>When conditions line up</h3>
-              <div className='fm-day-list'>{mornings.length?mornings.map((m,i)=><button type='button' key={m.date} aria-pressed={morningIndex===i} className={morningIndex===i?'active':''} onClick={()=>{setMorningIndex(i);setFocusDate(m.date);}}>
+              <div className='fm-day-list'>{mornings.length?mornings.map((m,i)=><button type='button' key={m.date} aria-pressed={selectedMorning?.date===m.date} className={selectedMorning?.date===m.date?'active':''} onClick={()=>{setMorningIndex(i);setFocusDate(m.date);}}>
                 <span><strong>{day(m.date)}</strong><small>{m.photo?.sunriseAt?'Sunrise ~ '+photoTime(m.photo.sunriseAt):'Sunrise unavailable'}</small></span>
                 <span className='fm-day-track'><span className={tone(m.score)} style={{width:(m.score||0)+'%'}}/></span>
                 <b>{m.score==null?'—':m.score}</b>
