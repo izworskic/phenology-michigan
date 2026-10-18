@@ -5,7 +5,7 @@ import {ARCHIVE_VERSION,SNAPSHOT_SOURCE,FORECAST_METHOD,createForecastIssue,appe
 
 const captured=new Date('2027-04-10T19:10:00Z'); // 3:10 p.m. Eastern Daylight Time
 const today='2027-04-10';
-const mkRow=(r)=>({id:r.id,season:'spring',thaw:{state:'unknown'},nights:Array.from({length:7},(_,i)=>({
+const mkRow=(r)=>({id:r.id,season:'spring',nwsUpdatedAt:'2027-04-10T18:00:00Z',thaw:{state:'unknown',observationAgeDays:1},nights:Array.from({length:7},(_,i)=>({
  date:shiftDate(today,i),level:i===0&&r.id==='southeast'?'strong':i%2?'watch':'dry',
  temp:48,rainChance:i%2?70:25,warmRainHours:2,thawLimited:false
 }))});
@@ -20,6 +20,12 @@ assert.equal(issue.regions[0].nights.length,7);
 assert.equal(issue.regions[0].nights[0].level,'strong');
 assert.equal(issue.regions[0].nights[6].date,'2027-04-16');
 assert.equal(issue.coverage.partial,false);
+assert.equal(issue.upstream.status,'healthy');
+assert.equal(issue.upstream.freshNwsRegions,9);
+assert.equal(issue.regions[0].climateAgeDays,1);
+assert.throws(()=>createForecastIssue({...feed,regions:feed.regions.map(r=>({...r,nwsUpdatedAt:'2027-04-08T18:00:00Z'}))},captured),/Too few/);
+assert.throws(()=>createForecastIssue({...feed,regions:feed.regions.map(r=>({...r,nwsUpdatedAt:null}))},captured),/Too few/);
+assert.equal(createForecastIssue({...feed,regions:feed.regions.map(r=>({...r,thaw:{state:'unknown'}}))},captured).upstream.status,'thaw_data_limited');
 assert.ok(!JSON.stringify(issue).includes('lat'));
 assert.ok(!JSON.stringify(issue).includes('lon'));
 assert.deepEqual(checkedArchive([issue],today),[issue]);
@@ -40,7 +46,7 @@ assert.throws(()=>createForecastIssue({...feed,regions:feed.regions.map(r=>({...
 assert.throws(()=>createForecastIssue({...feed,regions:feed.regions.map(r=>({...r,nights:r.nights.slice(0,6)}))},captured),/Too few/);
 const partial=createForecastIssue({...feed,regions:feed.regions.slice(0,7)},captured);
 assert.equal(partial.coverage.partial,true);
-const olderFeed={...feed,generatedAt:'2027-04-09T19:05:00Z',regions:feed.regions.map(r=>({...r,nights:r.nights.map((n,i)=>({...n,date:shiftDate('2027-04-09',i)}))}))};
+const olderFeed={...feed,generatedAt:'2027-04-09T19:05:00Z',regions:feed.regions.map(r=>({...r,nwsUpdatedAt:'2027-04-09T18:00:00Z',nights:r.nights.map((n,i)=>({...n,date:shiftDate('2027-04-09',i)}))}))};
 const earlier=createForecastIssue(olderFeed,new Date('2027-04-09T19:10:00Z'));
 assert.throws(()=>appendForecastIssue([issue],earlier),/Backdating/);
 assert.throws(()=>appendForecastIssue([{...issue,source:'https://evil.example'}],earlier));
@@ -76,9 +82,9 @@ const wf=fs.readFileSync(new URL('../.github/workflows/salamander-forecast-archi
 const capture=fs.readFileSync(new URL('../scripts/archive-salamander-forecast.mjs',import.meta.url),'utf8');
 const api=fs.readFileSync(new URL('../pages/api/salamander-observations.js',import.meta.url),'utf8');
 const ui=fs.readFileSync(new URL('../components/SalamanderObservations.js',import.meta.url),'utf8');
-assert.ok(wf.includes("cron: '5 19 * 3-5 *'")&&wf.includes('workflow_dispatch')&&wf.includes('npm test'));
+assert.ok(wf.includes("cron: '5 19,21 * 3-5 *'")&&wf.includes('workflow_dispatch')&&wf.includes('npm test'));
 assert.ok(wf.includes('git push origin HEAD:main')&&wf.includes('git pull --rebase origin main'));
 assert.ok(capture.includes('SNAPSHOT_SOURCE')&&capture.includes('already_recorded'));
-assert.ok(api.includes('checkedArchive')&&api.includes('forecastArchive:{...forecastCoverage,issueTimeline}'));
+assert.ok(api.includes('checkedArchive')&&api.includes('forecastArchive:{...forecastCoverage,issueTimeline,health:operations}'));
 assert.ok(ui.includes('What did the tracker predict at the time?')&&ui.includes('No archived spring forecast issues yet.'));
 console.log('Salamander archive: true pre-night timestamps, no backfill/overwrite, 9x7 structure, partial outage, privacy, source freshness, effort matching and UI tests passed.');

@@ -262,3 +262,19 @@
 @media(max-width:1030px){.sala-eval-layout{grid-template-columns:1fr}.sala-eval-left{display:grid;grid-template-columns:1fr 1fr}}
 @media(max-width:830px){.sala-eval-intro{flex-direction:column}.sala-eval-status{flex-basis:auto;width:100%;max-width:420px}.sala-eval-left{grid-template-columns:1fr}.sala-eval-readiness{grid-template-columns:1fr}}
 @media(max-width:560px){.sala-eval{padding:17px}.sala-eval-panel{padding:16px}.sala-eval-heading{flex-direction:column;align-items:flex-start;gap:5px}.sala-eval-heading small{text-align:left}.sala-eval-gates{grid-template-columns:1fr}.sala-eval-readiness{padding:15px}.sala-eval-condition-top strong{font-size:16px}}
+
+
+/* Public spring forecast archive reliability, with honest off-season and missed-day states. */
+.sala-archive-ops{margin:19px 0;padding:18px;border:1px solid #6b7e58;border-radius:12px;background:#14281e}
+.sala-archive-ops-header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.sala-archive-ops-header>strong{font:700 11px/1.5 system-ui,sans-serif;padding:7px 10px;border:1px solid #879071;border-radius:99px}
+.sala-archive-health-normal{color:#d1dfba;background:#2d3b27}
+.sala-archive-ops-header>.sala-archive-health-alert{color:#ffdda2;background:#4b3724;border-color:#b78843}
+.sala-archive-ops p{font:12px/1.7 system-ui,sans-serif;color:#c0d1bf;margin:10px 0}
+.sala-archive-ops-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:15px 0}
+.sala-archive-ops-metrics>div{border:1px solid #53694b;border-radius:8px;background:#1e3527;padding:11px;display:flex;flex-direction:column;gap:5px}
+.sala-archive-ops-metrics strong{font:500 28px/1.1 'Fraunces',Georgia,serif;color:#e8dfc2}
+.sala-archive-ops-metrics span{font:10px/1.45 system-ui,sans-serif;color:#b5ccb2}
+.sala-archive-ops .sala-archive-gaps{color:#f2d39b;border-left:3px solid #b78c43;padding:8px 11px;background:#4434225e}
+.sala-archive-ops>small{display:block;color:#acbea9;font:10px/1.6 system-ui,sans-serif}
+@media(max-width:700px){.sala-archive-ops-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.sala-archive-ops{padding:13px}}

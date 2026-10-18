@@ -11,6 +11,7 @@ export default function SalamanderObservations({selected}){
  const obs=payload?.observations,reported=payload?.migration?.reports||[];
  const history=payload?.migration?.history||[],readiness=payload?.migration?.readiness;
  const forecastArchive=payload?.migration?.forecastArchive,issueTimeline=forecastArchive?.issueTimeline||[];
+ const archiveOps=forecastArchive?.health;
  const progress=readiness?.sourceReviewedEvents||0;
  const active=obs?.state!=='off_season',sampled=obs?.state==='sampled';
  const regional=obs?.regions?.find(r=>r.id===selected);
@@ -102,6 +103,21 @@ export default function SalamanderObservations({selected}){
      <p>Each March–May afternoon, the public NWS-and-thaw outlook is saved as it was issued, with a timestamp and its seven-night, nine-region assessments. Forecast history is never reconstructed from observations after the fact.</p>
     </div>
     <div className="sala-archive-state"><span>Historical forecast evidence</span><strong>{forecastArchive?.issueDays?'Archiving':'Begins next spring'}</strong><small>{forecastArchive?.lastIssueDay?'Last issued '+forecastArchive.lastIssueDay:'Scheduled for spring afternoons · no past forecasts invented'}</small></div>
+   </div>
+   <div className="sala-archive-ops" id="archive-health">
+    <div className="sala-archive-ops-header">
+     <span className="sala-overline">Automated archive reliability</span>
+     <strong className={archiveOps?.alertActive?'sala-archive-health-alert':'sala-archive-health-normal'}>{!archiveOps?'Checking archive…':archiveOps.state==='off_season'?'Off-season · scheduled for spring':archiveOps.state==='captured_today'?'Today’s forecast saved':archiveOps.state==='missed_today'?'Forecast missed the evening deadline':archiveOps.state==='before_capture_window'?'Today’s first capture is upcoming':'Spring capture window open'}</strong>
+    </div>
+    <p>{archiveOps?.message||'Archive history is checked without requesting additional weather data.'}</p>
+    <div className="sala-archive-ops-metrics">
+     <div><strong>{archiveOps?.recordedCompletedDays??'—'}</strong><span>Completed-day issues saved</span></div>
+     <div><strong>{archiveOps?.missedCompletedDays??'—'}</strong><span>Permanent missed spring days</span></div>
+     <div><strong>{archiveOps?.partialRegionDays??'—'}</strong><span>Days with partial region coverage</span></div>
+     <div><strong>{archiveOps?.staleUpstreamIssues??'—'}</strong><span>Issues with limited NOAA thaw evidence</span></div>
+    </div>
+    {archiveOps?.recentMissingDates?.length>0&&<p className="sala-archive-gaps"><strong>Missing issue dates:</strong> {archiveOps.recentMissingDates.join(', ')}{archiveOps.gapsOmittedFromList>0?' · '+archiveOps.gapsOmittedFromList+' earlier gaps':''}. These predictions were never captured and will not be backfilled.</p>}
+    <small>Twice-daily same-day capture attempts in spring; a GitHub watchdog checks for missed issues after 6 p.m. Michigan time. NWS forecasts with missing or stale grid updates are not archived as current evidence. No extra paid weather data.</small>
    </div>
    <div className="sala-archive-metrics">
     <div><span>Issued forecast days</span><strong>{forecastArchive?.issueDays??'—'}</strong><small>One frozen issue per Michigan date</small></div>

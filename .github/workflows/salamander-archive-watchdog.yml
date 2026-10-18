@@ -1,0 +1,42 @@
+name: Detect missed salamander spring forecast issues
+on:
+  schedule:
+    # 23:20 UTC occurs after 6 p.m. Michigan time in EST and EDT.
+    - cron: '20 23 * 3-5 *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: salamander-archive-watchdog
+  cancel-in-progress: false
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check if a forecast was archived before the evening deadline
+        id: check
+        run: node scripts/salamander-archive-watchdog.mjs
+      - name: Record one operational GitHub issue for missed spring day
+        if: steps.check.outputs.alert == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DAY: ${{ steps.check.outputs.issue_day }}
+        run: |
+          set -euo pipefail
+          TITLE="[Salamander archive] Missed spring forecast $DAY"
+          if gh issue list -R "$GITHUB_REPOSITORY" --state all --limit 1000 --json title --jq '.[].title' | grep -Fqx "$TITLE"; then
+            echo "Already flagged missing forecast for $DAY"
+          else
+            gh issue create -R "$GITHUB_REPOSITORY" \
+              --title "$TITLE" \
+              --body "No as-issued Michigan salamander forecast was committed before the 6 p.m. Michigan deadline on $DAY. This is an archive collection gap, not evidence of absent salamander movement. Inspect the spring archive workflow logs for stale NWS grid timestamps, upstream outages, test failures, or scheduled-run delays. Do NOT reconstruct or backfill this prediction. Future days continue normally; the public archive health panel documents this gap."
+          fi
