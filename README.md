@@ -113,3 +113,41 @@ Frankfort now has an **embedded Harbor Lights Beach player**, using the operator
 
 2026-10-17 evening source audit: the original Harbor Lights Beach camera on Angelcam/Click2Stream showed "Connecting to camera" even on its own source page, so an iframe cannot restore the upstream feed. It is NOT published as the default in-page video anymore. Frankfort now defaults to the Oliver Art Center **Lake Michigan View** camera (https://rtsp.me/embed/SQ2GeaQN/) and offers the same operator's **Betsie Bay Harbor View** (https://rtsp.me/embed/A9ST7n4N/) as a second in-page tab. These are the original Oliver Art Center published iframe sources at https://oliverartcenterfrankfort.org/webcam. The first selected Frankfort embed is displayed without an extra tool-level loading click; the video operator may still require pressing Play inside their iframe. Live video continuity and image timestamps are operator-dependent. The Harbor Lights page remains in a conspicuous **Source unavailable** explanation and link, not a functioning embedded camera promise. Lake Michigan and inland harbor views are labelled separately. No fake camera substitutes or paid providers, and no changes to NOAA forecast, verification, ads, ice analysis, map or archived data.
 
+## Shared Michigan seasonal thermal intelligence (November 2026)
+
+New GET `/api/seasonal-heat?lat=43.6038&lon=-83.9554` serves a source-qualified
+current-year thermal progression for a **Michigan reference point**, including a 10-year comparison
+constructed from the same source and method. This endpoint is intended as a read-only provider
+for the leafcutter-bee, Michigan gardening and future seasonal decision tools. It is **not**
+precise property sensing, observed station weather, soil temperature, nectar flowering,
+bee emergence, or a species-calibrated threshold.
+
+- **Equation:** Daily base 50°F GDD = `max(0, (dailyHighF + dailyLowF)/2 - 50)`.
+  Accumulate from January 1 through yesterday in the America/Detroit timezone. No
+  mixing with the older hourly-positive-excess approximation; compare only totals
+  using the same high/low daily formula.
+- **Historical/weather evidence:** Open-Meteo ERA5-Land gridded reanalysis is
+  preferred through 12 days before the current Michigan date; Open-Meteo's recent
+  forecast-model `past_days=16` supplies the overlapping recent dates through
+  yesterday. The API labels the number of modeled versus reanalysis days. Missing
+  any day makes the current-season total **INCOMPLETE** and suppresses comparisons.
+- **Comparison:** Same-coordinate historical reanalysis from the previous 10 complete
+  calendar years, accumulated to the same month/day. Requires 8 of 10 fully-covered
+  baseline seasons, and labels the comparison by its actual years. **This is not**
+  the USA-NPN PRISM 1991–2020 30-year normal and must not be described as that.
+- **Location:** A Michigan-area coordinate, typically resolved by the consumer from
+  the 2020 Census ZIP Code Tabulation Area. A ZIP representative point can differ
+  substantially from a specific lakeshore garden, and model grids are coarser still.
+  Input bounds are restricted and external providers are fixed-host; no arbitrary URLs.
+- **Safety:** Historical and forecast are **different evidence classes**. All errors
+  fail closed. No observed flowers or biological outcome is claimed. Existing maple
+  sap and trillium thresholds are purpose-specific and must not be replaced by GDD50.
+- **Cost:** Two source reads per coordinate, shared server cache 6 hours. This adds
+  public Open-Meteo API requests; confirm a commercial-use agreement before
+  scaling high-volume ZIP traffic, because a monetized site should not assume
+  keyless API access carries unrestricted commercial-use rights.
+
+Run `node scripts/check-seasonal-heat.mjs`. API contract:
+`schema='seasonal-heat-v1'`, `status='AVAILABLE' | 'INCOMPLETE' | 'UNAVAILABLE' |
+'PENDING_FIRST_COMPLETE_DAY'`, `totalGdd50F`, `comparison`, `asOfDate`,
+`daily`, `method` and `modelNotObservation`.
