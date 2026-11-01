@@ -147,7 +147,7 @@ API key, new Redis, Postgres job, or paid weather service. Values are gridded
 visitor's exact garden, or confirmed nectar blooms. The spring first-bloom index
 models early-season indicator species and cannot certify summer bee forage.
 
-**Status:** `AVAILABLE`, `UNAVAILABLE`, `PENDING_FIRST_COMPLETE_DAY`;
+**Status:** `AVAILABLE` (both heat and anomaly), `PARTIAL` (official heat present but anomaly missing), `UNAVAILABLE`, `PENDING_FIRST_COMPLETE_DAY`;
 field names `schema`, `provider`, `asOfDate`, `totalGdd50F`,
 `comparison.anomalyGdd50F`, `weekChangeGdd50F`, `sourceUrls`,
 `method`, `modelNotObservation`. Seasonal total resets January 1; early
