@@ -35,9 +35,19 @@ assert.equal(snap.speciesEmergenceStatus,'UNVERIFIED');
 assert.ok(snap.sourceUrls.current.includes('gdd%3Aagdd_50f'));
 const missing=seasonalSnapshot({lat:43.6038,lon:-83.9554,asOfDate:dates.asOfDate,
  current:grid('AGDD',2800),anomaly:grid('DIFFERENT',15),now});
-assert.equal(missing.status,'UNAVAILABLE');
-assert.equal(missing.totalGdd50F,null);
+assert.equal(missing.status,'PARTIAL');
+assert.equal(missing.totalGdd50F,2800);
 assert.equal(missing.comparison,null);
+assert.match(missing.reason,/not mapped/);
+const missingCurrent=seasonalSnapshot({lat:47.1848,lon:-88.6408,asOfDate:dates.asOfDate,
+ current:grid('AGDD',-9999),anomaly:grid('AGDD_ANOMALY',237.4),now});
+assert.equal(missingCurrent.status,'UNAVAILABLE');
+assert.equal(missingCurrent.totalGdd50F,null);
+const northern=seasonalSnapshot({lat:47.1848,lon:-88.6408,asOfDate:dates.asOfDate,
+ current:grid('AGDD',1874.3693),anomaly:grid('AGDD_ANOMALY',-9999),now});
+assert.equal(northern.status,'PARTIAL');
+assert.equal(northern.totalGdd50F,1874.4);
+assert.equal(northern.comparison,null);
 const misordered=seasonalSnapshot({lat:43.6038,lon:-83.9554,asOfDate:dates.asOfDate,
  current:grid('AGDD',2700),anomaly:grid('AGDD_ANOMALY',-120),
  previous:grid('AGDD',2800),previousDate:dates.previousDate,now});
