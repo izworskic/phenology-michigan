@@ -113,3 +113,49 @@ Frankfort now has an **embedded Harbor Lights Beach player**, using the operator
 
 2026-10-17 evening source audit: the original Harbor Lights Beach camera on Angelcam/Click2Stream showed "Connecting to camera" even on its own source page, so an iframe cannot restore the upstream feed. It is NOT published as the default in-page video anymore. Frankfort now defaults to the Oliver Art Center **Lake Michigan View** camera (https://rtsp.me/embed/SQ2GeaQN/) and offers the same operator's **Betsie Bay Harbor View** (https://rtsp.me/embed/A9ST7n4N/) as a second in-page tab. These are the original Oliver Art Center published iframe sources at https://oliverartcenterfrankfort.org/webcam. The first selected Frankfort embed is displayed without an extra tool-level loading click; the video operator may still require pressing Play inside their iframe. Live video continuity and image timestamps are operator-dependent. The Harbor Lights page remains in a conspicuous **Source unavailable** explanation and link, not a functioning embedded camera promise. Lake Michigan and inland harbor views are labelled separately. No fake camera substitutes or paid providers, and no changes to NOAA forecast, verification, ads, ice analysis, map or archived data.
 
+## Shared Michigan seasonal thermal intelligence (November 2026)
+
+The read-only `GET /api/seasonal-heat?lat=43.6038&lon=-83.9554` gives a ZIP-reference-point
+seasonal heat summary for the leafcutter, Michigan gardening and future seasonal tools.
+This is an evidence provider, **not** a species-specific bloom or insect-emergence model.
+
+**Source:** official USA National Phenology Network (USA-NPN) GeoServer WMS GetFeatureInfo
+at `https://geoserver.usanpn.org/geoserver/wms`, with fixed named layers:
+
+- `gdd:agdd_50f`, field `AGDD`: total accumulated base-50°F growing degree days
+  since January 1 for the requested day, sampled from the official ~4km gridded layer.
+- `gdd:agdd_anomaly_50f`, field `AGDD_ANOMALY`: accumulated warmth difference
+  compared with the NPN's 1991–2020 reference at the **same grid location**.
+- A second `gdd:agdd_50f` request seven days earlier estimates last-week heat added.
+  Missing old data suppresses only the weekly change; missing current or anomaly
+  suppresses the entire headline total.
+
+The shared equation is `GDD50 = max(0, (daily high + daily low)/2 - 50°F)`.
+It replaces the leafcutter's incompatible hourly-positive-excess *GDD calculation*,
+while hourly counts of afternoons reaching 75°F remain an independent persistence metric.
+The forecast and historical grid are different evidence classes and must not be
+added together without an explicit projected-versus-historical label.
+
+**Sources:** https://www.usanpn.org/data/maps/AGDD and
+https://usa-npn.github.io/rnpn/articles/VI_geospatial.html .
+Check live endpoints against official WMS properties and dates before claiming it works.
+
+**Safeguards:** Request is fixed-host, fixed WMS layer name, five-by-five pixel query,
+restricted Michigan coordinate bounds; no arbitrary upstream, user GPS permission,
+API key, new Redis, Postgres job, or paid weather service. Values are gridded
+**air-temperature estimates**, not station observations, soil temperature, the
+visitor's exact garden, or confirmed nectar blooms. The spring first-bloom index
+models early-season indicator species and cannot certify summer bee forage.
+
+**Status:** `AVAILABLE`, `UNAVAILABLE`, `PENDING_FIRST_COMPLETE_DAY`;
+field names `schema`, `provider`, `asOfDate`, `totalGdd50F`,
+`comparison.anomalyGdd50F`, `weekChangeGdd50F`, `sourceUrls`,
+`method`, `modelNotObservation`. Seasonal total resets January 1; early
+Jan 1 has no last completed local day. No missing data are silently filled.
+Cache once per six hours per coordinate. Tests: `node scripts/check-seasonal-heat.mjs`.
+
+**Licensing correction:** The original prototype queried Open-Meteo's free
+endpoints. That approach was rejected prior to release: the public terms explicitly
+exclude advertising-supported sites. The shared endpoint uses NPN governmental
+data instead and does **not** introduce new commercial usage of Open-Meteo's free API.
+Existing Open-Meteo uses elsewhere in this repository warrant a separate licence audit.
