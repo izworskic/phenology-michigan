@@ -31,7 +31,7 @@ export default async function handler(req,res){
   if(previousDate)requests.push(fetchGrid(wmsUrl(lat,lon,previousDate,'current')));
   const [current,anomaly,previous=null]=await Promise.all(requests);
   const snapshot=seasonalSnapshot({lat,lon,asOfDate,current,anomaly,previous,previousDate,now});
-  if(snapshot.status!=='AVAILABLE')return res.status(503).json({...snapshot,status:'UNAVAILABLE'});
+  if(snapshot.status!=='AVAILABLE'&&snapshot.status!=='PARTIAL')return res.status(503).json({...snapshot,status:'UNAVAILABLE'});
   res.setHeader('Cache-Control','public, s-maxage=21600, stale-while-revalidate=1800');
   return res.status(200).json(snapshot);
  }catch(e){
