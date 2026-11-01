@@ -115,39 +115,47 @@ Frankfort now has an **embedded Harbor Lights Beach player**, using the operator
 
 ## Shared Michigan seasonal thermal intelligence (November 2026)
 
-New GET `/api/seasonal-heat?lat=43.6038&lon=-83.9554` serves a source-qualified
-current-year thermal progression for a **Michigan reference point**, including a 10-year comparison
-constructed from the same source and method. This endpoint is intended as a read-only provider
-for the leafcutter-bee, Michigan gardening and future seasonal decision tools. It is **not**
-precise property sensing, observed station weather, soil temperature, nectar flowering,
-bee emergence, or a species-calibrated threshold.
+The read-only `GET /api/seasonal-heat?lat=43.6038&lon=-83.9554` gives a ZIP-reference-point
+seasonal heat summary for the leafcutter, Michigan gardening and future seasonal tools.
+This is an evidence provider, **not** a species-specific bloom or insect-emergence model.
 
-- **Equation:** Daily base 50°F GDD = `max(0, (dailyHighF + dailyLowF)/2 - 50)`.
-  Accumulate from January 1 through yesterday in the America/Detroit timezone. No
-  mixing with the older hourly-positive-excess approximation; compare only totals
-  using the same high/low daily formula.
-- **Historical/weather evidence:** Open-Meteo ERA5-Land gridded reanalysis is
-  preferred through 12 days before the current Michigan date; Open-Meteo's recent
-  forecast-model `past_days=16` supplies the overlapping recent dates through
-  yesterday. The API labels the number of modeled versus reanalysis days. Missing
-  any day makes the current-season total **INCOMPLETE** and suppresses comparisons.
-- **Comparison:** Same-coordinate historical reanalysis from the previous 10 complete
-  calendar years, accumulated to the same month/day. Requires 8 of 10 fully-covered
-  baseline seasons, and labels the comparison by its actual years. **This is not**
-  the USA-NPN PRISM 1991–2020 30-year normal and must not be described as that.
-- **Location:** A Michigan-area coordinate, typically resolved by the consumer from
-  the 2020 Census ZIP Code Tabulation Area. A ZIP representative point can differ
-  substantially from a specific lakeshore garden, and model grids are coarser still.
-  Input bounds are restricted and external providers are fixed-host; no arbitrary URLs.
-- **Safety:** Historical and forecast are **different evidence classes**. All errors
-  fail closed. No observed flowers or biological outcome is claimed. Existing maple
-  sap and trillium thresholds are purpose-specific and must not be replaced by GDD50.
-- **Cost:** Two source reads per coordinate, shared server cache 6 hours. This adds
-  public Open-Meteo API requests; confirm a commercial-use agreement before
-  scaling high-volume ZIP traffic, because a monetized site should not assume
-  keyless API access carries unrestricted commercial-use rights.
+**Source:** official USA National Phenology Network (USA-NPN) GeoServer WMS GetFeatureInfo
+at `https://geoserver.usanpn.org/geoserver/wms`, with fixed named layers:
 
-Run `node scripts/check-seasonal-heat.mjs`. API contract:
-`schema='seasonal-heat-v1'`, `status='AVAILABLE' | 'INCOMPLETE' | 'UNAVAILABLE' |
-'PENDING_FIRST_COMPLETE_DAY'`, `totalGdd50F`, `comparison`, `asOfDate`,
-`daily`, `method` and `modelNotObservation`.
+- `gdd:agdd_50f`, field `AGDD`: total accumulated base-50°F growing degree days
+  since January 1 for the requested day, sampled from the official ~4km gridded layer.
+- `gdd:agdd_anomaly_50f`, field `AGDD_ANOMALY`: accumulated warmth difference
+  compared with the NPN's 1991–2020 reference at the **same grid location**.
+- A second `gdd:agdd_50f` request seven days earlier estimates last-week heat added.
+  Missing old data suppresses only the weekly change; missing current or anomaly
+  suppresses the entire headline total.
+
+The shared equation is `GDD50 = max(0, (daily high + daily low)/2 - 50°F)`.
+It replaces the leafcutter's incompatible hourly-positive-excess *GDD calculation*,
+while hourly counts of afternoons reaching 75°F remain an independent persistence metric.
+The forecast and historical grid are different evidence classes and must not be
+added together without an explicit projected-versus-historical label.
+
+**Sources:** https://www.usanpn.org/data/maps/AGDD and
+https://usa-npn.github.io/rnpn/articles/VI_geospatial.html .
+Check live endpoints against official WMS properties and dates before claiming it works.
+
+**Safeguards:** Request is fixed-host, fixed WMS layer name, five-by-five pixel query,
+restricted Michigan coordinate bounds; no arbitrary upstream, user GPS permission,
+API key, new Redis, Postgres job, or paid weather service. Values are gridded
+**air-temperature estimates**, not station observations, soil temperature, the
+visitor's exact garden, or confirmed nectar blooms. The spring first-bloom index
+models early-season indicator species and cannot certify summer bee forage.
+
+**Status:** `AVAILABLE`, `UNAVAILABLE`, `PENDING_FIRST_COMPLETE_DAY`;
+field names `schema`, `provider`, `asOfDate`, `totalGdd50F`,
+`comparison.anomalyGdd50F`, `weekChangeGdd50F`, `sourceUrls`,
+`method`, `modelNotObservation`. Seasonal total resets January 1; early
+Jan 1 has no last completed local day. No missing data are silently filled.
+Cache once per six hours per coordinate. Tests: `node scripts/check-seasonal-heat.mjs`.
+
+**Licensing correction:** The original prototype queried Open-Meteo's free
+endpoints. That approach was rejected prior to release: the public terms explicitly
+exclude advertising-supported sites. The shared endpoint uses NPN governmental
+data instead and does **not** introduce new commercial usage of Open-Meteo's free API.
+Existing Open-Meteo uses elsewhere in this repository warrant a separate licence audit.
