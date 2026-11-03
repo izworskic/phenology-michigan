@@ -611,6 +611,8 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
           </section>
         )}
 
+        <SeasonalFieldRead read={fieldRead} />
+
         {read && (
           <section style={{ marginTop: 18, background: "rgba(255,255,255,0.5)", border: "1px solid #e4dcc8", borderLeft: `4px solid ${season.color}`, borderRadius: 14, padding: "16px 20px" }}>
             <div style={{ fontSize: 11.5, letterSpacing: "0.14em", textTransform: "uppercase", color: "#8a7d62", marginBottom: 6 }}>The read</div>
@@ -618,8 +620,6 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
             {correlations && <p style={{ margin: "12px 0 0", fontSize: 14, lineHeight: 1.5, color: "#6a5f4a", fontFamily: "Newsreader, Georgia, serif", fontStyle: "italic", borderTop: "1px solid #e4dcc8", paddingTop: 12 }}>Calendar overlap: {correlations}</p>}
           </section>
         )}
-
-        <SeasonalFieldRead read={fieldRead} />
 
         <section className="pheno-2col" style={{ marginTop: 24 }}>
           <div style={{ background: "rgba(255,255,255,0.4)", border: "1px solid #e4dcc8", borderRadius: 18, padding: "18px 18px 8px" }}>
