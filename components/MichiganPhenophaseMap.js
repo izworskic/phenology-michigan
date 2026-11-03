@@ -21,6 +21,7 @@ export default function MichiganPhenophaseMap({data}){
  const active=regions.find(r=>r.id===selected)||regions[0];
  const phases=useMemo(()=>((active?.phases)||[]).filter(p=>phaseFilter==='all'||p.group===phaseFilter),[active,phaseFilter]);
  const sourceState=data?.sourceStatus;
+ const archiveStale=data?.status==='stale';
  const sourcePending=!valid||sourceState?.usaNpn==='pending';
  selection.current=setSelected;
  useEffect(()=>{
@@ -86,7 +87,7 @@ export default function MichiganPhenophaseMap({data}){
     <span><i className="nygeo-key limited"/> Limited reports</span>
     <span><i className="nygeo-key none"/> No eligible sample</span>
    </div>
-   {sourcePending?<div className="nygeo-source-warning" role="status"><Info size={17}/> Automated source collection is initializing; there are no current regional claims yet. The map shows regional reference centers only.</div>:null}
+   {archiveStale?<div className="nygeo-source-warning" role="status"><AlertCircle size={17}/> The observation archive is older than two days. Previously reported phenophases are withheld until a fresh automatic update succeeds; the regional reference map remains available.</div>:sourcePending?<div className="nygeo-source-warning" role="status"><Info size={17}/> Automated source collection is initializing; there are no current regional claims yet. The map shows regional reference centers only.</div>:null}
    {sourceState?.iNaturalist==='partial'||sourceState?.iNaturalist==='unavailable'?<div className="nygeo-source-warning"><AlertCircle size={16}/> Some iNaturalist queries failed; missing reports are unavailable data, not absence of wildlife.</div>:null}
    <div className="nygeo-layout">
     <div className="nygeo-map-column">
@@ -113,7 +114,7 @@ export default function MichiganPhenophaseMap({data}){
       </select>
      </div>
      <div className="nygeo-summary"><h4>{active?.name||'Regional evidence unavailable'}</h4>
-      <p>Evidence received in the last 14 days · {sourcePending?'collection not yet complete': 'sampled observational reports'}</p></div>
+      <p>Observation dates from the last 14 days · {archiveStale?'archive stale; reports withheld':sourcePending?'collection not yet complete':'sampled observational reports'}</p></div>
      {phases.length? <div className="nygeo-phases">
        {phases.map(p=>{
         const I=ICONS[p.group]||Leaf;
@@ -122,7 +123,7 @@ export default function MichiganPhenophaseMap({data}){
          <p className="nygeo-phase-species">{p.species.length?'Examples reported: '+p.species.map(x=>x.name).join(', '):'No named species available'}</p>
          <p className="nygeo-phase-sources">USA-NPN: {p.sourceReports['usa-npn']} submissions from {p.reportingSites} sites · iNaturalist: {p.sourceReports.inaturalist} annotated records from {p.reportingObservers} observers</p>
         </article>;
-       })}</div>:<p className="nygeo-empty">{sourcePending?'Awaiting the first automated source refresh.': 'No recent eligible reports in this sampled category and region. That does not mean the organism or stage was absent.'}</p>}
+       })}</div>:<p className="nygeo-empty">{archiveStale?'The automated archive is overdue; previously reported phenophases are withheld rather than presented as current.':sourcePending?'Awaiting the first automated source refresh.':'No recent eligible reports in this sampled category and region. That does not mean the organism or stage was absent.'}</p>}
      <div className="nygeo-evidence-footer">These are submitted observations, not a complete census. Reports may arrive late and reporting effort varies widely by region.</div>
     </div>
    </div>
