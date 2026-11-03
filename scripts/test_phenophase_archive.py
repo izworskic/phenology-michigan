@@ -26,22 +26,29 @@ class ArchiveTests(unittest.TestCase):
     def setUpClass(cls):
         cls.config = read("data/michigan-observation-regions.json")
         cls.real_geo = read("data/michigan-phenophase-geography.json")
-        # Stable synthetic test dates only: daily field data will update tomorrow
-        # and must not make historical edge-case tests nonrepeatable.
+        # Stable TEST-ONLY source derived from the real first November 3 capture.
+        # It cannot silently change when the automatic source refresh runs tomorrow.
+        first = read("data/michigan-phenophase-archive/2026.json")["snapshots"][0]
         cls.geo = deepcopy(cls.real_geo)
-        cls.geo["asOfDate"] = "2026-11-03"
-        cls.geo["windowStart"] = "2026-10-20"
-        cls.geo["windowEnd"] = "2026-11-03"
-        cls.geo["sourceStatus"]["usaNpn"] = "ok"
-        cls.geo["sourceStatus"]["iNaturalist"] = "ok"
-        cls.geo["sourceStatus"]["iNaturalistFailedQueries"] = 0
-        cls.geo["sourceStatus"]["iNaturalistCappedQueries"] = 0
-        for region in cls.geo["regions"]:
-            region["unavailableInatPhases"] = []
-            for phase in region["phases"]:
-                phase["latest"] = "2026-11-03"
-                for species in phase["species"]:
-                    species["date"] = "2026-11-03"
+        cls.geo["asOfDate"] = first["asOfDate"]
+        cls.geo["windowStart"] = first["windowStart"]
+        cls.geo["windowEnd"] = first["windowEnd"]
+        cls.geo["sourceStatus"] = deepcopy(first["sourceStatus"])
+        phase_labels = {p["id"]: p for p in cls.config["phenophases"]}
+        for current, base in zip(cls.geo["regions"], first["regions"]):
+            current["sampledReportCount"] = base["sampledReports"]
+            current["unavailableInatPhases"] = deepcopy(base["unavailableInatPhases"])
+            current["phases"] = [
+                {"id": p["id"], "name": phase_labels[p["id"]]["name"],
+                 "group": phase_labels[p["id"]]["group"],
+                 "latest": p["latest"], "coverage": p["coverage"],
+                 "sourceReports": deepcopy(p["reports"]),
+                 "reportingSites": p["reportingSites"],
+                 "reportingObservers": p["reportingObservers"],
+                 "uniqueReportingDays": p["uniqueReportingDays"],
+                 "species": deepcopy(p["species"])}
+                for p in base["phases"]
+            ]
 
     def test_first_captured_day_is_real_published_snapshot_not_reconstructed_events(self):
         archive = read("data/michigan-phenophase-archive/2026.json")
