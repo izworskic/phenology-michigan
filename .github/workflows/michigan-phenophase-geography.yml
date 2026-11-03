@@ -1,0 +1,74 @@
+name: Collect Michigan phenophase geography
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/build-michigan-phenophase-geography.py'
+      - 'scripts/test_michigan_phenophase_geography.py'
+      - 'data/michigan-observation-regions.json'
+      - '.github/workflows/michigan-phenophase-geography.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/build-michigan-phenophase-geography.py'
+      - 'data/michigan-observation-regions.json'
+      - '.github/workflows/michigan-phenophase-geography.yml'
+  schedule:
+    # Run after the existing USA-NPN daily signals and scientific dispatch pipelines.
+    - cron: '40 16 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: michigan-phenophase-source-geography
+  cancel-in-progress: false
+
+jobs:
+  scientific-observations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || 'main' }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fail-closed source, geographic and privacy tests
+        run: python3 -m unittest discover -s scripts -p 'test_michigan_phenophase_geography.py' -v
+      - name: Fetch third-party observed phenophases automatically
+        run: python3 scripts/build-michigan-phenophase-geography.py
+      - name: Assert the public artifact contains only regional aggregates
+        run: |
+          python3 - <<'PY'
+          import json
+          p=json.load(open('data/michigan-phenophase-geography.json'))
+          assert p['schema']=='michigan-phenophase-geography-v1'
+          assert p['sourceStatus']['usaNpn']=='ok'
+          assert len(p['regions'])==9
+          assert p['science']['noSubmissionRequired'] is True
+          for x in p['regions']:
+              assert len(x['phases'])<=6
+              for phase in x['phases']:
+                  assert len(phase['species'])<=4
+          all_text=json.dumps(p)
+          for key in ('"site_id"','"individual_id"','"user_id"','"geojson"','"reporter"'):
+              assert key not in all_text,key
+          print('Region-only scientific evidence and no-user-submission policy verified.')
+          PY
+      - name: Publish dated approved aggregates without deploying website code
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: |
+          git config user.name 'phenology-geography-bot'
+          git config user.email 'phenology-geography-bot@users.noreply.github.com'
+          git add data/michigan-phenophase-geography.json
+          if git diff --cached --quiet; then
+            echo 'No new dated evidence.'
+            exit 0
+          fi
+          git commit -m 'Update reported Michigan phenophase geography [skip deploy]'
+          git pull --rebase origin main
+          git push origin HEAD:main
