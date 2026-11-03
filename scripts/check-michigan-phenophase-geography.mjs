@@ -36,6 +36,9 @@ const script=fs.readFileSync(new URL('./build-michigan-phenophase-geography.py',
 assert.ok(page.includes('readGeographyEvidence()')&&page.includes('geography={geographyEvidence}'));
 assert.ok(page.includes('<NaturalYearDispatch read={naturalYear} geography={geographyEvidence} />'));
 assert.ok(page.includes('michigan-phenophase-geography.css'));
+assert.ok(page.includes('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'),'Load Leaflet CSS on the homepage; otherwise tiles and markers are displaced');
+assert.ok(map.includes("const archiveStale=data?.status==='stale'"),'Outdated evidence needs a distinct unavailable state');
+assert.ok(map.includes('archive stale; reports withheld'),'Stale reports must not be described as recent absence');
 assert.ok(page.includes('<link rel="canonical" href={SITE + "/"} />'));
 assert.ok(page.includes('<SpeciesTrialObservatory data={speciesTrials} />'));
 assert.ok(dispatch.includes('["map","Across Michigan"]'));
