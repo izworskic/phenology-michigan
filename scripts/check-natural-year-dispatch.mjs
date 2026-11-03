@@ -40,8 +40,9 @@ assert.ok(page.includes("<SpeciesTrialObservatory data={speciesTrials} />"),"Pre
 assert.ok(page.includes("<SeasonalFieldRead read={fieldRead} />"),"Preserve dated Python field evidence");
 assert.ok(page.includes('<link rel="canonical" href={SITE + "/"} />'));
 assert.ok(component.includes("Right now") && component.includes("Next on the calendar") && component.includes("Compare Michigan regions"));
+assert.ok(component.includes("/michigan-trillium#tri-site-science"),"Historical spring evidence should connect directly to the verified field research program");
 assert.ok(component.includes("What observers actually reported") && component.includes("statewide") && component.includes("This overview never"));
-assert.ok(component.includes("not a local")===false,"Narrative must remain clear and intentional");
+assert.ok(component.includes("not a local first-flower or first-bird prediction"),"The region-view explanation must explicitly disclose the modeling limit");
 assert.ok(css.includes("@media(max-width:520px)"));
 assert.ok(worker.includes("observed_reports")&&worker.includes("historical_regions")&&worker.includes("MAX_SIGNALS_AGE_DAYS"));
 console.log("Natural-year dispatch: confirmed specialist routes, archive freshness, regional historical scope, statewide observations, source trust, existing homepage preservation and mobile styling passed.");

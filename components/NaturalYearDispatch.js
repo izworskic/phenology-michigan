@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Leaf, Flower2, Bird, Waves, CloudSun, MapPin, ArrowRight, CalendarDays, Microscope, ExternalLink, Compass, Clock3 } from "lucide-react";
+import { Leaf, Flower2, Bird, Waves, CloudSun, MapPin, ArrowRight, CalendarDays, Microscope, ExternalLink, Compass, Clock3, Binoculars } from "lucide-react";
 
-const ICONS = {plants: Flower2, birds: Bird, wildlife: Leaf, weather: CloudSun, water: Waves};
+const ICONS = {plants: Flower2, birds: Bird, wildlife: Binoculars, weather: CloudSun, water: Waves};
 const LABEL = {plants:"Plants",birds:"Birds",wildlife:"Wildlife",weather:"Weather",water:"Water"};
 const labelDate = s => {
   if (!s) return "Date unavailable";
@@ -133,7 +133,7 @@ export default function NaturalYearDispatch({read}) {
           <HistoricalBand name="Large-flowered trillium" entry={chosen.trillium} note={"Flowering-annotated public reports · "+chosen.trilliumSampleRegion} href="/michigan-trillium"/>
           <HistoricalBand name="Ruby-throated hummingbird" entry={chosen.hummingbird} note={"First public spring reports"+(chosen.birdSampleRegion?" · "+chosen.birdSampleRegion:"")} href="/hummingbird-tracker"/>
         </div>
-        <div className="ny-region-fine"><Microscope size={17}/> These windows are read from the existing independent historical species trials. They do not assert a local first flower or first bird. Where history is insufficient, the comparison withholds the date.</div>
+        <div className="ny-region-fine"><Microscope size={17}/><div>These windows come from the independently tested historical species archives, not a local first-flower or first-bird prediction. Where history is insufficient, the date is withheld.<p><a href="/michigan-trillium#tri-site-science">Help build real first-flower records at monitored preserves <ArrowRight size={13}/></a></p></div></div>
       </div>}
       <details className="ny-method">
         <summary>How this dispatch distinguishes evidence</summary>
