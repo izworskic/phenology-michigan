@@ -156,38 +156,97 @@ def snapshot_from_geography(source, config, today):
 
 
 def validate_archive(archive, year, config):
-    if not isinstance(archive, dict) or archive.get("schema") != ARCHIVE_SCHEMA or archive.get("year") != year:
+    """Require an exact, PII-free archive shape, even when files were hand-edited."""
+    if (not isinstance(archive, dict)
+            or set(archive) != {"schema", "year", "snapshots"}
+            or archive.get("schema") != ARCHIVE_SCHEMA
+            or type(archive.get("year")) is not int or archive["year"] != year):
         raise ValueError("Historical year schema mismatch")
     rows = archive.get("snapshots")
     if not isinstance(rows, list) or len(rows) > MAX_SNAPSHOTS_PER_YEAR:
         raise ValueError("Unexpected snapshot count for one calendar year")
     ids = region_ids(config)
+    phases = {p["id"]: p for p in config["phenophases"]}
     previous = None
     for snap in rows:
+        if not isinstance(snap, dict) or set(snap) != {
+            "asOfDate", "windowStart", "windowEnd", "kind", "sourceStatus", "regions"
+        }:
+            raise ValueError("Historical snapshot has unknown or private attributes")
         as_of = parse_day(snap.get("asOfDate"))
         if as_of.year != year or (previous is not None and as_of <= previous):
             raise ValueError("Out-of-order, duplicated, or wrong-year history")
         if snap.get("kind") != "overlapping-14-day-reporting-snapshot":
             raise ValueError("History must never masquerade as daily event totals")
-        if parse_day(snap.get("windowEnd")) != as_of or (as_of - parse_day(snap.get("windowStart"))).days != 14:
+        begin = parse_day(snap.get("windowStart"))
+        if parse_day(snap.get("windowEnd")) != as_of or (as_of - begin).days != 14:
             raise ValueError("Unexpected historical window")
+        health = snap.get("sourceStatus")
+        if (not isinstance(health, dict) or set(health) != {
+            "usaNpn", "iNaturalist", "iNaturalistCappedQueries", "iNaturalistFailedQueries"
+        } or health.get("usaNpn") != "ok"
+                or health.get("iNaturalist") not in HEALTH):
+            raise ValueError("Recorded incomplete NPN evidence or invalid source health")
+        bounded_count(health["iNaturalistCappedQueries"])
+        bounded_count(health["iNaturalistFailedQueries"])
+        if health["iNaturalist"] == "ok" and health["iNaturalistFailedQueries"]:
+            raise ValueError("Source health falsely reports complete success")
         regs = snap.get("regions")
         if not isinstance(regs, list) or [r.get("id") for r in regs] != ids:
             raise ValueError("Historical geography changed unexpectedly")
-        if snap.get("sourceStatus", {}).get("usaNpn") != "ok":
-            raise ValueError("Recorded incomplete NPN evidence as verified")
         for r in regs:
-            bounded_count(r.get("sampledReports"))
+            if not isinstance(r, dict) or set(r) != {
+                "id", "sampledReports", "unavailableInatPhases", "phases"
+            }:
+                raise ValueError("Forbidden individual field-site data in regional archive")
+            total = bounded_count(r.get("sampledReports"))
+            if (not isinstance(r.get("unavailableInatPhases"), list)
+                    or any(v not in phases for v in r["unavailableInatPhases"])
+                    or len(set(r["unavailableInatPhases"])) != len(r["unavailableInatPhases"])):
+                raise ValueError("Unrecognized iNaturalist query outage scope")
             if not isinstance(r.get("phases"), list) or len(r["phases"]) > 6:
                 raise ValueError("Unbounded historic phase data")
+            seen = set()
+            counted = 0
             for p in r["phases"]:
-                if p.get("id") not in {a["id"] for a in config["phenophases"]}:
-                    raise ValueError("Unknown archived phase")
-                if p.get("coverage") not in COVERAGE:
-                    raise ValueError("Unknown coverage state")
+                if (not isinstance(p, dict) or set(p) != {
+                    "id", "latest", "coverage", "reports", "reportingSites",
+                    "reportingObservers", "uniqueReportingDays", "species"
+                }):
+                    raise ValueError("Unknown site or individual fields in archived biology")
+                pid = p["id"]
+                if pid not in phases or pid in seen or p["coverage"] not in COVERAGE:
+                    raise ValueError("Unknown or duplicated archived phase")
+                seen.add(pid)
+                latest = parse_day(p["latest"])
+                if not begin <= latest <= as_of:
+                    raise ValueError("Archived phase dates outside overlapping sample window")
+                reports = p.get("reports")
+                if not isinstance(reports, dict) or set(reports) != set(SOURCE_LABELS):
+                    raise ValueError("Unknown scientific report source")
+                count = {label: bounded_count(reports[label]) for label in SOURCE_LABELS}
+                sites = bounded_count(p["reportingSites"])
+                observers = bounded_count(p["reportingObservers"])
+                days = bounded_count(p["uniqueReportingDays"])
+                if (sites > count["usa-npn"] or observers > count["inaturalist"]
+                        or days > 15 or not sum(count.values())):
+                    raise ValueError("Historical report breadth is inconsistent")
+                counted += sum(count.values())
+                examples = p.get("species")
+                if not isinstance(examples, list) or len(examples) > 4:
+                    raise ValueError("Unbounded species-name examples")
+                for example in examples:
+                    if not isinstance(example, dict) or set(example) != {"name", "date", "source"}:
+                        raise ValueError("Unapproved private species example metadata")
+                    name = example["name"]
+                    if (not isinstance(name, str) or not 2 <= len(name) <= 80
+                            or any(c in name for c in "<>") or example["source"] not in SOURCE_LABELS
+                            or not begin <= parse_day(example["date"]) <= latest):
+                        raise ValueError("Invalid public species example")
+            if counted > total:
+                raise ValueError("Reported stage sample exceeds total regional samples")
         previous = as_of
     return archive
-
 
 def add_snapshot(archive, snapshot, config):
     day = parse_day(snapshot["asOfDate"])
