@@ -1,0 +1,211 @@
+{
+  "schema": "natural-year-connections-v1",
+  "description": "Curated homepage connections to existing phenology specialist experiences. Windows are broad editorial seasons, never observed or predicted biological event dates.",
+  "regions": [
+    {
+      "id": "saginaw-bay",
+      "label": "Saginaw Bay & central Lower Michigan",
+      "trilliumRegion": "central",
+      "hummingbirdRegion": "saginaw-bay",
+      "note": "Historical reference regions, not forecasts at a particular yard or preserve"
+    },
+    {
+      "id": "southeast",
+      "label": "Southeast Michigan",
+      "trilliumRegion": "southeast",
+      "hummingbirdRegion": "detroit",
+      "note": "Flowering and bird report regions have different footprints"
+    },
+    {
+      "id": "southwest",
+      "label": "Southwest Michigan",
+      "trilliumRegion": "southwest",
+      "hummingbirdRegion": "kalamazoo",
+      "note": "Broad regions; reported timing is sensitive to observer effort"
+    },
+    {
+      "id": "west",
+      "label": "West Michigan",
+      "trilliumRegion": "west",
+      "hummingbirdRegion": "grand-rapids",
+      "note": "Broad regions; reported timing is sensitive to observer effort"
+    },
+    {
+      "id": "north",
+      "label": "Northern Lower Peninsula",
+      "trilliumRegion": "north",
+      "hummingbirdRegion": "gaylord",
+      "note": "Representative regions, not exact site conditions"
+    },
+    {
+      "id": "eastup",
+      "label": "Eastern Upper Peninsula",
+      "trilliumRegion": "eastup",
+      "hummingbirdRegion": null,
+      "note": "No geographically matching hummingbird reporting-history series in this trial"
+    },
+    {
+      "id": "westup",
+      "label": "Western Upper Peninsula",
+      "trilliumRegion": "westup",
+      "hummingbirdRegion": "houghton",
+      "note": "Representative regions, not exact site conditions"
+    }
+  ],
+  "experiences": [
+    {
+      "id": "leaf-change",
+      "title": "Changing leaves & woodland phenophases",
+      "category": "plants",
+      "startDoy": 255,
+      "endDoy": 332,
+      "url": "#turning-year",
+      "linkLabel": "Open the annual field calendar",
+      "scope": "Saginaw Bay calendar reference",
+      "what": "Watch different tree species move from colored leaves to leaf drop; report actual dates from a known tree",
+      "caution": "A statewide maple report cannot confirm leaf color in a particular town",
+      "source": "Existing Michigan Phenology calendar and USA-NPN leaf observations",
+      "rank": 4
+    },
+    {
+      "id": "waterfowl",
+      "title": "Southbound marsh birds",
+      "category": "birds",
+      "startDoy": 285,
+      "endDoy": 335,
+      "url": "https://michiganbirdingreport.com",
+      "linkLabel": "Explore Michigan Birding Report",
+      "scope": "Broad Saginaw Bay migration calendar",
+      "what": "Check marshes and bay edges for changing flocks; migration varies with weather",
+      "caution": "Calls or sightings do not independently prove the timing of a migratory movement",
+      "source": "Existing Michigan Phenology fall migration calendar",
+      "rank": 5
+    },
+    {
+      "id": "frost",
+      "title": "First frosts & the autumn garden",
+      "category": "weather",
+      "startDoy": 255,
+      "endDoy": 337,
+      "url": "/frosty-mornings",
+      "linkLabel": "Open the frost decision tool",
+      "scope": "Michigan seasonal weather context",
+      "what": "Compare overnight minima, skies and actual observed frost before deciding what to protect",
+      "caution": "Weather suitability is not an observed frost event",
+      "source": "Existing Frosty Mornings tool",
+      "rank": 4
+    },
+    {
+      "id": "lake-smoke",
+      "title": "Lake smoke and freeze-up clues",
+      "category": "water",
+      "startDoy": 290,
+      "endDoy": 70,
+      "url": "/lake-smoke",
+      "linkLabel": "Open Lake Smoke",
+      "scope": "Great Lakes seasonal conditions",
+      "what": "Compare lake-to-air temperature contrast, cold-air outbreaks and shore exposure",
+      "caution": "Cold air alone does not confirm lake smoke or safe ice",
+      "source": "Existing Lake Smoke tool",
+      "rank": 3
+    },
+    {
+      "id": "trillium",
+      "title": "Large-flowered trillium",
+      "category": "plants",
+      "startDoy": 105,
+      "endDoy": 178,
+      "url": "/michigan-trillium",
+      "linkLabel": "Open the Trillium Tracker",
+      "scope": "Broad spring calendar; reported-flowering history is regional",
+      "what": "Look for buds and open flowers in permitted woodland places and record the stage",
+      "caution": "Historical report weeks do not establish first bloom at a preserve",
+      "source": "Existing Trillium Tracker and independently tested reporting archive",
+      "rank": 5
+    },
+    {
+      "id": "hummingbirds",
+      "title": "Ruby-throated hummingbirds",
+      "category": "birds",
+      "startDoy": 106,
+      "endDoy": 165,
+      "url": "/hummingbird-tracker",
+      "linkLabel": "Open the Hummingbird Tracker",
+      "scope": "Regional spring reporting history",
+      "what": "Prepare a clean feeder before the usual first-report window and watch for actual arrivals",
+      "caution": "First public reports are not confirmed first biological arrivals",
+      "source": "Existing Hummingbird Tracker and independently tested reporting archive",
+      "rank": 5
+    },
+    {
+      "id": "salamanders",
+      "title": "Spring salamander movements",
+      "category": "wildlife",
+      "startDoy": 60,
+      "endDoy": 148,
+      "url": "/salamander-migration",
+      "linkLabel": "Open the Salamander Migration Tracker",
+      "scope": "Michigan spring weather opportunity",
+      "what": "Look for managed education walks and compare thaw, rain and temperature",
+      "caution": "Suitable weather is not a confirmed migration or a publicly accessible crossing",
+      "source": "Existing Salamander Migration Tracker",
+      "rank": 4
+    },
+    {
+      "id": "frogs",
+      "title": "Frog and toad chorus",
+      "category": "wildlife",
+      "startDoy": 65,
+      "endDoy": 205,
+      "url": "/frog-chorus",
+      "linkLabel": "Listen with the Frog Chorus",
+      "scope": "Michigan broad species-season window",
+      "what": "Listen for different calls near permitted wetland edges on mild evenings",
+      "caution": "Weather ratings do not verify calls or animal abundance",
+      "source": "Existing Frog Chorus Tracker",
+      "rank": 4
+    },
+    {
+      "id": "woodcock",
+      "title": "Woodcock sky dance",
+      "category": "birds",
+      "startDoy": 73,
+      "endDoy": 125,
+      "url": "/woodcock-sky-dance",
+      "linkLabel": "Explore the Woodcock Sky Dance",
+      "scope": "Michigan dusk display season",
+      "what": "Check published viewing opportunities and listen at dusk from permitted ground",
+      "caution": "Seasonal timing is not a recorded display at a particular site",
+      "source": "Existing Woodcock Sky Dance",
+      "rank": 3
+    },
+    {
+      "id": "fireflies",
+      "title": "Firefly emergence & warm nights",
+      "category": "wildlife",
+      "startDoy": 151,
+      "endDoy": 236,
+      "url": "/firefly-tracker",
+      "linkLabel": "Open the Firefly Tracker",
+      "scope": "Michigan adult firefly viewing season",
+      "what": "Look for flashes at safe, dark grassy edges during warm quiet evenings",
+      "caution": "A warm night does not prove adult emergence; species have different clocks",
+      "source": "Existing Firefly Tracker",
+      "rank": 4
+    },
+    {
+      "id": "blooms",
+      "title": "Michigan flowering destinations",
+      "category": "plants",
+      "startDoy": 90,
+      "endDoy": 315,
+      "url": "/bloom-tracker",
+      "linkLabel": "Open the Michigan Bloom Tracker",
+      "scope": "Destination-specific reports when verified",
+      "what": "Check dated venue reports before traveling for blossoms or seasonal displays",
+      "caution": "Published display schedules do not confirm flowers open today",
+      "source": "Existing Michigan Bloom Tracker",
+      "rank": 2
+    }
+  ]
+}
