@@ -16,6 +16,7 @@ import SpeciesTrialObservatory from "../components/SpeciesTrialObservatory";
 import { readSpeciesTrials } from "../lib/species-trials";
 import NaturalYearDispatch from "../components/NaturalYearDispatch";
 import { readNaturalYearDispatch } from "../lib/natural-year-dispatch.mjs";
+import { readGeographyEvidence } from "../lib/michigan-phenophase-geography.mjs";
 
 const SITE = "https://phenology.chrisizworski.com";
 const CAT_ICON = { water: Waves, fish: Fish, hatch: Egg, bird: Bird, bloom: Flower2, garden: Sprout, wild: Feather };
@@ -177,7 +178,7 @@ const SIGNAL_CHECKS = {
   "First hard frost": { kind: "frost" },
 };
 
-export default function Home({ almanac, archivedAlmanac, regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt, fieldRead, speciesTrials, naturalYear }) {
+export default function Home({ almanac, archivedAlmanac, regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt, fieldRead, speciesTrials, naturalYear, geographyEvidence }) {
   const [mounted, setMounted] = useState(false);
   const [riverId, setRiverId] = useState("ausable");
   const [sel, setSel] = useState(null);
@@ -556,6 +557,7 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
         <meta name="description" content="An interpreted real-time read on the natural year across Saginaw Bay and northeastern Michigan: live river conditions, projected hatches, bird movement, and growing degree days, by Chris Izworski." />
         <link rel="canonical" href={SITE + "/"} />
         <link rel="stylesheet" href="/natural-year-dispatch.css" />
+        <link rel="stylesheet" href="/michigan-phenophase-geography.css" />
         <meta property="og:title" content="Michigan Phenology by Chris Izworski" />
         <meta property="og:description" content="The natural year of Saginaw Bay and the AuSable, interpreted in real time." />
         <meta property="og:url" content={SITE + "/"} /><meta property="og:type" content="website" />
@@ -616,7 +618,7 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
           </section>
         )}
 
-        <NaturalYearDispatch read={naturalYear} />
+        <NaturalYearDispatch read={naturalYear} geography={geographyEvidence} />
         <SeasonalFieldRead read={fieldRead} />
 
         {read && (
@@ -1122,7 +1124,7 @@ export async function getServerSideProps({ res }) {
   // from the banked bundle the cron refreshes daily, so the page makes one cheap call for all of them.
   // Every source is timeout-guarded so no single hung upstream can stall the page,
   // and everything runs in one parallel batch so worst-case latency is one timeout, not several.
-  const [regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, almanacRows, buoy, alerts, signals, riverForecast, aurora, fieldRead, speciesTrials, naturalYear] = await Promise.all([
+  const [regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, almanacRows, buoy, alerts, signals, riverForecast, aurora, fieldRead, speciesTrials, naturalYear, geographyEvidence] = await Promise.all([
     T(fetchRegional(), { air: { tempF: null, forecast: null }, level: null }),
     T(fetchRivers(), []),
     T(fetchGddActual(), null),
@@ -1140,6 +1142,7 @@ export async function getServerSideProps({ res }) {
     T(readFieldRead(), null),
     T(readSpeciesTrials(), null),
     T(readNaturalYearDispatch(), null),
+    T(readGeographyEvidence(), null),
   ]);
   const sig = signals || emptySignals();
   const bay = { ...buoy, ...(sig.bayDaily || {}) };
@@ -1153,7 +1156,7 @@ export async function getServerSideProps({ res }) {
     props: {
       almanac: recentAlmanac,
       archivedAlmanac: recentAlmanac ? null : latestAlmanac,
-      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, fieldRead, speciesTrials, naturalYear,
+      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, fieldRead, speciesTrials, naturalYear, geographyEvidence,
       springIndex: sig.springIndex || emptySignals().springIndex,
       observations: sig.observations || [], inat: sig.inat || [], drought: sig.drought || null,
       bay, alerts, doy,

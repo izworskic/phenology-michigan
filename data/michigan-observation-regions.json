@@ -1,0 +1,172 @@
+{
+  "schema": "michigan-observation-regions-v1",
+  "sourcePolicy": "Sources are third-party public observations, not volunteer submissions to this site. No precise coordinates, individual observer, plant patch, or protected wildlife site is ever published. Region points are illustrative center locations; a report does not verify the biological stage everywhere in its region.",
+  "maxAssignmentKm": 135,
+  "inaturalistPlaceId": 29,
+  "regions": [
+    {
+      "id": "detroit",
+      "name": "Detroit & Ann Arbor",
+      "lat": 42.33,
+      "lon": -83.05
+    },
+    {
+      "id": "kalamazoo",
+      "name": "Kalamazoo & Southwest",
+      "lat": 42.29,
+      "lon": -85.59
+    },
+    {
+      "id": "grand-rapids",
+      "name": "Grand Rapids & West Michigan",
+      "lat": 42.96,
+      "lon": -85.67
+    },
+    {
+      "id": "lansing",
+      "name": "Lansing & Mid-Michigan",
+      "lat": 42.73,
+      "lon": -84.55
+    },
+    {
+      "id": "saginaw-bay",
+      "name": "Saginaw Bay & Bay City",
+      "lat": 43.6,
+      "lon": -83.89
+    },
+    {
+      "id": "traverse-city",
+      "name": "Traverse City & Northwest",
+      "lat": 44.76,
+      "lon": -85.62
+    },
+    {
+      "id": "gaylord",
+      "name": "Northern Lower Peninsula",
+      "lat": 45.03,
+      "lon": -84.67
+    },
+    {
+      "id": "marquette",
+      "name": "Marquette & Central U.P.",
+      "lat": 46.54,
+      "lon": -87.4
+    },
+    {
+      "id": "houghton",
+      "name": "Keweenaw & Western U.P.",
+      "lat": 47.12,
+      "lon": -88.57
+    }
+  ],
+  "phenophases": [
+    {
+      "id": "flowering",
+      "name": "Open flowers",
+      "group": "plants",
+      "npnPatterns": [
+        "^open flowers$",
+        "^flowers$",
+        "^open flower"
+      ],
+      "inat": {
+        "term": 12,
+        "value": 13
+      }
+    },
+    {
+      "id": "leaf-buds",
+      "name": "Breaking leaf buds",
+      "group": "plants",
+      "npnPatterns": [
+        "^breaking leaf buds$",
+        "^breaking leaf buds"
+      ],
+      "inat": {
+        "term": 36,
+        "value": 37
+      }
+    },
+    {
+      "id": "leaf-color",
+      "name": "Colored leaves",
+      "group": "plants",
+      "npnPatterns": [
+        "^colored leaves$"
+      ],
+      "inat": {
+        "term": 36,
+        "value": 39
+      }
+    },
+    {
+      "id": "leaf-fall",
+      "name": "Falling leaves",
+      "group": "plants",
+      "npnPatterns": [
+        "^falling leaves$"
+      ],
+      "inat": null
+    },
+    {
+      "id": "fruiting",
+      "name": "Fruits and seeds",
+      "group": "plants",
+      "npnPatterns": [
+        "^ripe fruits$",
+        "^fruits$",
+        "^ripe fruit",
+        "^fruit or seeds"
+      ],
+      "inat": {
+        "term": 12,
+        "value": 14
+      }
+    },
+    {
+      "id": "adult-insects",
+      "name": "Adult insects",
+      "group": "insects",
+      "npnPatterns": [
+        "^adults$"
+      ],
+      "inat": {
+        "term": 1,
+        "value": 2,
+        "taxonId": 47157
+      }
+    },
+    {
+      "id": "bird-calls",
+      "name": "Bird calls and songs",
+      "group": "birds",
+      "npnPatterns": [
+        "^calls or song \\(birds\\)$",
+        "^singing individuals \\(birds\\)$"
+      ],
+      "inat": null
+    }
+  ],
+  "seasonalQueries": {
+    "winter": [
+      "leaf-color",
+      "fruiting",
+      "adult-insects"
+    ],
+    "spring": [
+      "leaf-buds",
+      "flowering",
+      "adult-insects"
+    ],
+    "summer": [
+      "flowering",
+      "fruiting",
+      "adult-insects"
+    ],
+    "autumn": [
+      "leaf-color",
+      "fruiting",
+      "flowering"
+    ]
+  }
+}
