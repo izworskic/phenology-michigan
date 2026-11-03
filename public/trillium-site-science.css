@@ -1,0 +1,74 @@
+/* Site-specific trillium science, intentionally distinct from the regional forecast.
+   All content is sourced from reviewed repeat visits; example interval is labeled. */
+.tri-site-science{margin:34px 0 24px;border:1px solid #c6d6c6;border-radius:20px;overflow:hidden;background:#f5f7f0;box-shadow:0 12px 38px rgba(26,53,37,.07);scroll-margin-top:16px}
+.tri-site-science-hero{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(220px,.78fr);gap:28px;padding:31px;background:linear-gradient(120deg,#e8eee3,#f4f1e4 85%);border-bottom:1px solid #ccd7c8}
+.tri-site-science-hero h2{font-size:clamp(25px,3.4vw,38px)!important;color:#264b36;margin:10px 0 11px!important;line-height:1.12}
+.tri-site-science-hero h2 em{font-style:italic;color:#8e5f33}
+.tri-site-science-hero p{color:#465e4f;font-size:14px;line-height:1.65;max-width:680px}
+.tri-site-science-cta{display:inline-flex;align-items:center;gap:9px;margin-top:6px;padding:12px 16px;border-radius:9px;background:#275f43!important;border:1px solid #275f43;color:#fff!important;text-decoration:none!important;font:700 13px Arial,sans-serif}
+.tri-site-science-cta:hover,.tri-site-science-cta:focus-visible{background:#17452f!important}
+.tri-site-science .tri-site-fine{font:11px/1.55 Arial,sans-serif;color:#62736a;margin:9px 0 0}
+.tri-site-science-snapshot{padding:18px;background:#fffdf7;border:1px solid #d4dacd;border-radius:13px;display:flex;flex-direction:column;gap:10px;align-self:stretch}
+.tri-site-science-snapshot>div{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid #e9ebdf;padding-bottom:9px}
+.tri-site-science-snapshot>div>span{font:600 11px/1.35 Arial,sans-serif;color:#617365}
+.tri-site-science-snapshot strong{font:600 27px/1 Georgia,serif;color:#274937;font-variant-numeric:tabular-nums}
+.tri-site-science-snapshot strong small{font:13px Georgia,serif;color:#7f8a7d}
+.tri-site-science-snapshot>p{margin:0;font:11px/1.55 Arial,sans-serif;color:#788574}
+.tri-site-science-body{padding:22px 26px 29px;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(260px,.83fr);gap:16px}
+.tri-site-science-board,.tri-onset-experiment,.tri-site-science-protocol{border:1px solid #dbe4d5;border-radius:13px;background:#fff;padding:20px;min-width:0}
+.tri-site-science-board-header{display:flex;justify-content:space-between;flex-wrap:wrap;align-items:center;gap:9px;padding-bottom:11px;border-bottom:1px solid #e7ece5}
+.tri-site-science-board-header>div{display:flex;align-items:center;gap:8px;font:700 13px Arial,sans-serif;color:#315742}
+.tri-site-science-board-header>span{font:11px Arial,sans-serif;color:#708173}
+.tri-site-science-select{display:flex;flex-direction:column;gap:6px;margin:15px 0;font:700 11px Arial,sans-serif;color:#547160}
+.tri-site-science-select select{appearance:auto;width:100%;background:#f8fbf7;color:#2b4636;border:1px solid #9fb8a6;border-radius:8px;padding:12px 13px;font:600 13px Arial,sans-serif}
+.tri-site-science-detail{display:grid;grid-template-columns:minmax(0,1fr) minmax(190px,.9fr);gap:16px}
+.tri-site-science-detail h3{font-size:21px!important;color:#234734;margin:7px 0!important}
+.tri-site-science-detail p{font:12.5px/1.65 Arial,sans-serif;color:#637566;margin:7px 0}
+.tri-site-science-link{display:inline-flex;align-items:center;gap:3px;color:#225f43;background:transparent;border:0;border-bottom:1px solid #6b9a75;padding:3px 0;cursor:pointer;font:700 12px Arial,sans-serif}
+.tri-site-science-link:hover{text-decoration:underline}
+.tri-site-ladder{display:grid;gap:8px;list-style:none;padding:10px 12px;margin:0;background:#f7f9f5;border:1px solid #e3e9e0;border-radius:9px}
+.tri-site-ladder li{display:flex;align-items:center;gap:10px;color:#879384}
+.tri-site-ladder-marker{flex:none;display:grid;place-items:center;width:27px;height:27px;border-radius:50%;font:700 11px Arial,sans-serif;color:#819180;background:#e7ece4;border:1px solid #d5dfd2}
+.tri-site-ladder li.ready .tri-site-ladder-marker{background:#2d6e48;color:#fff;border-color:#2d6e48}
+.tri-site-ladder b{display:block;color:#536452;font:700 12px Arial,sans-serif}
+.tri-site-ladder small{display:block;color:#7c8979;font:10.5px/1.3 Arial,sans-serif;margin-top:3px}
+.tri-site-science-absence{display:flex;align-items:flex-start;gap:10px;margin:14px 0;background:#f1f5ed;border-left:3px solid #8aa682;padding:12px 13px;font:12.5px/1.6 Arial,sans-serif;color:#4d6653}
+.tri-site-science-absence svg{flex:none;margin-top:1px;color:#658575}
+.tri-site-science-calibration{display:flex;gap:10px;margin-top:13px;padding:13px;background:#fcf8ec;border:1px solid #eadfc1;border-radius:9px;color:#795728}
+.tri-site-science-calibration>svg{flex:none;margin-top:2px}
+.tri-site-science-calibration strong{display:block;font:700 13px Arial,sans-serif;color:#795728}
+.tri-site-science-calibration p{font:12px/1.55 Arial,sans-serif;margin:5px 0 0;color:#745e39}
+.tri-site-science-history{margin-top:12px;border:1px solid #e2e7df;border-radius:9px;padding:12px}
+.tri-site-science-history h3{font-size:16px!important;margin:0 0 8px!important;color:#376346}
+.tri-site-science-year{display:flex;gap:8px;flex-wrap:wrap;padding:7px 0;border-bottom:1px solid #e6ebe5;font:11.5px Arial,sans-serif;color:#536752}
+.tri-site-science-year:last-child{border-bottom:0}
+.tri-site-science-year strong{color:#295e40}
+.tri-site-science-year small{width:100%;color:#778373}
+.tri-onset-experiment{background:#fbfaf5}
+.tri-onset-experiment h3{font-size:22px!important;color:#365b42;margin:8px 0!important}
+.tri-onset-experiment>p{font:12.5px/1.6 Arial,sans-serif;color:#657266}
+.tri-onset-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}
+.tri-onset-fields label{display:flex;flex-direction:column;gap:5px;font:11px Arial,sans-serif;color:#687b68}
+.tri-onset-fields strong{color:#2b5d42;font-size:13px}
+.tri-onset-fields input{width:100%;min-width:0;background:#fff;border:1px solid #c1cdbc;border-radius:7px;padding:9px 5px;color:#344d3a;font:12px Arial,sans-serif}
+.tri-onset-illustration{display:flex;align-items:center;gap:0;margin:20px 0 12px}
+.tri-onset-start,.tri-onset-end{font:700 10px Arial,sans-serif;color:#576d5c;white-space:nowrap}
+.tri-onset-line{flex:1;margin:0 8px;border-top:5px solid #b0c8ae;position:relative;display:flex;justify-content:center}
+.tri-onset-line::before,.tri-onset-line::after{content:'';position:absolute;top:-8px;width:11px;height:11px;border-radius:50%;background:#3e7551;border:2px solid #fff}
+.tri-onset-line::before{left:0}.tri-onset-line::after{right:0}
+.tri-onset-line span{margin-top:9px;letter-spacing:.02em;text-align:center;font:700 9px Arial,sans-serif;color:#4e6d57}
+.tri-onset-result{margin-top:14px;display:flex;flex-direction:column;gap:6px;padding:12px;background:#eaf1e6;border:1px solid #cfddca;border-radius:8px}
+.tri-onset-result strong{font:600 15px Georgia,serif;color:#29573b}
+.tri-onset-result span{font:12px Arial,sans-serif;color:#5d7561}
+.tri-onset-invalid{border:1px solid #ddcaa6;background:#faf0de;padding:10px;border-radius:7px;color:#885820!important}
+.tri-site-science-protocol{grid-column:1/-1;padding:21px}
+.tri-site-science-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin-top:13px}
+.tri-site-science-steps article>span{display:block;color:#9d7b4f;font:700 13px Arial,sans-serif;letter-spacing:.12em;margin-bottom:7px}
+.tri-site-science-steps h3{color:#345c44;font-size:17px!important;margin:0 0 8px!important}
+.tri-site-science-steps p{font:12.5px/1.65 Arial,sans-serif;color:#617265;margin:0}
+.tri-site-science-foot{display:flex;gap:10px;margin:18px 0 0!important;padding-top:15px;border-top:1px solid #e5e9df;color:#607362;font:11.5px/1.7 Arial,sans-serif}
+.tri-site-science-foot svg{flex:none;margin-top:1px}
+.tri-site-science-foot a{color:#265d40;text-decoration:underline}
+@media(max-width:850px){.tri-site-science-hero{grid-template-columns:1fr}.tri-site-science-body{grid-template-columns:1fr}.tri-site-science-steps{gap:15px}}
+@media(max-width:620px){.tri-site-science{margin:24px 0;border-radius:13px}.tri-site-science-hero{padding:19px;gap:14px}.tri-site-science-body{padding:12px;gap:12px}.tri-site-science-board,.tri-onset-experiment,.tri-site-science-protocol{padding:14px}.tri-site-science-detail{grid-template-columns:1fr}.tri-site-science-steps{grid-template-columns:1fr}.tri-site-science-snapshot{padding:13px}.tri-onset-fields{grid-template-columns:1fr 1fr}.tri-site-science-hero h2{font-size:26px!important}.tri-site-science-board-header>span{font-size:10.5px}}
+@media(prefers-reduced-motion:reduce){.tri-site-science *{scroll-behavior:auto!important;transition:none!important}}
