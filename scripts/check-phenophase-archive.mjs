@@ -60,6 +60,8 @@ const job=fs.readFileSync(new URL('../.github/workflows/michigan-phenophase-geog
 const worker=fs.readFileSync(new URL('./archive-michigan-phenophase.py',import.meta.url),'utf8');
 assert.ok(api.includes('readHistoryIndex')&&api.includes('readHistoryYear'));
 assert.ok(api.includes("state:'not-collected'"),'A missed collection day is not a missing biological event');
+assert.ok(api.includes('history.snapshots.length!==indexed.snapshotDays'),'Do not mistake incomplete fallback history for an uncollected day');
+assert.ok(api.includes('indexed.lastSnapshot'),'Cross-check archived date coverage against live year metadata');
 assert.ok(api.includes('s-maxage=600'),'Cache the index and annual archive');
 assert.ok(job.includes('archive-michigan-phenophase.py'),'Daily source workflow must archive every successful capture');
 assert.ok(job.includes('michigan-phenophase-archive-index.json'),'Daily source workflow must publish archival discovery');

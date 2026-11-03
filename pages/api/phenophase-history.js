@@ -41,6 +41,19 @@ export default async function handler(req,res){
   return res.status(503).json({state:'unavailable',message:'Verified yearly archive unavailable; no observations inferred.'});
  }
  if(rawDay!=null){
+  // A remote index can know about days beyond the older bundled year file.
+  // If fetching the newer annual file fails, do not call the absent day
+  // 'not-collected' when the archive is in fact temporarily unavailable.
+  const indexed=index.years.find(y=>y.year===year);
+  if(indexed && (history.snapshots.length!==indexed.snapshotDays
+                 || history.snapshots[0]?.asOfDate!==indexed.firstSnapshot
+                 || history.snapshots.at(-1)?.asOfDate!==indexed.lastSnapshot)){
+   res.setHeader('Cache-Control','no-store');
+   return res.status(503).json({
+    state:'unavailable',
+    message:'Complete dated archive temporarily unavailable; collection gaps cannot be verified.'
+   });
+  }
   const item=history.snapshots.find(s=>s.asOfDate===rawDay);
   if(!item){
    res.setHeader('Cache-Control','public, s-maxage=300');
