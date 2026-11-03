@@ -6,6 +6,7 @@ import json
 import unittest
 from copy import deepcopy
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location("geography", ROOT/"scripts/build-michigan-phenophase-geography.py")
@@ -47,6 +48,18 @@ class GeographyScienceTests(unittest.TestCase):
         for r in CONFIG["regions"]:
             self.assertEqual(M.assign_region(r["lat"],r["lon"],CONFIG),r["id"])
         self.assertIsNone(M.assign_region(25, -80, CONFIG))
+
+    def test_live_npn_acquisition_preserves_raw_records_for_one_normalization(self):
+        # Production previously normalized the source in acquire_npn and again
+        # inside build(), silently discarding every valid phenophase.
+        row=npn(site_id=999,phenophase_description="Colored leaves")
+        with patch.object(M,"fetch_json",return_value=[row]):
+            raw,count=M.acquire_npn(NOW,CONFIG)
+        self.assertEqual(count,1)
+        self.assertEqual(raw[0]["phenophase_status"],1)
+        output=M.build(CONFIG,raw,[],NOW)
+        region=next(x for x in output["regions"] if x["id"]=="saginaw-bay")
+        self.assertEqual(region["phases"][0]["sourceReports"]["usa-npn"],1)
 
     def test_npn_positive_only_and_no_deduced_absence(self):
         raw = [npn(), npn(phenophase_status=0, observation_id=2),

@@ -264,7 +264,11 @@ def acquire_npn(today, config):
         "end_date": today.isoformat(), "state[0]": "MI"
     })
     data = fetch_json(NPN + "?" + q)
-    return normalize_npn(data, config, today), len(data)
+    # Validate the upstream schema now, but return RAW records. build()
+    # performs the single normalization pass. Returning already-normalized
+    # dictionaries made every NPN phase disappear on the second pass.
+    normalize_npn(data, config, today)
+    return data, len(data)
 
 
 def inat_query(region, item, today, config):
