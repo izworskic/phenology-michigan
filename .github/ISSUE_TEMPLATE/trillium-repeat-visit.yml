@@ -1,0 +1,117 @@
+name: Repeated trillium phenophase check
+description: Record a visit to the SAME monitored trillium patch, including explicit "no open flowers" days. Public source; reviewed before any research use.
+title: "[Trillium monitoring visit] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Science, not an instant bloom posting.** This is one visit to a stable, publicly accessible tracked plant or patch. It requires a free GitHub account, and an editor must verify the preserve, species, observation, and repeated plot identity before it enters the research archive.
+
+        **Never post precise plant GPS coordinates, private land routes, contact details, or unauthorized off-trail access.** Follow the site's visitor rules. You can report “no” or “uncertain” if you actually checked the plants. **Never turn a missed visit into a “no.”**
+  - type: dropdown
+    id: preserve
+    attributes:
+      label: Preserve
+      options:
+        - Warren Dunes wooded study area
+        - Warren Woods Nature Study Area
+        - Trillium Ravine Nature Sanctuary
+        - Nan Weston Nature Preserve
+        - Trillium Trail Nature Sanctuary
+        - P.J. Hoffmaster spring wildflower hikes
+        - Portage Point Woods Preserve
+        - Hoogland Family Nature Preserve
+        - John Arthur Woollam Preserve
+        - Echo Lake Nature Preserve
+    validations:
+      required: true
+  - type: dropdown
+    id: plot
+    attributes:
+      label: Stable tracked patch code
+      description: A = primary recurring patch; B and C are optional additional recurring patches. Use the SAME anonymous code for the same plants on every visit and next year. Do not post coordinates.
+      options:
+        - A
+        - B
+        - C
+    validations:
+      required: true
+  - type: input
+    id: date
+    attributes:
+      label: Date plants were actually inspected
+      placeholder: YYYY-MM-DD
+      description: March 15 to June 30 of an observed year. Do not use upload date.
+    validations:
+      required: true
+  - type: dropdown
+    id: flowers
+    attributes:
+      label: Open flowers
+      description: Open means fresh stamens/pistils visible among unfurled petals, not just a bud. No means the checked plant(s) did not show this phase; uncertain means you could not judge.
+      options:
+        - "yes"
+        - "no"
+        - "uncertain"
+    validations:
+      required: true
+  - type: dropdown
+    id: buds
+    attributes:
+      label: Flowers or flower buds
+      description: A visible fresh open flower requires yes here, even if you are also seeing unopened buds.
+      options:
+        - "yes"
+        - "no"
+        - "uncertain"
+    validations:
+      required: true
+  - type: dropdown
+    id: snow
+    attributes:
+      label: Snow on the monitored patch
+      options:
+        - "yes"
+        - "no"
+        - "uncertain"
+    validations:
+      required: true
+  - type: input
+    id: soil
+    attributes:
+      label: Optional spot soil temperature in Fahrenheit
+      placeholder: "Example: 47.2 (leave blank if not measured)"
+      description: A single field probe is context ONLY. It cannot fill gaps in a continuous daily soil-logger history.
+    validations:
+      required: false
+  - type: input
+    id: depth
+    attributes:
+      label: Optional soil probe depth in centimeters
+      placeholder: "Example: 10 (required if soil temperature supplied)"
+      description: Use the actual depth, not a guess.
+    validations:
+      required: false
+  - type: textarea
+    id: site
+    attributes:
+      label: How can the same publicly accessible patch and preserve be verified?
+      description: Explain the named official preserve/trail and how the repeat plot remains identifiable without giving plant coordinates, sensitive plant positions, names of other visitors, or private approaches.
+      placeholder: I used my previously monitored anonymous patch A on the public managed trail and recorded the visit in my dated field notebook.
+    validations:
+      required: true
+  - type: input
+    id: evidence
+    attributes:
+      label: Optional public supporting observation or field log URL
+      description: An iNaturalist photograph may corroborate a YES, but cannot prove exactly when flowering began or verify a NO by itself. Editor must inspect site/patch consistency.
+      placeholder: https://www.inaturalist.org/observations/12345
+    validations:
+      required: false
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy and access
+      options:
+        - label: I observed the actual plants, followed public-access rules, and have not supplied sensitive plant GPS coordinates, personal details, or off-trail directions.
+          required: true

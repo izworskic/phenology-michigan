@@ -1,0 +1,42 @@
+name: Recalculate site-level phenology evidence
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'data/trillium-monitoring-visits.json'
+      - 'data/trillium-monitoring-soil.json'
+      - 'scripts/build-trillium-site-onset.py'
+  schedule:
+    # Weekly recheck of the reviewed archive; never create synthetic observations.
+    - cron: '45 16 * * 1'
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: trillium-site-research-rebuild
+  cancel-in-progress: false
+jobs:
+  recalculate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify interval-censored science
+        run: python3 -m unittest discover -s scripts -p 'test_trillium_site_onset.py' -v
+      - name: Recompute only documented site measurements
+        run: python3 scripts/build-trillium-site-onset.py
+      - name: Keep dated evidence fresh without rebuilding the website
+        run: |
+          git config user.name "phenology-site-research-bot"
+          git config user.email "phenology-site-research-bot@users.noreply.github.com"
+          git add data/trillium-site-onset-summary.json
+          if git diff --cached --quiet; then echo "No new evidence"; exit 0; fi
+          git commit -m "Refresh reviewed site onset evidence [skip deploy]"
+          git pull --rebase origin main
+          git push origin HEAD:main

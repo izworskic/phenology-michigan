@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "species": "Trillium grandiflorum",
+  "phenophase": "open_flowers",
+  "policy": "Only independently reviewed observations of the same tracked plants/patches at named authorized public preserves. Yes/no/uncertain are recorded distinctly. No visitor identities, precise plant coordinates or unsupported bloom predictions.",
+  "visits": []
+}
