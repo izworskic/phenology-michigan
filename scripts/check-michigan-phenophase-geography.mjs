@@ -40,6 +40,8 @@ assert.ok(page.includes('<link rel="canonical" href={SITE + "/"} />'));
 assert.ok(page.includes('<SpeciesTrialObservatory data={speciesTrials} />'));
 assert.ok(dispatch.includes('["map","Across Michigan"]'));
 assert.ok(dispatch.includes('<MichiganPhenophaseMap data={geography} />'));
+assert.ok(dispatch.includes('new URLSearchParams(window.location.search).get("view")'),"The geography tab must support a shareable home ?view=map deep link");
+assert.ok(dispatch.includes('["now","map","next","regions"]'),"Only existing dispatch views may be selected through the URL");
 assert.ok(!map.includes('navigator.geolocation'),'No precise visitor location tracking feature should be introduced');
 assert.ok(map.includes('no individual field-site coordinates'));
 assert.ok(map.includes('No visitor reporting or verification is needed here'));

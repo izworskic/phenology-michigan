@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 const MichiganPhenophaseMap = dynamic(() => import("./MichiganPhenophaseMap"), {ssr:false});
 import { Leaf, Flower2, Bird, Waves, CloudSun, MapPin, ArrowRight, CalendarDays, Microscope, ExternalLink, Compass, Clock3, Binoculars } from "lucide-react";
@@ -72,6 +72,12 @@ function HistoricalBand({name, entry, note, href}) {
 export default function NaturalYearDispatch({read,geography}) {
   const [view,setView]=useState("now");
   const [region,setRegion]=useState("saginaw-bay");
+  useEffect(()=>{
+    // Only known view names may be deep-linked. The page retains its / canonical;
+    // query selection does not generate a new indexable event or data claim.
+    const requested=new URLSearchParams(window.location.search).get("view");
+    if(["now","map","next","regions"].includes(requested))setView(requested);
+  },[]);
   if (!read) return <section className="ny-dispatch ny-fallback" aria-label="Natural year guide">
     <div className="ny-upper"><span className="ny-eyebrow">The field dispatch</span><h2>Explore the living natural year</h2>
       <p>Recent report synthesis is temporarily unavailable. The specialist trackers remain accessible; none of these links confirms an event today.</p>
