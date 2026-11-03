@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Flower2, Bird, TrendingUp, AlertCircle, ExternalLink, BarChart3, MapPin } from "lucide-react";
 
 const BROWN = "#856037", TEAL = "#315f60", FG = "#2d362a";
@@ -48,7 +48,7 @@ function MetricCompare({ region, bird }) {
   const vals = [{ k: "Calendar baseline", v: m?.rollingCalendarMaeDays, color: "#79968a" }, { k: "Thermal model", v: m?.rollingHeatMaeDays, color: BROWN }];
   const max = Math.max(10, ...vals.map(x => x.v || 0));
   return <div>
-    <div style={{ fontSize: 11, letterSpacing: ".05em", textTransform: "uppercase", color: "#697463", fontWeight: 700, margin: "12px 0 8px" }}>Held-out prediction error, 2024–26</div>
+    <div style={{ fontSize: 11, letterSpacing: ".05em", textTransform: "uppercase", color: "#697463", fontWeight: 700, margin: "12px 0 8px" }}>Held-out prediction error, 2024 onward</div>
     {vals.map(x => <div key={x.k} style={{ display: "grid", gridTemplateColumns: "130px 1fr 64px", gap: 8, alignItems: "center", marginBottom: 7 }}>
       <span style={{ fontSize: 11.5, color: FG }}>{x.k}</span>
       <div style={{ background: "#e7ece5", height: 11, borderRadius: 7, overflow: "hidden" }}><div style={{ height: "100%", width: (100 * (x.v || 0) / max) + "%", background: x.color, borderRadius: 7 }} /></div>
