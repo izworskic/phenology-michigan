@@ -1,0 +1,5 @@
+{
+  "schemaVersion": 1,
+  "policy": "Complete March 1–June 30 daily mean soil temperatures from a documented on-site logger at the same stable monitored patch. Never substitute Open-Meteo grid temperatures for a forest-floor sensor. Raw coordinates are not public.",
+  "seasons": []
+}
