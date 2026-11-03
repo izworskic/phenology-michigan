@@ -6,12 +6,17 @@ on:
       - 'scripts/build-michigan-phenophase-geography.py'
       - 'scripts/test_michigan_phenophase_geography.py'
       - 'data/michigan-observation-regions.json'
+      - 'scripts/archive-michigan-phenophase.py'
+      - 'scripts/test_phenophase_archive.py'
+      - 'pages/api/phenophase-history.js'
+      - 'lib/phenophase-history.mjs'
       - '.github/workflows/michigan-phenophase-geography.yml'
   push:
     branches: [main]
     paths:
       - 'scripts/build-michigan-phenophase-geography.py'
       - 'data/michigan-observation-regions.json'
+      - 'scripts/archive-michigan-phenophase.py'
       - '.github/workflows/michigan-phenophase-geography.yml'
   schedule:
     # Run after the existing USA-NPN daily signals and scientific dispatch pipelines.
@@ -41,6 +46,10 @@ jobs:
         run: python3 -m unittest discover -s scripts -p 'test_michigan_phenophase_geography.py' -v
       - name: Fetch third-party observed phenophases automatically
         run: python3 scripts/build-michigan-phenophase-geography.py
+      - name: Store one unmodified dated 14-day snapshot per local collection day
+        run: |
+          python3 -m unittest discover -s scripts -p 'test_phenophase_archive.py' -v
+          python3 scripts/archive-michigan-phenophase.py
       - name: Assert the public artifact contains only regional aggregates
         run: |
           python3 - <<'PY'
@@ -59,16 +68,37 @@ jobs:
               assert key not in all_text,key
           print('Region-only scientific evidence and no-user-submission policy verified.')
           PY
-      - name: Publish dated approved aggregates without deploying website code
+      - name: Validate the longitudinal archive and year index
+        run: |
+          python3 -m unittest discover -s scripts -p 'test_phenophase_archive.py' -v
+          python3 - <<'PY'
+          import datetime as dt
+          import json
+          from pathlib import Path
+          from zoneinfo import ZoneInfo
+          index=json.loads(Path('data/michigan-phenophase-archive-index.json').read_text())
+          src=json.loads(Path('data/michigan-phenophase-geography.json').read_text())
+          assert index['schema']=='michigan-phenophase-snapshot-index-v1'
+          assert index['interpretation']['oneSnapshotPerCollectionDay'] is True
+          assert index['interpretation']['visitorSubmissionsRequired'] is False
+          assert sum(x['snapshotDays'] for x in index['years'])==index['snapshotCount']
+          year=int(src['asOfDate'][:4])
+          history=json.loads(Path(f'data/michigan-phenophase-archive/{year}.json').read_text())
+          assert history['snapshots'][-1]['asOfDate']==src['asOfDate']
+          assert history['snapshots'][-1]['kind']=='overlapping-14-day-reporting-snapshot'
+          assert all('lat' not in x and 'lon' not in x for x in history['snapshots'][-1]['regions'])
+          print('Daily report snapshot, privacy, recorded gaps and year index verified.')
+          PY
+      - name: Publish dated approved aggregates and yearly reporting snapshots without deploying website code
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         run: |
           git config user.name 'phenology-geography-bot'
           git config user.email 'phenology-geography-bot@users.noreply.github.com'
-          git add data/michigan-phenophase-geography.json
+          git add data/michigan-phenophase-geography.json data/michigan-phenophase-archive-index.json data/michigan-phenophase-archive/
           if git diff --cached --quiet; then
             echo 'No new dated evidence.'
             exit 0
           fi
-          git commit -m 'Update reported Michigan phenophase geography [skip deploy]'
+          git commit -m 'Update Michigan phenophase geography and immutable historical snapshots [skip deploy]'
           git pull --rebase origin main
           git push origin HEAD:main
