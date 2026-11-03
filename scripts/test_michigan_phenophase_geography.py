@@ -120,7 +120,7 @@ class GeographyScienceTests(unittest.TestCase):
         self.assertEqual(result["regions"][4]["lat"],CONFIG["regions"][4]["lat"])
         self.assertFalse(any("550" in json.dumps(r) for r in result["regions"]))
         self.assertNotIn("43.61",json.dumps(result))
-        self.assertNotIn("-83.89",json.dumps(result))  # only center, not raw observation coords
+        self.assertNotIn("43.61",json.dumps(result))  # no raw site point; only predefined regional anchors
 
     def test_not_infer_statewide_absence_on_no_reports(self):
         result=M.build(CONFIG,[],[],NOW,source_health={"usa-npn":{"state":"ok"},
