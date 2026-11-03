@@ -25,7 +25,23 @@ class ArchiveTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.config = read("data/michigan-observation-regions.json")
-        cls.geo = read("data/michigan-phenophase-geography.json")
+        cls.real_geo = read("data/michigan-phenophase-geography.json")
+        # Stable synthetic test dates only: daily field data will update tomorrow
+        # and must not make historical edge-case tests nonrepeatable.
+        cls.geo = deepcopy(cls.real_geo)
+        cls.geo["asOfDate"] = "2026-11-03"
+        cls.geo["windowStart"] = "2026-10-20"
+        cls.geo["windowEnd"] = "2026-11-03"
+        cls.geo["sourceStatus"]["usaNpn"] = "ok"
+        cls.geo["sourceStatus"]["iNaturalist"] = "ok"
+        cls.geo["sourceStatus"]["iNaturalistFailedQueries"] = 0
+        cls.geo["sourceStatus"]["iNaturalistCappedQueries"] = 0
+        for region in cls.geo["regions"]:
+            region["unavailableInatPhases"] = []
+            for phase in region["phases"]:
+                phase["latest"] = "2026-11-03"
+                for species in phase["species"]:
+                    species["date"] = "2026-11-03"
 
     def test_first_captured_day_is_real_published_snapshot_not_reconstructed_events(self):
         archive = read("data/michigan-phenophase-archive/2026.json")
@@ -43,6 +59,9 @@ class ArchiveTests(unittest.TestCase):
         self.assertEqual(archive["snapshots"][0]["sourceStatus"]["usaNpn"], "ok")
 
     def test_snapshot_is_only_reviewed_public_regional_data(self):
+        latest = dt.date.fromisoformat(self.real_geo["asOfDate"])
+        live = M.snapshot_from_geography(self.real_geo, self.config, latest)
+        self.assertEqual(live["asOfDate"], self.real_geo["asOfDate"])
         snap = M.snapshot_from_geography(self.geo, self.config, dt.date(2026, 11, 3))
         self.assertEqual(len(snap["regions"]), 9)
         self.assertEqual(snap["regions"][4]["id"], "saginaw-bay")
