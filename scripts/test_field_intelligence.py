@@ -26,6 +26,8 @@ class FieldReadTests(unittest.TestCase):
         river = next(t for t in result["tracks"] if t["id"] == "river")
         self.assertIn("7°F cooler", river["detail"])
         self.assertNotIn("days late", str(result).lower())
+        self.assertEqual(len(result["timeline"]), 8)
+        self.assertEqual(result["timeline"][0]["date"], "2026-10-24")
 
     def test_downward_cumulative_revision_withholds_heat_delta(self):
         records = rows()
