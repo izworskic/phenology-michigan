@@ -7,6 +7,8 @@ const COLORS = { heat: "#76632b", river: "#2c6771" };
 export default function SeasonalFieldRead({ read }) {
   if (!read || !read.tracks?.length) return null;
   const archived = read.status !== "current";
+  const evidence = read.dataIntegrity?.schema === "python-intelligence-evidence-v1" ? read.dataIntegrity : null;
+  const revised = evidence?.heatRevisionDates?.length > 0;
   return (
     <section aria-labelledby="field-read-title" style={{ marginTop: 22, border: "1px solid #c9d7bd", borderRadius: 18, overflow: "hidden", background: "#fbfcf7", boxShadow: "0 8px 24px rgba(42,66,30,0.05)" }}>
       <div style={{ padding: "19px 20px 14px", background: "linear-gradient(110deg, #e9efe0, #f6f4e8)", borderBottom: "1px solid #d9dfcd" }}>
@@ -20,7 +22,18 @@ export default function SeasonalFieldRead({ read }) {
         </p>
       </div>
       <div style={{ padding: "16px 20px 18px" }}>
-        <FieldSeasonDial timeline={read.timeline || []} caution={(read.quality || []).some(q => q.includes("declined"))} />
+        {evidence && (
+          <div aria-label="Archive data coverage" style={{ background: "#f5f8f1", border: "1px solid #d8e3d2", borderRadius: 10, padding: "10px 12px", marginBottom: 12, color: "#3e5844", fontSize: 12.5, lineHeight: 1.6 }}>
+            <strong>How complete is the evidence?</strong>
+            <div>Over the last {evidence.daysExpected} calendar days: {evidence.riverDays} AuSable gauge readings and {evidence.heatDays} gridded heat readings. These counts measure archived coverage, not forecast accuracy.</div>
+            {(evidence.missingDates?.length > 0 || evidence.duplicateDates?.length > 0 || revised) && <div style={{ color: "#7a5631" }}>
+              {evidence.missingDates?.length > 0 ? `${evidence.missingDates.length} dates have no archived record. ` : ""}
+              {evidence.duplicateDates?.length > 0 ? `${evidence.duplicateDates.length} duplicate dates were excluded. ` : ""}
+              {revised ? "The heat source contains a downward revision; do not interpret it as cooling." : ""}
+            </div>}
+          </div>
+        )}
+        <FieldSeasonDial timeline={read.timeline || []} caution={revised || (read.quality || []).some(q => q.includes("declined"))} />
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(215px,1fr))", gap: 12 }}>
           {read.tracks.map(track => {
             const Icon = SOURCE[track.id] || Info;
