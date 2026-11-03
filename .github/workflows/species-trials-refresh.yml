@@ -1,0 +1,50 @@
+name: Re-evaluate Michigan species phenology
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/build-species-trials.py'
+      - 'data/trillium-flowering-history.json'
+      - 'data/trillium-thermal-history.json'
+      - 'data/hummingbird-history.json'
+      - '.github/workflows/species-trials-refresh.yml'
+  schedule:
+    # Biological archives settle after summer, but run weekly to catch revised records.
+    - cron: '40 16 * * 0'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: species-phenology-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Independently test reporting and temperature evidence
+        run: python3 -m unittest discover -s scripts -p 'test_species_trials.py' -v
+      - name: Rebuild out-of-time species diagnostics
+        run: python3 scripts/build-species-trials.py
+      - name: Publish banked scientific summary without deploying code
+        run: |
+          git config user.name "phenology-science-bot"
+          git config user.email "phenology-science-bot@users.noreply.github.com"
+          git add data/phenology-species-trials.json
+          if git diff --cached --quiet; then
+            echo "Unchanged archive"
+            exit 0
+          fi
+          git commit -m "species phenology audit $(date -u +%F) [skip deploy]"
+          git pull --rebase origin main
+          git push origin HEAD:main
