@@ -100,6 +100,15 @@
       }
     },
     {
+      "id": "leaf-fall",
+      "name": "Falling leaves",
+      "group": "plants",
+      "npnPatterns": [
+        "^falling leaves$"
+      ],
+      "inat": null
+    },
+    {
       "id": "fruiting",
       "name": "Fruits and seeds",
       "group": "plants",
