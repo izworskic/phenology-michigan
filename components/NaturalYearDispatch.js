@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 const MichiganPhenophaseMap = dynamic(() => import("./MichiganPhenophaseMap"), {ssr:false});
+const PhenophaseTimeMachine = dynamic(() => import("./PhenophaseTimeMachine"), {ssr:false});
 import { Leaf, Flower2, Bird, Waves, CloudSun, MapPin, ArrowRight, CalendarDays, Microscope, ExternalLink, Compass, Clock3, Binoculars } from "lucide-react";
 
 const ICONS = {plants: Flower2, birds: Bird, wildlife: Binoculars, weather: CloudSun, water: Waves};
@@ -19,6 +20,7 @@ const DETAIL = {
   next: {title:"The next chapters of the natural year",description:"These are broad calendar windows, not a countdown to a verified emergence or migration."},
   regions: {title:"How differently spring is reported",description:"Two independent biological clocks, shown as historical public-reporting windows by region."},
   map: {title:"Reported phenophases around Michigan",description:"Regional evidence from existing public observation networks, gathered automatically without requesting visitor submissions."},
+  history: {title:"The Living Season Time Machine",description:"Replay only actual dated collection snapshots and discover how reports changed across Michigan, without manufacturing gaps or daily biological events."},
 };
 
 function WatchLink({row, next=false}) {
@@ -76,7 +78,7 @@ export default function NaturalYearDispatch({read,geography}) {
     // Only known view names may be deep-linked. The page retains its / canonical;
     // query selection does not generate a new indexable event or data claim.
     const requested=new URLSearchParams(window.location.search).get("view");
-    if(["now","map","next","regions"].includes(requested))setView(requested);
+    if(["now","map","history","next","regions"].includes(requested))setView(requested);
   },[]);
   if (!read) return <section className="ny-dispatch ny-fallback" aria-label="Natural year guide">
     <div className="ny-upper"><span className="ny-eyebrow">The field dispatch</span><h2>Explore the living natural year</h2>
@@ -104,12 +106,13 @@ export default function NaturalYearDispatch({read,geography}) {
       </div>
     </div>
     <div className="ny-control" role="group" aria-label="Choose the natural-year lens">
-      {[["now","Right now"],["map","Across Michigan"],["next","Next on the calendar"],["regions","Compare regions"]].map(([id,label])=>
+      {[["now","Right now"],["map","Across Michigan"],["history","Time Machine"],["next","Next on the calendar"],["regions","Compare regions"]].map(([id,label])=>
         <button key={id} type="button" className={view===id?"is-active":""} aria-pressed={view===id} onClick={()=>setView(id)}>{label}</button>)}
     </div>
     <div className="ny-inner">
       <div className="ny-view-heading"><h3>{DETAIL[view].title}</h3><p>{DETAIL[view].description}</p></div>
       {view==="map" && <MichiganPhenophaseMap data={geography} />}
+      {view==="history" && <PhenophaseTimeMachine />}
       {view==="now" && <div className="ny-columns">
         <article className="ny-notebook">
           <div className="ny-section-title"><Leaf size={19}/><h4>What observers actually reported</h4></div>
