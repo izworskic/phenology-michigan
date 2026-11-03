@@ -72,3 +72,9 @@
 @media(max-width:850px){.tri-site-science-hero{grid-template-columns:1fr}.tri-site-science-body{grid-template-columns:1fr}.tri-site-science-steps{gap:15px}}
 @media(max-width:620px){.tri-site-science{margin:24px 0;border-radius:13px}.tri-site-science-hero{padding:19px;gap:14px}.tri-site-science-body{padding:12px;gap:12px}.tri-site-science-board,.tri-onset-experiment,.tri-site-science-protocol{padding:14px}.tri-site-science-detail{grid-template-columns:1fr}.tri-site-science-steps{grid-template-columns:1fr}.tri-site-science-snapshot{padding:13px}.tri-onset-fields{grid-template-columns:1fr 1fr}.tri-site-science-hero h2{font-size:26px!important}.tri-site-science-board-header>span{font-size:10.5px}}
 @media(prefers-reduced-motion:reduce){.tri-site-science *{scroll-behavior:auto!important;transition:none!important}}
+
+/* Second release: intact reading order on small screens; no flex text fragments. */
+.tri-site-science-absence>span,.tri-site-science-foot>span{display:block;min-width:0;flex:1}
+.tri-site-science-hero-link{display:inline-flex;align-items:center;gap:7px;margin:12px 0 0 14px;color:#edf4e8!important;font:700 12px Arial,sans-serif;text-decoration:underline;text-underline-offset:3px}
+.tri-site-science-hero-link:hover,.tri-site-science-hero-link:focus-visible{color:#fff!important;text-decoration-thickness:2px}
+@media(max-width:650px){.tri-site-science-hero-link{margin:13px 0 0;display:flex;max-width:max-content}}

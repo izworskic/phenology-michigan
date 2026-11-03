@@ -104,7 +104,7 @@ export default function TrilliumSiteScience({onOpenStop}){
        <strong>{row.year} · patch {row.plotId}</strong><span>{PHASE_LABEL[row.state]||'Unclassified'}</span>
        <small>{row.state==='bounded-onset'?('After '+pretty(row.lastNo)+' and by '+pretty(row.firstYes)+' · '+row.gapDays+' days'):row.firstYes?('First reported yes: '+pretty(row.firstYes)+'; not an exact onset'):row.negativeVisits+' negative, '+row.uncertainVisits+' uncertain check(s)'}</small>
       </div>)}
-     </div>:<p className='tri-site-science-absence'><BookOpenCheck size={19}/> No independently reviewed repeat-visit series at this preserve yet. This is an evidence gap, <strong>not</strong> evidence that trilliums are absent.</p>}
+     </div>:<p className='tri-site-science-absence'><BookOpenCheck size={19}/><span>No independently reviewed repeat-visit series at this preserve yet. This is an evidence gap, <strong>not</strong> evidence that trilliums are absent.</span></p>}
      <div className='tri-site-science-calibration'><Thermometer size={20}/><div><strong>{s.calibration?.state==='retrospectively-calibrated'?'Historical on-site soil model has passed validation':'On-site bloom model not yet calibrated'}</strong><p>{s.calibration?.reason||'The same patch needs repeated visits and measured soil records across multiple springs.'} {s.calibration?.pairedSeasons||0} complete qualifying soil-and-bloom years; at least eight are required for a site-specific retrospective test.</p></div></div>
     </div>
     <IntervalExperiment/>
@@ -115,7 +115,7 @@ export default function TrilliumSiteScience({onOpenStop}){
       <article><span>02</span><h3>Write down the “no” days</h3><p>As spring approaches, return every two or three days when practical. Mark open flowers <b>yes, no, or uncertain</b>; never turn an unchecked visit into “no”. Note buds and snow separately.</p></article>
       <article><span>03</span><h3>Measure, don't assume</h3><p>Optional dated soil-probe readings must include depth. A future soil-heat model requires complete daily measurements from a documented on-site logger at the same depth and patch. A regional forecast cannot substitute.</p></article>
      </div>
-     <p className='tri-site-science-foot'><AlertTriangle size={17}/> A direct photo can establish that a flower was open on a date; it cannot, by itself, establish when the first flower opened. Public trail restrictions, privacy and plant conservation take precedence over collecting data. Protocol follows <a href={NPN} target='_blank' rel='noopener noreferrer'>USA-NPN Nature's Notebook <ExternalLink size={12}/></a>. {source==='bundled'?'The last validated archive is shown if the live archive is unavailable.':''}</p>
+     <p className='tri-site-science-foot'><AlertTriangle size={17}/><span>A direct photo can establish that a flower was open on a date; it cannot, by itself, establish when the first flower opened. Public trail restrictions, privacy and plant conservation take precedence over collecting data. Protocol follows <a href={NPN} target='_blank' rel='noopener noreferrer'>USA-NPN Nature's Notebook <ExternalLink size={12}/></a>. {source==='bundled'?'The last validated archive is shown if the live archive is unavailable.':''}</span></p>
     </div>
    </div>
   </section>;
