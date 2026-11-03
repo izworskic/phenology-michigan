@@ -106,7 +106,7 @@ class GeographyScienceTests(unittest.TestCase):
         reg=next(x for x in result["regions"] if x["id"]=="saginaw-bay")
         self.assertEqual(reg["phases"][0]["reportingSites"],2)
         self.assertEqual(reg["phases"][0]["coverage"],"multiple-reporters-or-sites")
-        self.assertEqual(reg["phases"][0]["sourceReports"]["usa-npn"],3)
+        self.assertEqual(reg["phases"][0]["sourceReports"]["usa-npn"],2)  # independent site-day evidence, not multiple individuals at one site
         limited=M.build(CONFIG,[npn()],[],NOW)
         self.assertEqual(next(x for x in limited["regions"] if x["id"]=="saginaw-bay")["phases"][0]["coverage"],"limited-sample")
         self.assertFalse(any("observer:" in json.dumps(r) for r in result["regions"]))
