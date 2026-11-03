@@ -37,19 +37,20 @@ def soil_archive(site, years, temps):
 
 
 class SiteScienceTests(unittest.TestCase):
-    def test_production_begins_with_zero_verified_site_observations(self):
+    def test_production_archive_matches_validated_evidence_without_fake_visits(self):
         visits = json.loads((ROOT / "data/trillium-monitoring-visits.json").read_text())
         soil = json.loads((ROOT / "data/trillium-monitoring-soil.json").read_text())
-        self.assertEqual(visits["visits"], [])
-        self.assertEqual(soil["seasons"], [])
-        out = M.build(visits, soil, dt.date(2026, 11, 3))
+        local_today = dt.datetime.now(M.ZoneInfo("America/Detroit")).date()
+        out = M.build(visits, soil, local_today)
         self.assertEqual(len(out["sites"]), 10)
-        self.assertEqual(out["summary"]["reviewedVisits"], 0)
-        self.assertEqual(out["summary"]["boundedPlotYears"], 0)
-        self.assertEqual(out["summary"]["sitesWithCalibratedModels"], 0)
-        self.assertTrue(all(s["calibration"]["thresholdSoilGdd40"] is None for s in out["sites"]))
+        self.assertEqual(out["summary"]["reviewedVisits"], len(visits["visits"]))
+        self.assertEqual(out["summary"]["completeMeasuredSoilSeasons"], len(soil["seasons"]))
+        self.assertEqual(sum(x["reviewedVisits"] for x in out["sites"]), len(visits["visits"]))
+        self.assertTrue(all(x["calibration"]["thresholdSoilGdd40"] is None for x in out["sites"]
+                            if x["calibration"]["state"] == "not-calibrated"))
         self.assertNotIn("latitude", json.dumps(out))
         self.assertNotIn("longitude", json.dumps(out))
+        self.assertNotIn("reviewNote", json.dumps(out))
 
     def test_no_then_yes_is_an_interval_not_exact_onset(self):
         rows = [
