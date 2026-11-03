@@ -12,7 +12,7 @@ const ICONS={plants:Flower2,insects:Bug,birds:Bird};
 const dateLabel=x=>x?new Date(x+'T12:00:00Z').toLocaleDateString('en-US',{timeZone:'UTC',month:'short',day:'numeric'}):'Date unavailable';
 const pinHtml=(i,tone,selected)=>'<span class="nygeo-pin '+tone+(selected?' selected':'')+'"><b>'+i+'</b></span>';
 
-export default function MichiganPhenophaseMap({data}){
+export default function MichiganPhenophaseMap({data,historical=false}){
  const node=useRef(null),leaflet=useRef(null),tile=useRef(null),points=useRef(new Map()),selection=useRef(null);
  const [ready,setReady]=useState(false),[error,setError]=useState(''),[selected,setSelected]=useState('saginaw-bay'),[phaseFilter,setPhaseFilter]=useState('all');
  const [tileMode,setTileMode]=useState('voyager');
@@ -21,7 +21,8 @@ export default function MichiganPhenophaseMap({data}){
  const active=regions.find(r=>r.id===selected)||regions[0];
  const phases=useMemo(()=>((active?.phases)||[]).filter(p=>phaseFilter==='all'||p.group===phaseFilter),[active,phaseFilter]);
  const sourceState=data?.sourceStatus;
- const archiveStale=data?.status==='stale';
+ const isHistorical=historical||data?.status==='historical';
+ const archiveStale=!isHistorical&&data?.status==='stale';
  const sourcePending=!valid||sourceState?.usaNpn==='pending';
  selection.current=setSelected;
  useEffect(()=>{
@@ -74,14 +75,15 @@ export default function MichiganPhenophaseMap({data}){
    mark?.setIcon(window.L.divIcon({className:'nygeo-marker-wrap',
     html:pinHtml(i+1,tone,r.id===selected),iconSize:[35,35],iconAnchor:[18,18]}));
    mark?.setZIndexOffset(r.id===selected?400:0);
+   mark?.bindTooltip(r.name+' · '+(tone==='multiple'?'multiple reporting sites/observers':tone==='limited'?'limited reports':'no eligible reports in this sample'),{direction:'top'});
   });
  },[ready,selected,phaseFilter,regions]);
  // No programmatic geolocation and no exact field coordinates are ever requested.
  return <div className="nygeo-root">
-   <div className="nygeo-intro"><div><span className="nygeo-kicker"><MapPin size={14}/> AUTOMATED MICHIGAN FIELD EVIDENCE</span>
-     <h4>Where observers have reported seasonal changes</h4>
-     <p>Actual dated records from established observation networks, grouped into broad Michigan regions. No visitor reporting or verification is needed here.</p>
-    </div><span className="nygeo-date"><CalendarDays size={14}/> Sample through {dateLabel(data?.asOfDate)}</span></div>
+   <div className="nygeo-intro"><div><span className="nygeo-kicker"><MapPin size={14}/> {isHistorical?"RECORDED HISTORICAL SAMPLE":"AUTOMATED MICHIGAN FIELD EVIDENCE"}</span>
+     <h4>{isHistorical?'How Michigan was reported on this date':'Where observers have reported seasonal changes'}</h4>
+     <p>{isHistorical?'A preserved, dated reporting snapshot across nine broad regions. The records describe public submitted observations in a 15-date window, not events that all occurred on the capture day.':'Actual dated records from established observation networks, grouped into broad Michigan regions. No visitor reporting or verification is needed here.'}</p>
+    </div><span className="nygeo-date"><CalendarDays size={14}/> {isHistorical? "Captured ":"Sample through "}{dateLabel(data?.asOfDate)}</span></div>
    <div className="nygeo-sourcebar">
     <span><i className="nygeo-key multiple"/> Multiple reporting sites or observers</span>
     <span><i className="nygeo-key limited"/> Limited reports</span>
@@ -114,7 +116,7 @@ export default function MichiganPhenophaseMap({data}){
       </select>
      </div>
      <div className="nygeo-summary"><h4>{active?.name||'Regional evidence unavailable'}</h4>
-      <p>Observation dates from the last 14 days · {archiveStale?'archive stale; reports withheld':sourcePending?'collection not yet complete':'sampled observational reports'}</p></div>
+      <p>{isHistorical?'Archive report window '+dateLabel(data?.windowStart)+' – '+dateLabel(data?.windowEnd):'Observation dates from the last 14 days · '+(archiveStale?'archive stale; reports withheld':sourcePending?'collection not yet complete':'sampled observational reports')}</p></div>
      {phases.length? <div className="nygeo-phases">
        {phases.map(p=>{
         const I=ICONS[p.group]||Leaf;
@@ -123,8 +125,8 @@ export default function MichiganPhenophaseMap({data}){
          <p className="nygeo-phase-species">{p.species.length?'Examples reported: '+p.species.map(x=>x.name).join(', '):'No named species available'}</p>
          <p className="nygeo-phase-sources">USA-NPN: {p.sourceReports['usa-npn']} submissions from {p.reportingSites} sites · iNaturalist: {p.sourceReports.inaturalist} annotated records from {p.reportingObservers} observers</p>
         </article>;
-       })}</div>:<p className="nygeo-empty">{archiveStale?'The automated archive is overdue; previously reported phenophases are withheld rather than presented as current.':sourcePending?'Awaiting the first automated source refresh.':'No recent eligible reports in this sampled category and region. That does not mean the organism or stage was absent.'}</p>}
-     <div className="nygeo-evidence-footer">These are submitted observations, not a complete census. Reports may arrive late and reporting effort varies widely by region.</div>
+       })}</div>:<p className="nygeo-empty">{archiveStale?'The automated archive is overdue; previously reported phenophases are withheld rather than presented as current.':sourcePending?'Awaiting the first automated source refresh.':(isHistorical?'No eligible reports in this archived sample. This does not prove biological absence.':'No recent eligible reports in this sampled category and region. That does not mean the organism or stage was absent.')}</p>}
+     <div className="nygeo-evidence-footer">{isHistorical?'Historic collected samples overlap by 14 days. Changes between frames are not new daily events. Reporting effort and source coverage may vary.':'These are submitted observations, not a complete census. Reports may arrive late and reporting effort varies widely by region.'}</div>
     </div>
    </div>
    <div className="nygeo-method"><Info size={16}/><p>USA-NPN records an explicit biological phase seen by a participant. iNaturalist records require research-grade identification, a matching annotation, usable public geography and an observation date. Both are filtered automatically; neither establishes a region-wide first occurrence, local abundance, or migration. No precise observation positions are shown.
