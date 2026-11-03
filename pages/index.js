@@ -12,6 +12,8 @@ import { readSignals, emptySignals } from "../lib/signals";
 import { skyTonight } from "../lib/sky";
 import { readFieldRead } from "../lib/field-read";
 import SeasonalFieldRead from "../components/SeasonalFieldRead";
+import SpeciesTrialObservatory from "../components/SpeciesTrialObservatory";
+import { readSpeciesTrials } from "../lib/species-trials";
 
 const SITE = "https://phenology.chrisizworski.com";
 const CAT_ICON = { water: Waves, fish: Fish, hatch: Egg, bird: Bird, bloom: Flower2, garden: Sprout, wild: Feather };
@@ -173,7 +175,7 @@ const SIGNAL_CHECKS = {
   "First hard frost": { kind: "frost" },
 };
 
-export default function Home({ almanac, archivedAlmanac, regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt, fieldRead }) {
+export default function Home({ almanac, archivedAlmanac, regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt, fieldRead, speciesTrials }) {
   const [mounted, setMounted] = useState(false);
   const [riverId, setRiverId] = useState("ausable");
   const [sel, setSel] = useState(null);
@@ -620,6 +622,8 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
             {correlations && <p style={{ margin: "12px 0 0", fontSize: 14, lineHeight: 1.5, color: "#6a5f4a", fontFamily: "Newsreader, Georgia, serif", fontStyle: "italic", borderTop: "1px solid #e4dcc8", paddingTop: 12 }}>Calendar overlap: {correlations}</p>}
           </section>
         )}
+
+        <SpeciesTrialObservatory data={speciesTrials} />
 
         <section className="pheno-2col" style={{ marginTop: 24 }}>
           <div style={{ background: "rgba(255,255,255,0.4)", border: "1px solid #e4dcc8", borderRadius: 18, padding: "18px 18px 8px" }}>
@@ -1110,7 +1114,7 @@ export async function getServerSideProps({ res }) {
   // from the banked bundle the cron refreshes daily, so the page makes one cheap call for all of them.
   // Every source is timeout-guarded so no single hung upstream can stall the page,
   // and everything runs in one parallel batch so worst-case latency is one timeout, not several.
-  const [regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, almanacRows, buoy, alerts, signals, riverForecast, aurora, fieldRead] = await Promise.all([
+  const [regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, almanacRows, buoy, alerts, signals, riverForecast, aurora, fieldRead, speciesTrials] = await Promise.all([
     T(fetchRegional(), { air: { tempF: null, forecast: null }, level: null }),
     T(fetchRivers(), []),
     T(fetchGddActual(), null),
@@ -1126,6 +1130,7 @@ export async function getServerSideProps({ res }) {
     T(fetchRiverForecast(), { active: false }),
     T(fetchAurora(), { kpNow: null, kpPeak: null, kpPeakTime: null, ovationBay: null, ovationNorth: null }),
     T(readFieldRead(), null),
+    T(readSpeciesTrials(), null),
   ]);
   const sig = signals || emptySignals();
   const bay = { ...buoy, ...(sig.bayDaily || {}) };
@@ -1139,7 +1144,7 @@ export async function getServerSideProps({ res }) {
     props: {
       almanac: recentAlmanac,
       archivedAlmanac: recentAlmanac ? null : latestAlmanac,
-      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, fieldRead,
+      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, fieldRead, speciesTrials,
       springIndex: sig.springIndex || emptySignals().springIndex,
       observations: sig.observations || [], inat: sig.inat || [], drought: sig.drought || null,
       bay, alerts, doy,
