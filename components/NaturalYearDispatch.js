@@ -1,4 +1,6 @@
 import { useState } from "react";
+import dynamic from "next/dynamic";
+const MichiganPhenophaseMap = dynamic(() => import("./MichiganPhenophaseMap"), {ssr:false});
 import { Leaf, Flower2, Bird, Waves, CloudSun, MapPin, ArrowRight, CalendarDays, Microscope, ExternalLink, Compass, Clock3, Binoculars } from "lucide-react";
 
 const ICONS = {plants: Flower2, birds: Bird, wildlife: Binoculars, weather: CloudSun, water: Waves};
@@ -16,6 +18,7 @@ const DETAIL = {
   now: {title:"The field desk for this part of the year",description:"Recent reports and the specialist tools whose usual seasons overlap this date."},
   next: {title:"The next chapters of the natural year",description:"These are broad calendar windows, not a countdown to a verified emergence or migration."},
   regions: {title:"How differently spring is reported",description:"Two independent biological clocks, shown as historical public-reporting windows by region."},
+  map: {title:"Reported phenophases around Michigan",description:"Regional evidence from existing public observation networks, gathered automatically without requesting visitor submissions."},
 };
 
 function WatchLink({row, next=false}) {
@@ -66,7 +69,7 @@ function HistoricalBand({name, entry, note, href}) {
   </article>;
 }
 
-export default function NaturalYearDispatch({read}) {
+export default function NaturalYearDispatch({read,geography}) {
   const [view,setView]=useState("now");
   const [region,setRegion]=useState("saginaw-bay");
   if (!read) return <section className="ny-dispatch ny-fallback" aria-label="Natural year guide">
@@ -95,11 +98,12 @@ export default function NaturalYearDispatch({read}) {
       </div>
     </div>
     <div className="ny-control" role="group" aria-label="Choose the natural-year lens">
-      {[["now","Right now"],["next","Next on the calendar"],["regions","Compare Michigan regions"]].map(([id,label])=>
+      {[["now","Right now"],["map","Across Michigan"],["next","Next on the calendar"],["regions","Compare regions"]].map(([id,label])=>
         <button key={id} type="button" className={view===id?"is-active":""} aria-pressed={view===id} onClick={()=>setView(id)}>{label}</button>)}
     </div>
     <div className="ny-inner">
       <div className="ny-view-heading"><h3>{DETAIL[view].title}</h3><p>{DETAIL[view].description}</p></div>
+      {view==="map" && <MichiganPhenophaseMap data={geography} />}
       {view==="now" && <div className="ny-columns">
         <article className="ny-notebook">
           <div className="ny-section-title"><Leaf size={19}/><h4>What observers actually reported</h4></div>
