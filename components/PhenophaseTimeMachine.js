@@ -64,7 +64,6 @@ export default function PhenophaseTimeMachine(){
  const [playing,setPlaying]=useState(false);
  const [copied,setCopied]=useState(false);
  const requested=useRef(null);
- const initialized=useRef(false);
  const snapshots=archive?.snapshots||[];
  const snapshot=snapshots[selectedIndex]||null;
  const previous=selectedIndex>0?snapshots[selectedIndex-1]:null;
@@ -72,8 +71,6 @@ export default function PhenophaseTimeMachine(){
  const comparison=useMemo(()=>previous&&snapshot?compareCaptures(previous,snapshot,region):null,[previous,snapshot,region]);
  const yearRecord=index?.years?.find(x=>x.year===year)||null;
  useEffect(()=>{
-  if(initialized.current)return;
-  initialized.current=true;
   requested.current=parseRequested();
   const ctrl=new AbortController();
   getArchive(ROOT,ctrl.signal).then(data=>{
