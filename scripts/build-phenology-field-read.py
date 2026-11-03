@@ -97,7 +97,7 @@ def build(rows, signals, today=None):
     if not valid:
         return {"schema": "phenology-field-read-v1", "status": "unavailable",
                 "reason": "No dated field archive has been recorded.", "asOfDate": None,
-                "observations": [], "tracks": [], "quality": []}
+                "observations": [], "tracks": [], "timeline": [], "quality": []}
     latest = valid[-1]
     as_of = date_of(latest["date"])
     age = (today - as_of).days
@@ -130,6 +130,18 @@ def build(rows, signals, today=None):
                        "source": "USGS water-temperature gauge, banked daily",
                        "evidence": "gauge-observation", "sourceUrl": "https://waterdata.usgs.gov/",
                        "asOfDate": as_of.isoformat()})
+    # A dated 28-day evidence trail for the visitor's interactive field dial.
+    # Gaps remain gaps: we only include actual archived days and never interpolate.
+    timeline = []
+    for row in valid:
+        day = date_of(row.get("date"))
+        if not (0 <= (as_of - day).days <= 27):
+            continue
+        river_value = number(row.get("ausableTempF"), 30, 100)
+        heat_value = number(row.get("gdd"), 0, 15000)
+        timeline.append({"date": day.isoformat(),
+                         "riverF": round(river_value, 1) if river_value is not None else None,
+                         "heatGdd": round(heat_value, 1) if heat_value is not None else None})
     observations = observation_list(signals, as_of) if status == "current" else []
     if not observations:
         quality.append("No sufficiently recent Michigan-wide Nature's Notebook reports are available in this snapshot.")
@@ -139,7 +151,7 @@ def build(rows, signals, today=None):
     quality.append("Only the available 2026 archive is evaluated; no multi-year climate normal or species onset date is inferred.")
     return {"schema": "phenology-field-read-v1", "status": status,
             "asOfDate": as_of.isoformat(), "generatedForDate": today.isoformat(),
-            "region": "Saginaw Bay / AuSable reference area", "tracks": tracks,
+            "region": "Saginaw Bay / AuSable reference area", "tracks": tracks, "timeline": timeline,
             "observations": observations, "fieldPrompt": field_prompt(as_of.month),
             "quality": quality, "modelLimit": "Describes recorded conditions and observation reports; never confirms today's presence or predicts species emergence."}
 
