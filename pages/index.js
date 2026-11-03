@@ -14,6 +14,8 @@ import { readFieldRead } from "../lib/field-read";
 import SeasonalFieldRead from "../components/SeasonalFieldRead";
 import SpeciesTrialObservatory from "../components/SpeciesTrialObservatory";
 import { readSpeciesTrials } from "../lib/species-trials";
+import NaturalYearDispatch from "../components/NaturalYearDispatch";
+import { readNaturalYearDispatch } from "../lib/natural-year-dispatch.mjs";
 
 const SITE = "https://phenology.chrisizworski.com";
 const CAT_ICON = { water: Waves, fish: Fish, hatch: Egg, bird: Bird, bloom: Flower2, garden: Sprout, wild: Feather };
@@ -175,7 +177,7 @@ const SIGNAL_CHECKS = {
   "First hard frost": { kind: "frost" },
 };
 
-export default function Home({ almanac, archivedAlmanac, regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt, fieldRead, speciesTrials }) {
+export default function Home({ almanac, archivedAlmanac, regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt, fieldRead, speciesTrials, naturalYear }) {
   const [mounted, setMounted] = useState(false);
   const [riverId, setRiverId] = useState("ausable");
   const [sel, setSel] = useState(null);
@@ -553,6 +555,7 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
         <title>Michigan Phenology by Chris Izworski: Saginaw Bay and the AuSable in Real Time</title>
         <meta name="description" content="An interpreted real-time read on the natural year across Saginaw Bay and northeastern Michigan: live river conditions, projected hatches, bird movement, and growing degree days, by Chris Izworski." />
         <link rel="canonical" href={SITE + "/"} />
+        <link rel="stylesheet" href="/natural-year-dispatch.css" />
         <meta property="og:title" content="Michigan Phenology by Chris Izworski" />
         <meta property="og:description" content="The natural year of Saginaw Bay and the AuSable, interpreted in real time." />
         <meta property="og:url" content={SITE + "/"} /><meta property="og:type" content="website" />
@@ -613,6 +616,7 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
           </section>
         )}
 
+        <NaturalYearDispatch read={naturalYear} />
         <SeasonalFieldRead read={fieldRead} />
 
         {read && (
@@ -623,7 +627,11 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
           </section>
         )}
 
-        <SpeciesTrialObservatory data={speciesTrials} />
+        <details className="ny-science-disclosure">
+          <summary>Explore the science: two species, two biological clocks</summary>
+          <p>Open the full historical-model experiment, compare independently tested calendar and temperature predictions, and replay the observed reporting years. This remains separate from local observations.</p>
+          <SpeciesTrialObservatory data={speciesTrials} />
+        </details>
 
         <section className="pheno-2col" style={{ marginTop: 24 }}>
           <div style={{ background: "rgba(255,255,255,0.4)", border: "1px solid #e4dcc8", borderRadius: 18, padding: "18px 18px 8px" }}>
@@ -754,7 +762,7 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
         </div>
 
 
-        <section style={{ marginTop: 34 }}>
+        <section id="turning-year" style={{ marginTop: 34 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
             <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>The turning year</h2>
             <span style={{ marginLeft: "auto", fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "#7a7058", border: "1px solid #d8cca8", borderRadius: 6, padding: "1px 6px", whiteSpace: "nowrap" }}>the usual year</span>
@@ -1114,7 +1122,7 @@ export async function getServerSideProps({ res }) {
   // from the banked bundle the cron refreshes daily, so the page makes one cheap call for all of them.
   // Every source is timeout-guarded so no single hung upstream can stall the page,
   // and everything runs in one parallel batch so worst-case latency is one timeout, not several.
-  const [regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, almanacRows, buoy, alerts, signals, riverForecast, aurora, fieldRead, speciesTrials] = await Promise.all([
+  const [regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, almanacRows, buoy, alerts, signals, riverForecast, aurora, fieldRead, speciesTrials, naturalYear] = await Promise.all([
     T(fetchRegional(), { air: { tempF: null, forecast: null }, level: null }),
     T(fetchRivers(), []),
     T(fetchGddActual(), null),
@@ -1131,6 +1139,7 @@ export async function getServerSideProps({ res }) {
     T(fetchAurora(), { kpNow: null, kpPeak: null, kpPeakTime: null, ovationBay: null, ovationNorth: null }),
     T(readFieldRead(), null),
     T(readSpeciesTrials(), null),
+    T(readNaturalYearDispatch(), null),
   ]);
   const sig = signals || emptySignals();
   const bay = { ...buoy, ...(sig.bayDaily || {}) };
@@ -1144,7 +1153,7 @@ export async function getServerSideProps({ res }) {
     props: {
       almanac: recentAlmanac,
       archivedAlmanac: recentAlmanac ? null : latestAlmanac,
-      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, fieldRead, speciesTrials,
+      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, fieldRead, speciesTrials, naturalYear,
       springIndex: sig.springIndex || emptySignals().springIndex,
       observations: sig.observations || [], inat: sig.inat || [], drought: sig.drought || null,
       bay, alerts, doy,
