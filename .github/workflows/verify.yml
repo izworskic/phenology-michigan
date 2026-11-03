@@ -52,6 +52,7 @@ on:
       - 'lib/phenology.js'
       - 'lib/field-read.js'
       - 'components/SeasonalFieldRead.js'
+      - 'components/FieldSeasonDial.js'
       - 'scripts/build-phenology-field-read.py'
       - 'scripts/test_field_intelligence.py'
       - 'scripts/check-phenology-model.mjs'
