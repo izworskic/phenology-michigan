@@ -134,12 +134,20 @@ class GeographyScienceTests(unittest.TestCase):
         winter=M.build(CONFIG,[npn(observation_date="2026-11-01")],[],dt.date(2027,1,7))
         self.assertTrue(all(not r["phases"] for r in winter["regions"]))
 
-    def test_empty_uninitialized_public_archive_never_claims_current_reports(self):
+    def test_public_archive_is_evidence_scoped_after_automatic_refresh(self):
         archive=json.loads((ROOT/"data/michigan-phenophase-geography.json").read_text())
         self.assertEqual(archive["schema"],"michigan-phenophase-geography-v1")
         self.assertEqual(len(archive["regions"]),9)
-        self.assertEqual(archive["sourceStatus"]["usaNpn"],"pending")
-        self.assertFalse(any(r["phases"] for r in archive["regions"]))
+        self.assertIn(archive["sourceStatus"]["usaNpn"],("pending","ok"))
+        if archive["sourceStatus"]["usaNpn"]=="pending":
+            self.assertFalse(any(r["phases"] for r in archive["regions"]))
+        self.assertTrue(all(r["lat"]==CONFIG["regions"][i]["lat"]
+                            and r["lon"]==CONFIG["regions"][i]["lon"]
+                            for i,r in enumerate(archive["regions"])))
+        self.assertTrue(all(p["coverage"] in ("multiple-reporters-or-sites","limited-sample")
+                            for r in archive["regions"] for p in r["phases"]))
+        for private_field in ("reviewer_id","site_id","individual_id","geojson","positional_accuracy","reporter"):
+            self.assertNotIn('"'+private_field+'"',json.dumps(archive))
 
 if __name__=="__main__":
     unittest.main()
