@@ -237,7 +237,7 @@ def gather(records, config, today, source_health):
             "phases": phases[:6], "sampledReportCount": sum(len(by.get((r["id"],phase),[])) for phase in labels),
             "hasMultipleReportingSites": any(p["coverage"] == "multiple-reporters-or-sites" for p in phases),
             # Distinguish no eligible reports from an upstream feed failure.
-            "sourceCoverage": source_health.get("inaturalist", {}).get("missingRegions", []),
+            "unavailableInatPhases": [v.split("/", 1)[1] for v in source_health.get("inaturalist", {}).get("missingRegions", [])\n                                      if v.startswith(r["id"] + "/")],
         })
     return regions
 
