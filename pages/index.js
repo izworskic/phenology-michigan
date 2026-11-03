@@ -110,15 +110,15 @@ function EventPopout({ ev, doy, actualTotal, thresholds, season, onClose }) {
   if (!ev) return null;
   const C = CAT[ev.cat]; const Icon = CAT_ICON[ev.cat];
   const within = ev.e > 365 ? (doy >= ev.s || doy <= ev.e % 365) : (doy >= ev.s && doy <= ev.e);
-  const status = within ? "Active now" : ev.s - doy > 0 ? `Begins in about ${ev.s - doy} days` : `Ended about ${doy - ev.e} days ago`;
+  const status = within ? "Inside the usual calendar window, not locally confirmed" : ev.s - doy > 0 ? `Usual window begins in about ${ev.s - doy} days` : `Usual window ended about ${doy - ev.e} days ago`;
   let projLine = null;
   if (ev.cat === "hatch" && actualTotal != null) {
     const thr = thresholds[ev.name];
     if (thr != null) {
-      if (actualTotal >= thr) projLine = `Degree days have passed the ${thr} mark this year, so this hatch is on or imminent rather than projected.`;
+      if (actualTotal >= thr) projLine = `The gridded heat model has passed the ${thr} threshold. This does not confirm a hatch: water temperature and field observations still matter.`;
       else {
         const pd = projectOnset(thr, actualTotal, doy);
-        projLine = pd ? `Projected onset around ${fmtDate(pd)}, about ${pd - doy} days out, once degree days reach roughly ${thr}. The site is at ${actualTotal} now and accumulating at this season's pace.` : `Degree days are not projected to reach the ${thr} threshold within the year at the current pace.`;
+        projLine = pd ? `Rough heat-only threshold crossing around ${fmtDate(pd)}, about ${pd - doy} days out. This is a simplified climate heuristic, not a verified species emergence forecast.` : `Degree days are not projected to reach the ${thr} threshold within the year at the current pace.`;
       }
     }
   }
@@ -158,8 +158,8 @@ function EventPopout({ ev, doy, actualTotal, thresholds, season, onClose }) {
   );
 }
 
-// Which folk correlations can be checked against a live sensor, and the threshold that confirms them.
-// Only the ones with a defensible measurable; the rest stand on their phenological text alone.
+// Environmental thresholds may accompany seasonal cues but never verify a species is
+// flowering, emerging, present, or active. Confirmation requires a dated observation.
 const SIGNAL_CHECKS = {
   "Forsythia bloom": { kind: "soil", min: 55 },
   "Lilac first bloom": { kind: "soil", min: 57 },
@@ -173,7 +173,7 @@ const SIGNAL_CHECKS = {
   "First hard frost": { kind: "frost" },
 };
 
-export default function Home({ almanac, regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt, fieldRead }) {
+export default function Home({ almanac, archivedAlmanac, regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt, fieldRead }) {
   const [mounted, setMounted] = useState(false);
   const [riverId, setRiverId] = useState("ausable");
   const [sel, setSel] = useState(null);
@@ -464,8 +464,8 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
     () => indicators.filter((i) => eventMatches(i, activeTags)),
     [indicators, activeTags]
   );
-  // For a given signal, test it against today's live sensor reading so a folk correlation can be
-  // confirmed or shown as not-yet-there. Returns null when there is nothing measurable to check.
+  // Compare contextual temperature cues without claiming the biological event has occurred.
+  // Null means no measurable environmental reading is available.
   const liveCheck = useMemo(() => {
     const soilF = forecast?.soilF ?? null;
     const waterF = bay && bay.waterTempF != null ? bay.waterTempF : (river && river.temp != null ? Math.round(cToF(river.temp)) : null);
@@ -479,7 +479,7 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
       return null;
     };
   }, [forecast, bay, river]);
-  const confirmedCount = useMemo(() => filteredIndicators.reduce((n, i) => { const c = liveCheck(i.name); return n + (c && c.ok ? 1 : 0); }, 0), [filteredIndicators, liveCheck]);
+  const compatibleCueCount = useMemo(() => filteredIndicators.reduce((n, i) => { const c = liveCheck(i.name); return n + (c && c.ok ? 1 : 0); }, 0), [filteredIndicators, liveCheck]);
   const allTags = ALL_GROUPS;
   const tagLabels = GROUP_LABEL;
 
@@ -673,6 +673,13 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
                 <p style={{ fontSize: 11.5, margin: "10px 0 0", color: "#9a8f76" }}>{almanac.date}</p>
               </div>
             )}
+            {archivedAlmanac?.text && (
+              <details style={{ margin: "0 0 18px", padding: "10px 14px", background: "#faf8f0", borderRadius: 9, border: "1px solid #ddd8ca" }}>
+                <summary style={{ cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#75654b" }}>Past almanac entry — {archivedAlmanac.date} (not today's field report)</summary>
+                <p style={{ fontSize: 12, color: "#85785f" }}>Historical editorial commentary from the archive. It does not establish current blooms, hatches or species activity.</p>
+                <p style={{ fontSize: 14, lineHeight: 1.6, color: "#5a5240" }}>{archivedAlmanac.text}</p>
+              </details>
+            )}
             <h2 style={{ fontSize: 17, margin: "2px 0 8px", color: season.color }}>In the usual seasonal window</h2>
             <p style={{ fontSize: 11.5, color: "#786e58", margin: "0 0 8px" }}>Calendar guidance only. A window is not a verified local sighting, flowering date, hatch or migration arrival.</p>
             {active.length ? active.map((ev, i) => <EventRow key={i} ev={ev} doy={doy} state="active" onSelect={setSel} />) : <div style={{ fontSize: 13, color: "#9a8f76", padding: "8px 0" }}>A quiet stretch on the calendar.</div>}
@@ -685,12 +692,12 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
           <section style={{ marginTop: 30 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
               <Link2 size={16} color={CAT.bloom.color} />
-              <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>Connections in play</h2>
+              <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>Seasonal connections to watch</h2>
             </div>
-            <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 12px", fontStyle: "italic" }}>The signals nature is giving right now, and what each one points to on the rivers, in the woods, and in the garden.{confirmedCount > 0 ? ` ${confirmedCount} ${confirmedCount === 1 ? "is" : "are"} backed by today's readings.` : ""}</p>
+            <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 12px", fontStyle: "italic" }}>Traditional field cues in their usual seasonal windows. A matching temperature reading is context, not confirmation that a bloom, hatch, or migration occurred.{compatibleCueCount > 0 ? ` ${compatibleCueCount} temperature ${compatibleCueCount === 1 ? "cue meets" : "cues meet"} the listed thresholds.` : ""}</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 12 }}>
               {filteredIndicators.map((ind, i) => {
-                const tag = ind.state === "active" ? "active now" : `in about ${ind.days} days`;
+                const tag = ind.state === "active" ? "usual window" : `in about ${ind.days} days`;
                 const tagColor = ind.state === "active" ? "#5a8a4a" : "#b08828";
                 const chk = liveCheck(ind.name);
                 return (
@@ -707,7 +714,7 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
                     {chk && (
                       <div style={{ marginTop: 8, fontSize: 11.5, display: "inline-flex", alignItems: "center", gap: 5, borderRadius: 8, padding: "3px 9px", background: chk.ok ? "rgba(228,243,221,0.75)" : "rgba(244,237,222,0.75)", color: chk.ok ? "#42702f" : "#9a7b3a", border: `1px solid ${chk.ok ? "#bcd3ad" : "#e3d2a6"}` }}>
                         {chk.ok ? <Check size={13} /> : <Clock size={13} />}
-                        <span>{chk.ok ? `today's reading agrees: ${chk.label}` : `${chk.label}${chk.want ? `, ${chk.want}` : ""}`}</span>
+                        <span>{chk.ok ? `temperature cue met: ${chk.label}; event unverified` : `${chk.label}${chk.want ? `, ${chk.want}` : ""}`}</span>
                       </div>
                     )}
                   </div>
@@ -1068,9 +1075,9 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
             <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
               <Sprout size={16} color={CAT.garden.color} />
               <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>Logged across Michigan</h2>
-              <span style={{ marginLeft: "auto", fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "#5a8a4a", border: "1px solid #bcd3ad", borderRadius: 6, padding: "1px 6px", whiteSpace: "nowrap" }}>live, USA-NPN</span>
+              <span style={{ marginLeft: "auto", fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "#5a8a4a", border: "1px solid #bcd3ad", borderRadius: 6, padding: "1px 6px", whiteSpace: "nowrap" }}>dated USA-NPN</span>
             </div>
-            <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 12px", fontStyle: "italic" }}>What Nature's Notebook observers are actually seeing right now statewide, whatever the season: flowering, leaf color, fruit, and animal activity as it happens.</p>
+            <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 12px", fontStyle: "italic" }}>Dated Nature's Notebook reports from across Michigan, gathered within the recent reporting window. These reports do not establish what is happening locally around Saginaw Bay.</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>
               {observations.map((o, i) => (
                 <div key={i} style={{ border: "1px solid #e4dcc8", borderLeft: `3px solid ${o.kingdom === "Plantae" ? CAT.bloom.color : CAT.wild.color}`, borderRadius: 10, padding: "9px 12px", background: "rgba(255,255,255,0.5)" }}>
@@ -1123,9 +1130,15 @@ export async function getServerSideProps({ res }) {
   const sig = signals || emptySignals();
   const bay = { ...buoy, ...(sig.bayDaily || {}) };
   const sky = skyTonight(43.5945, -83.8889, now);
+  const latestAlmanac = (almanacRows || []).slice(-1)[0] || null;
+  const localDateParts = Object.fromEntries(new Intl.DateTimeFormat("en-US", { timeZone: "America/Detroit", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(now).filter(p => p.type !== "literal").map(p => [p.type, p.value]));
+  const localDate = `${localDateParts.year}-${localDateParts.month}-${localDateParts.day}`;
+  const ageDays = latestAlmanac && /^\d{4}-\d{2}-\d{2}$/.test(latestAlmanac.date || "") ? (Date.parse(localDate + "T12:00:00Z") - Date.parse(latestAlmanac.date + "T12:00:00Z")) / 86400000 : Infinity;
+  const recentAlmanac = ageDays >= 0 && ageDays <= 3 ? latestAlmanac : null;
   return {
     props: {
-      almanac: (almanacRows || []).slice(-1)[0] || null,
+      almanac: recentAlmanac,
+      archivedAlmanac: recentAlmanac ? null : latestAlmanac,
       regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, fieldRead,
       springIndex: sig.springIndex || emptySignals().springIndex,
       observations: sig.observations || [], inat: sig.inat || [], drought: sig.drought || null,
