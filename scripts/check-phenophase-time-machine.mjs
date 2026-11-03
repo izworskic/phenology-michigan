@@ -78,7 +78,7 @@ const map=fs.readFileSync(new URL('../components/MichiganPhenophaseMap.js',impor
 const page=fs.readFileSync(new URL('../pages/index.js',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../public/phenophase-time-machine.css',import.meta.url),'utf8');
 assert.ok(dispatch.includes('"history","Time Machine"')&&dispatch.includes('<PhenophaseTimeMachine />'),'Existing dispatch gets a fifth, purpose-built lens');
-assert.ok(dispatch.includes('"history"].includes(requested)'),'Direct shareable view query should be allowlisted');
+assert.ok(dispatch.includes('["now","map","history","next","regions"].includes(requested)'),'Direct shareable view query should be allowlisted');
 assert.ok(player.includes("getArchive(ROOT+'?year='+year"),'Annual captures must be read from validated historical API');
 assert.ok(player.includes('snapshots.length<2')&&player.includes('only the days actually collected'),'A one-day archive must not pretend it can play an invented season');
 assert.ok(player.includes('previous&&snapshot?compareCaptures'),'Only compare two genuinely captured frames');
