@@ -40,6 +40,7 @@ assert.ok(page.includes("<SpeciesTrialObservatory data={speciesTrials} />"),"Pre
 assert.ok(page.includes("<SeasonalFieldRead read={fieldRead} />"),"Preserve dated Python field evidence");
 assert.ok(page.includes('<link rel="canonical" href={SITE + "/"} />'));
 assert.ok(component.includes("Right now") && component.includes("Next on the calendar") && component.includes("Compare Michigan regions"));
+assert.ok(component.includes("/michigan-trillium#tri-site-science"),"Historical spring evidence should connect directly to the verified field research program");
 assert.ok(component.includes("What observers actually reported") && component.includes("statewide") && component.includes("This overview never"));
 assert.ok(component.includes("not a local")===false,"Narrative must remain clear and intentional");
 assert.ok(css.includes("@media(max-width:520px)"));
