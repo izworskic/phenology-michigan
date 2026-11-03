@@ -34,3 +34,28 @@ The worker's 15:30 UTC cadence follows the original 13:00 UTC refresh but GitHub
 
 ## Future investment
 Introduce spatially matched, species-specific, independently evaluated phenophase models (first leaf/flower, migration, insect emergence). Keep these separate from the general seasonal GDD clock, and require source/coverage/accuracy checks before publishing visitor predictions.
+
+## Python Intelligence OS v1 pilot: archive-integrity extension (2026-11-03)
+
+This repository owns the **first implementation**, while the canonical cross-tool operating standard lives at `izworskic/chrisizworski-com/design-systems/python-intelligence-os-v1/`. The reusable stdlib package is `scripts/python_intelligence/`; it is intentionally not a new API or duplicate phenology science backend.
+
+### Measurable new visitor value
+
+- The 28-day interactive season replay now contains **28 explicit dated slots**, including null values for missing archive days. Lines do not bridge missing dates; the visitor can scrub to a date with no evidence and see that honestly.
+- The field desk displays the number of archived river gauge and gridded-heat readings in that 28-day period. **Coverage is not confidence, forecast skill or a probability of a biological event.**
+- Duplicated date records are excluded completely until reconciled, rather than selecting whichever appeared last. Future and malformed rows are excluded and counted.
+- Downward changes in same-calendar-year accumulated heat are flagged as **revisions/data inconsistencies**, not physical cooling or evidence of an event. A legitimate Jan 1 seasonal reset is exempt.
+- Existing source definitions, statewide USA-NPN observation scope, GDD withholding rules, seasonal guardrails, URL/canonical, ads, and prior charts remain unchanged.
+
+### Implementation and contracts
+
+- `scripts/python_intelligence/quality.py`: deterministic `prepare_archive` and `evidence_window`.
+- `scripts/python_intelligence/scorecard.py`: weighted prioritization with four hard gates (licensing, evidence validation, fail-closed behavior, owning-repository verification).
+- `scripts/build-phenology-field-read.py`: emits an additive `dataIntegrity` object with schema `python-intelligence-evidence-v1`. Existing `phenology-field-read-v1` JSON schema and field names remain valid; old files remain supported by the component.
+- `components/SeasonalFieldRead.js`: coverage and source-revision copy. `components/FieldSeasonDial.js` already handles null days and line breaks.
+
+### Boundaries and future go/no-go
+
+Do not infer species emergence or issue pest spray guidance from the generic degree-day total. Do not treat a Grayling temperature reconstruction as Bay City conditions, or statewide Nature's Notebook reports as local sightings. Do not add new Open-Meteo API calls to an ad-supported property without a licensing review.
+
+**Acceptance:** offline Python regression, `npm test`, `npm run build`, 390px mobile browser verification, and public post-merge fetch. Monitor archive coverage and chart availability before considering predictive models. Any future forecast requires independent ground-truth observations, prospective holdout evaluation, uncertainty calibration, source rights, and a reliable stale-data fallback.
