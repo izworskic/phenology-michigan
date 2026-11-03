@@ -14,6 +14,8 @@ import math
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from python_intelligence.quality import prepare_archive, evidence_window
+
 ROOT = Path(__file__).resolve().parents[1]
 TZ = ZoneInfo("America/Detroit")
 MAX_AGE_DAYS = 3
@@ -91,9 +93,8 @@ def field_prompt(month):
 
 def build(rows, signals, today=None):
     today = today or dt.datetime.now(TZ).date()
-    valid = [r for r in rows if isinstance(r, dict) and date_of(r.get("date"))]
-    valid = [r for r in valid if date_of(r["date"]) <= today]
-    valid.sort(key=lambda r: r["date"])
+    # Python OS: reject rather than silently prefer a duplicate snapshot.
+    valid, audit = prepare_archive(rows, today)
     if not valid:
         return {"schema": "phenology-field-read-v1", "status": "unavailable",
                 "reason": "No dated field archive has been recorded.", "asOfDate": None,
@@ -104,6 +105,13 @@ def build(rows, signals, today=None):
     status = "current" if age <= MAX_AGE_DAYS else "archive-only"
     quality = []
     tracks = []
+    integrity = evidence_window(valid, as_of, audit=audit)
+    if integrity["duplicateDates"]:
+        quality.append("Duplicate dates were excluded pending archive reconciliation; no value was chosen arbitrarily.")
+    if integrity["futureRecordsExcluded"] or integrity["invalidRecordsExcluded"]:
+        quality.append("Future-dated or invalid archive records were excluded from the field read.")
+    if integrity["heatRevisionDates"]:
+        quality.append("Accumulated heat decreased on recorded dates within the last 28 days; treat the trend as revised source data, not lost heat.")
     week_heat = consecutive(valid, "gdd", as_of, 7, (0, 15000))
     # The source is a GRIDDDED temperature reconstruction. A declining
     # cumulative total is mathematically impossible absent input revision.
@@ -130,15 +138,15 @@ def build(rows, signals, today=None):
                        "source": "USGS water-temperature gauge, banked daily",
                        "evidence": "gauge-observation", "sourceUrl": "https://waterdata.usgs.gov/",
                        "asOfDate": as_of.isoformat()})
-    # A dated 28-day evidence trail for the visitor's interactive field dial.
-    # Gaps remain gaps: we only include actual archived days and never interpolate.
+    # Every calendar day has a slot: missing values stay null and chart lines
+    # break. Even the replay slider can reveal missing dates explicitly.
+    by_day = {date_of(row["date"]): row for row in valid}
     timeline = []
-    for row in valid:
-        day = date_of(row.get("date"))
-        if not (0 <= (as_of - day).days <= 27):
-            continue
-        river_value = number(row.get("ausableTempF"), 30, 100)
-        heat_value = number(row.get("gdd"), 0, 15000)
+    for offset in range(27, -1, -1):
+        day = as_of - dt.timedelta(days=offset)
+        row = by_day.get(day)
+        river_value = number(row.get("ausableTempF"), 30, 100) if row else None
+        heat_value = number(row.get("gdd"), 0, 15000) if row else None
         timeline.append({"date": day.isoformat(),
                          "riverF": round(river_value, 1) if river_value is not None else None,
                          "heatGdd": round(heat_value, 1) if heat_value is not None else None})
@@ -152,6 +160,7 @@ def build(rows, signals, today=None):
     return {"schema": "phenology-field-read-v1", "status": status,
             "asOfDate": as_of.isoformat(), "generatedForDate": today.isoformat(),
             "region": "Saginaw Bay / AuSable reference area", "tracks": tracks, "timeline": timeline,
+            "dataIntegrity": integrity,
             "observations": observations, "fieldPrompt": field_prompt(as_of.month),
             "quality": quality, "modelLimit": "Describes recorded conditions and observation reports; never confirms today's presence or predicts species emergence."}
 
