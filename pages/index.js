@@ -10,6 +10,8 @@ import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchAusableSta
 import { readHistory, readAlmanac } from "../lib/history";
 import { readSignals, emptySignals } from "../lib/signals";
 import { skyTonight } from "../lib/sky";
+import { readFieldRead } from "../lib/field-read";
+import SeasonalFieldRead from "../components/SeasonalFieldRead";
 
 const SITE = "https://phenology.chrisizworski.com";
 const CAT_ICON = { water: Waves, fish: Fish, hatch: Egg, bird: Bird, bloom: Flower2, garden: Sprout, wild: Feather };
@@ -91,7 +93,7 @@ function Instrument({ Icon, label, value, unit, sub, live, accent }) {
 
 function EventRow({ ev, doy, state, onSelect }) {
   const C = CAT[ev.cat]; const Icon = CAT_ICON[ev.cat];
-  const tag = state === "active" ? "now" : state === "imminent" ? `${ev.s - doy} d` : `${doy - ev.e} d ago`;
+  const tag = state === "active" ? "window" : state === "imminent" ? `${ev.s - doy} d` : `${doy - ev.e} d ago`;
   const tagColor = state === "active" ? "#5a8a4a" : state === "imminent" ? "#b08828" : "#a89c83";
   return (
     <div onClick={onSelect ? () => onSelect(ev) : undefined} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "9px 0", borderBottom: "1px solid #ece4d2", cursor: onSelect ? "pointer" : "default" }}>
@@ -108,15 +110,15 @@ function EventPopout({ ev, doy, actualTotal, thresholds, season, onClose }) {
   if (!ev) return null;
   const C = CAT[ev.cat]; const Icon = CAT_ICON[ev.cat];
   const within = ev.e > 365 ? (doy >= ev.s || doy <= ev.e % 365) : (doy >= ev.s && doy <= ev.e);
-  const status = within ? "Active now" : ev.s - doy > 0 ? `Begins in about ${ev.s - doy} days` : `Ended about ${doy - ev.e} days ago`;
+  const status = within ? "Inside the usual calendar window, not locally confirmed" : ev.s - doy > 0 ? `Usual window begins in about ${ev.s - doy} days` : `Usual window ended about ${doy - ev.e} days ago`;
   let projLine = null;
   if (ev.cat === "hatch" && actualTotal != null) {
     const thr = thresholds[ev.name];
     if (thr != null) {
-      if (actualTotal >= thr) projLine = `Degree days have passed the ${thr} mark this year, so this hatch is on or imminent rather than projected.`;
+      if (actualTotal >= thr) projLine = `The gridded heat model has passed the ${thr} threshold. This does not confirm a hatch: water temperature and field observations still matter.`;
       else {
         const pd = projectOnset(thr, actualTotal, doy);
-        projLine = pd ? `Projected onset around ${fmtDate(pd)}, about ${pd - doy} days out, once degree days reach roughly ${thr}. The site is at ${actualTotal} now and accumulating at this season's pace.` : `Degree days are not projected to reach the ${thr} threshold within the year at the current pace.`;
+        projLine = pd ? `Rough heat-only threshold crossing around ${fmtDate(pd)}, about ${pd - doy} days out. This is a simplified climate heuristic, not a verified species emergence forecast.` : `Degree days are not projected to reach the ${thr} threshold within the year at the current pace.`;
       }
     }
   }
@@ -156,8 +158,8 @@ function EventPopout({ ev, doy, actualTotal, thresholds, season, onClose }) {
   );
 }
 
-// Which folk correlations can be checked against a live sensor, and the threshold that confirms them.
-// Only the ones with a defensible measurable; the rest stand on their phenological text alone.
+// Environmental thresholds may accompany seasonal cues but never verify a species is
+// flowering, emerging, present, or active. Confirmation requires a dated observation.
 const SIGNAL_CHECKS = {
   "Forsythia bloom": { kind: "soil", min: 55 },
   "Lilac first bloom": { kind: "soil", min: 57 },
@@ -171,7 +173,7 @@ const SIGNAL_CHECKS = {
   "First hard frost": { kind: "frost" },
 };
 
-export default function Home({ almanac, regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt }) {
+export default function Home({ almanac, archivedAlmanac, regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt, fieldRead }) {
   const [mounted, setMounted] = useState(false);
   const [riverId, setRiverId] = useState("ausable");
   const [sel, setSel] = useState(null);
@@ -189,8 +191,8 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
   const year = useMemo(() => turningYear(), []);
   const thisMonth = monthOfDoy(doy);
   const { active, imminent, recent } = useMemo(
-    () => classify(doy, river ? river.hatchOffset : 0, seasonOffset || 0),
-    [doy, river, seasonOffset],
+    () => classify(doy, river ? river.hatchOffset : 0, 0),
+    [doy, river],
   );
 
   const chart = useMemo(() => {
@@ -199,8 +201,6 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
   }, [normal, gddActual]);
   const actualTotal = gddActual?.total ?? null;
   const gddAnom = actualTotal != null ? actualTotal - gddNow : null;
-  const dailyRate = Math.max(1, Math.round(normalMeanF(doy) - 50));
-  const daysApprox = gddAnom != null ? Math.round(gddAnom / dailyRate) : null;
   const airF = regional.air.tempF;
 
   // ---- The read: deterministic synthesis across the streams ----
@@ -262,8 +262,8 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
     }
     // season pace
     if (gddAnom != null) {
-      const pace = Math.abs(daysApprox) <= 2 ? "essentially on schedule" : daysApprox > 2 ? `running about ${daysApprox} days early` : `running about ${Math.abs(daysApprox)} days late`;
-      parts.push(`The local base-50°F heat calculation stands at ${actualTotal} degree days against this site's modeled reference of ${gddNow}, equivalent to ${pace} on that reference curve. This is a model comparison, not a measured date shift for every species.`);
+      const heatGap = actualTotal - gddNow;
+      parts.push(`The Grayling-area gridded base-50°F heat estimate stands at ${actualTotal} growing degree days against this site's simplified calendar reference of ${gddNow} (${heatGap >= 0 ? "+" : ""}${heatGap} GDD). This is a comparison of heat sums, not a reliable number of days early or late for every species.`);
     }
     // USA-NPN accumulated-heat anomaly: a year-round read on whether the season is ahead of or behind normal
     if (springIndex && springIndex.agddAnom != null && Math.abs(springIndex.agddAnom) >= 10 && doy >= 55 && doy <= 330) {
@@ -280,7 +280,7 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
       const h = Math.floor(forecast.daylightH), m = Math.round((forecast.daylightH - h) * 60);
       const dir = forecast.daylightDeltaMin > 0.2 ? "still lengthening" : forecast.daylightDeltaMin < -0.2 ? "shortening" : "near its turn";
       let soilTxt = "";
-      if (forecast.soilF != null) soilTxt = forecast.soilF < 50 ? `, and the soil at six inches is ${forecast.soilF} degrees, still too cold for warm-season planting` : `, and the soil at six inches is ${forecast.soilF} degrees, warm enough for morels and the warm-season garden`;
+      if (forecast.soilF != null) soilTxt = forecast.soilF < 50 ? `, and the soil at six inches is ${forecast.soilF} degrees, still too cold for warm-season planting` : doy >= 75 && doy <= 175 ? `, and the soil at six inches is ${forecast.soilF} degrees, one useful spring growth signal` : `, and the soil at six inches is ${forecast.soilF} degrees; this is a temperature reading, not a claim of active garden or mushroom growth`;
       parts.push(`Daylight is ${h} hours ${m} minutes, ${dir} about ${Math.abs(forecast.daylightDeltaMin)} minutes a day${soilTxt}.`);
     }
     // frost climatology: anchor the growing season in spring and again toward fall
@@ -331,7 +331,7 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
     }
     if (hotIdx != null && hotIdx > 0) { const [hot] = parts.splice(hotIdx, 1); parts.unshift(hot); }
     return parts.join(" ");
-  }, [rivers, stats, gddAnom, daysApprox, actualTotal, gddNow, thresholds, doy, birds, forecast, springIndex, bay, drought, riverForecast]);
+  }, [rivers, stats, gddAnom, actualTotal, gddNow, thresholds, doy, birds, forecast, springIndex, bay, drought, riverForecast]);
 
   const indicators = useMemo(() => activeIndicators(doy).filter((i) => i.state !== "recent"), [doy]);
 
@@ -365,9 +365,8 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
     }
     const wTemp = river && river.temp != null ? Math.round(cToF(river.temp)) : (bay && bay.waterTempF != null ? bay.waterTempF : null);
     if (wTemp != null) chips.push({ k: "water", label: "Water", value: `${wTemp}`, unit: "\u00B0F", sub: river && river.temp != null ? "river" : "the bay" });
-    if (daysApprox != null) {
-      const pace = Math.abs(daysApprox) <= 2 ? "on time" : daysApprox > 0 ? `${daysApprox}d early` : `${Math.abs(daysApprox)}d late`;
-      chips.push({ k: "heat", label: "Season", value: pace, unit: "", sub: actualTotal != null ? `${actualTotal} GDD` : "" });
+    if (actualTotal != null) {
+      chips.push({ k: "heat", label: "Accumulated heat", value: `${actualTotal}`, unit: "GDD50", sub: "Grayling gridded estimate" });
     }
     if (sky && sky.moon) chips.push({ k: "moon", label: "Moon", value: `${sky.moon.illum}`, unit: "%", sub: sky.moon.name });
     if (forecast && forecast.frost && forecast.frost.length) {
@@ -384,7 +383,7 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
     const fc = fallColor(doy);
     const color = fc ? fc.stage : null;
     return { chips, hatching, planting, overhead, color };
-  }, [river, bay, daysApprox, actualTotal, sky, forecast, emergence, garden, doy, bayHatches]);
+  }, [river, bay, actualTotal, sky, forecast, emergence, garden, doy, bayHatches]);
 
   // Stage two: tabbed detail deck. One panel shows at a time so each is a short screen.
   const [tab, setTab] = useState("water");
@@ -410,10 +409,10 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
     if (forecast && forecast.snowDepthIn != null && forecast.snowDepthIn >= 0.5) a.push({ tab: "garden", Icon: Snowflake, label: "Snow on ground", value: forecast.snowDepthIn, unit: "in", sub: "modeled, Open-Meteo", live: true, accent: CAT.water.color });
     a.push({ tab: "sky", Icon: Sunrise, label: "Daylight", value: forecast?.daylightH != null ? `${Math.floor(forecast.daylightH)}h ${Math.round((forecast.daylightH - Math.floor(forecast.daylightH)) * 60)}m` : "n/a", unit: "", sub: forecast?.daylightH != null ? `${forecast.daylightDeltaMin > 0 ? "+" : ""}${forecast.daylightDeltaMin} min/day${forecast.sunrise ? `, ${forecast.sunrise} to ${forecast.sunset}` : ""}` : "unavailable", live: forecast?.daylightH != null, accent: season.color });
     a.push({ tab: "trends", Icon: Thermometer, label: "Bay City air, now", value: airF != null ? airF : normToday, unit: "deg F", sub: airF != null ? `current observation${regional.air.forecast ? ", " + regional.air.forecast.toLowerCase() : ""}` : "seasonal normal", live: airF != null, accent: season.color });
-    a.push({ tab: "trends", Icon: Sprout, label: "Degree days, actual", value: actualTotal != null ? actualTotal : gddNow, unit: "GDD50", sub: actualTotal != null ? "observed since Jan 1, Open-Meteo" : "modeled", live: actualTotal != null, accent: CAT.garden.color });
-    a.push({ tab: "trends", Icon: TreePine, label: "Season anomaly", value: gddAnom != null ? (gddAnom >= 0 ? "+" : "") + gddAnom : "0", unit: "GDD vs normal", sub: gddAnom != null ? `about ${Math.abs(daysApprox)} days ${gddAnom >= 0 ? "ahead" : "behind"} normal` : "real degree days pending", live: gddAnom != null, accent: CAT.bird.color });
+    a.push({ tab: "trends", Icon: Sprout, label: "Degree days, actual", value: actualTotal != null ? actualTotal : gddNow, unit: "GDD50", sub: actualTotal != null ? "gridded estimate since Jan 1, Open-Meteo" : "modeled", live: actualTotal != null, accent: CAT.garden.color });
+    a.push({ tab: "trends", Icon: TreePine, label: "Season anomaly", value: gddAnom != null ? (gddAnom >= 0 ? "+" : "") + gddAnom : "0", unit: "GDD vs normal", sub: gddAnom != null ? "heat-sum difference; not a calendar-day shift" : "gridded degree days pending", live: gddAnom != null, accent: CAT.bird.color });
     return a;
-  }, [river, airF, normToday, regional, actualTotal, gddNow, gddAnom, daysApprox, forecast, bay, season]);
+  }, [river, airF, normToday, regional, actualTotal, gddNow, gddAnom, forecast, bay, season]);
   const InstrumentGrid = ({ which }) => {
     const items = instruments.filter((x) => x.tab === which);
     if (!items.length) return null;
@@ -465,8 +464,8 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
     () => indicators.filter((i) => eventMatches(i, activeTags)),
     [indicators, activeTags]
   );
-  // For a given signal, test it against today's live sensor reading so a folk correlation can be
-  // confirmed or shown as not-yet-there. Returns null when there is nothing measurable to check.
+  // Compare contextual temperature cues without claiming the biological event has occurred.
+  // Null means no measurable environmental reading is available.
   const liveCheck = useMemo(() => {
     const soilF = forecast?.soilF ?? null;
     const waterF = bay && bay.waterTempF != null ? bay.waterTempF : (river && river.temp != null ? Math.round(cToF(river.temp)) : null);
@@ -480,7 +479,7 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
       return null;
     };
   }, [forecast, bay, river]);
-  const confirmedCount = useMemo(() => filteredIndicators.reduce((n, i) => { const c = liveCheck(i.name); return n + (c && c.ok ? 1 : 0); }, 0), [filteredIndicators, liveCheck]);
+  const compatibleCueCount = useMemo(() => filteredIndicators.reduce((n, i) => { const c = liveCheck(i.name); return n + (c && c.ok ? 1 : 0); }, 0), [filteredIndicators, liveCheck]);
   const allTags = ALL_GROUPS;
   const tagLabels = GROUP_LABEL;
 
@@ -510,7 +509,7 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
     }
     if (!best) return null;
     const [a, b] = best;
-    return `${a.name} and ${b.name} overlap on the calendar right now. Watch whether they track together as the years bank up.`;
+    return `${a.name} and ${b.name} share a usual seasonal window. This is a calendar overlap, not evidence that both occurred locally or are biologically correlated.`;
   }, [doy, activeTags]);
 
   // banked daily record
@@ -616,9 +615,11 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
           <section style={{ marginTop: 18, background: "rgba(255,255,255,0.5)", border: "1px solid #e4dcc8", borderLeft: `4px solid ${season.color}`, borderRadius: 14, padding: "16px 20px" }}>
             <div style={{ fontSize: 11.5, letterSpacing: "0.14em", textTransform: "uppercase", color: "#8a7d62", marginBottom: 6 }}>The read</div>
             <p style={{ margin: 0, fontSize: 16, lineHeight: 1.6, color: "#3a3527", fontFamily: "Newsreader, Georgia, serif" }}>{read}</p>
-            {correlations && <p style={{ margin: "12px 0 0", fontSize: 14, lineHeight: 1.5, color: "#6a5f4a", fontFamily: "Newsreader, Georgia, serif", fontStyle: "italic", borderTop: "1px solid #e4dcc8", paddingTop: 12 }}>Correlation: {correlations}</p>}
+            {correlations && <p style={{ margin: "12px 0 0", fontSize: 14, lineHeight: 1.5, color: "#6a5f4a", fontFamily: "Newsreader, Georgia, serif", fontStyle: "italic", borderTop: "1px solid #e4dcc8", paddingTop: 12 }}>Calendar overlap: {correlations}</p>}
           </section>
         )}
+
+        <SeasonalFieldRead read={fieldRead} />
 
         <section className="pheno-2col" style={{ marginTop: 24 }}>
           <div style={{ background: "rgba(255,255,255,0.4)", border: "1px solid #e4dcc8", borderRadius: 18, padding: "18px 18px 8px" }}>
@@ -658,7 +659,7 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
                 </div>
                 <div style={{ fontSize: 12, color: "#9a8f76", marginTop: 6, lineHeight: 1.5 }}>
                   {actualTotal != null ? `${actualTotal} growing degree days gathered so far against ${gddNow} normal for the date. ` : ""}
-                  The hatches, blooms and garden dates below are shifted to match. Bird migration and lake levels are not, since they follow daylight and the basin rather than the heat.
+                  This spring-only thermal comparison is provisional. Event dates are not shifted from this single heat measure; plant and insect timing requires species-specific evidence.
                 </div>
               </div>
             )}
@@ -672,7 +673,15 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
                 <p style={{ fontSize: 11.5, margin: "10px 0 0", color: "#9a8f76" }}>{almanac.date}</p>
               </div>
             )}
-            <h2 style={{ fontSize: 17, margin: "2px 0 8px", color: season.color }}>Happening now</h2>
+            {archivedAlmanac?.text && (
+              <details style={{ margin: "0 0 18px", padding: "10px 14px", background: "#faf8f0", borderRadius: 9, border: "1px solid #ddd8ca" }}>
+                <summary style={{ cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#75654b" }}>Past almanac entry — {archivedAlmanac.date} (not today's field report)</summary>
+                <p style={{ fontSize: 12, color: "#85785f" }}>Historical editorial commentary from the archive. It does not establish current blooms, hatches or species activity.</p>
+                <p style={{ fontSize: 14, lineHeight: 1.6, color: "#5a5240" }}>{archivedAlmanac.text}</p>
+              </details>
+            )}
+            <h2 style={{ fontSize: 17, margin: "2px 0 8px", color: season.color }}>In the usual seasonal window</h2>
+            <p style={{ fontSize: 11.5, color: "#786e58", margin: "0 0 8px" }}>Calendar guidance only. A window is not a verified local sighting, flowering date, hatch or migration arrival.</p>
             {active.length ? active.map((ev, i) => <EventRow key={i} ev={ev} doy={doy} state="active" onSelect={setSel} />) : <div style={{ fontSize: 13, color: "#9a8f76", padding: "8px 0" }}>A quiet stretch on the calendar.</div>}
             {imminent.length > 0 && <><h2 style={{ fontSize: 17, margin: "20px 0 8px", color: "#b08828" }}>Next three weeks</h2>{imminent.map((ev, i) => <EventRow key={i} ev={ev} doy={doy} state="imminent" onSelect={setSel} />)}</>}
             {recent.length > 0 && <><h2 style={{ fontSize: 17, margin: "20px 0 8px", color: "#a89c83" }}>Just past</h2>{recent.map((ev, i) => <EventRow key={i} ev={ev} doy={doy} state="recent" onSelect={setSel} />)}</>}
@@ -683,12 +692,12 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
           <section style={{ marginTop: 30 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
               <Link2 size={16} color={CAT.bloom.color} />
-              <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>Connections in play</h2>
+              <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>Seasonal connections to watch</h2>
             </div>
-            <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 12px", fontStyle: "italic" }}>The signals nature is giving right now, and what each one points to on the rivers, in the woods, and in the garden.{confirmedCount > 0 ? ` ${confirmedCount} ${confirmedCount === 1 ? "is" : "are"} backed by today's readings.` : ""}</p>
+            <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 12px", fontStyle: "italic" }}>Traditional field cues in their usual seasonal windows. A matching temperature reading is context, not confirmation that a bloom, hatch, or migration occurred.{compatibleCueCount > 0 ? ` ${compatibleCueCount} temperature ${compatibleCueCount === 1 ? "cue meets" : "cues meet"} the listed thresholds.` : ""}</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 12 }}>
               {filteredIndicators.map((ind, i) => {
-                const tag = ind.state === "active" ? "active now" : `in about ${ind.days} days`;
+                const tag = ind.state === "active" ? "usual window" : `in about ${ind.days} days`;
                 const tagColor = ind.state === "active" ? "#5a8a4a" : "#b08828";
                 const chk = liveCheck(ind.name);
                 return (
@@ -705,7 +714,7 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
                     {chk && (
                       <div style={{ marginTop: 8, fontSize: 11.5, display: "inline-flex", alignItems: "center", gap: 5, borderRadius: 8, padding: "3px 9px", background: chk.ok ? "rgba(228,243,221,0.75)" : "rgba(244,237,222,0.75)", color: chk.ok ? "#42702f" : "#9a7b3a", border: `1px solid ${chk.ok ? "#bcd3ad" : "#e3d2a6"}` }}>
                         {chk.ok ? <Check size={13} /> : <Clock size={13} />}
-                        <span>{chk.ok ? `today's reading agrees: ${chk.label}` : `${chk.label}${chk.want ? `, ${chk.want}` : ""}`}</span>
+                        <span>{chk.ok ? `temperature cue met: ${chk.label}; event unverified` : `${chk.label}${chk.want ? `, ${chk.want}` : ""}`}</span>
                       </div>
                     )}
                   </div>
@@ -749,7 +758,7 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
           <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 16px", fontStyle: "italic" }}>
             All seventy-one events, filed under the month each one peaks in. These are the ordinary dates, the year as it usually runs here.
             {seasonPhrase && seasonOffset !== null && Math.abs(seasonOffset) >= 3
-              ? ` This year is ${seasonPhrase}, so the heat-driven ones are arriving off these dates by about that much.`
+              ? ` The spring heat curve is estimated as ${seasonPhrase}; calendar windows are not moved without species-specific evidence.`
               : ""}
             {" "}The months are uneven on purpose. May carries fifteen of them and January carries two, which is what the year is actually like here.
           </p>
@@ -1066,9 +1075,9 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
             <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
               <Sprout size={16} color={CAT.garden.color} />
               <h2 style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#8a7d62", margin: 0 }}>Logged across Michigan</h2>
-              <span style={{ marginLeft: "auto", fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "#5a8a4a", border: "1px solid #bcd3ad", borderRadius: 6, padding: "1px 6px", whiteSpace: "nowrap" }}>live, USA-NPN</span>
+              <span style={{ marginLeft: "auto", fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "#5a8a4a", border: "1px solid #bcd3ad", borderRadius: 6, padding: "1px 6px", whiteSpace: "nowrap" }}>dated USA-NPN</span>
             </div>
-            <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 12px", fontStyle: "italic" }}>What Nature's Notebook observers are actually seeing right now statewide, whatever the season: flowering, leaf color, fruit, and animal activity as it happens.</p>
+            <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 12px", fontStyle: "italic" }}>Dated Nature's Notebook reports from across Michigan, gathered within the recent reporting window. These reports do not establish what is happening locally around Saginaw Bay.</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>
               {observations.map((o, i) => (
                 <div key={i} style={{ border: "1px solid #e4dcc8", borderLeft: `3px solid ${o.kingdom === "Plantae" ? CAT.bloom.color : CAT.wild.color}`, borderRadius: 10, padding: "9px 12px", background: "rgba(255,255,255,0.5)" }}>
@@ -1101,7 +1110,7 @@ export async function getServerSideProps({ res }) {
   // from the banked bundle the cron refreshes daily, so the page makes one cheap call for all of them.
   // Every source is timeout-guarded so no single hung upstream can stall the page,
   // and everything runs in one parallel batch so worst-case latency is one timeout, not several.
-  const [regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, almanacRows, buoy, alerts, signals, riverForecast, aurora] = await Promise.all([
+  const [regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, almanacRows, buoy, alerts, signals, riverForecast, aurora, fieldRead] = await Promise.all([
     T(fetchRegional(), { air: { tempF: null, forecast: null }, level: null }),
     T(fetchRivers(), []),
     T(fetchGddActual(), null),
@@ -1116,14 +1125,21 @@ export async function getServerSideProps({ res }) {
     T(readSignals(), null),
     T(fetchRiverForecast(), { active: false }),
     T(fetchAurora(), { kpNow: null, kpPeak: null, kpPeakTime: null, ovationBay: null, ovationNorth: null }),
+    T(readFieldRead(), null),
   ]);
   const sig = signals || emptySignals();
   const bay = { ...buoy, ...(sig.bayDaily || {}) };
   const sky = skyTonight(43.5945, -83.8889, now);
+  const latestAlmanac = (almanacRows || []).slice(-1)[0] || null;
+  const localDateParts = Object.fromEntries(new Intl.DateTimeFormat("en-US", { timeZone: "America/Detroit", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(now).filter(p => p.type !== "literal").map(p => [p.type, p.value]));
+  const localDate = `${localDateParts.year}-${localDateParts.month}-${localDateParts.day}`;
+  const ageDays = latestAlmanac && /^\d{4}-\d{2}-\d{2}$/.test(latestAlmanac.date || "") ? (Date.parse(localDate + "T12:00:00Z") - Date.parse(latestAlmanac.date + "T12:00:00Z")) / 86400000 : Infinity;
+  const recentAlmanac = ageDays >= 0 && ageDays <= 3 ? latestAlmanac : null;
   return {
     props: {
-      almanac: (almanacRows || []).slice(-1)[0] || null,
-      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora,
+      almanac: recentAlmanac,
+      archivedAlmanac: recentAlmanac ? null : latestAlmanac,
+      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, fieldRead,
       springIndex: sig.springIndex || emptySignals().springIndex,
       observations: sig.observations || [], inat: sig.inat || [], drought: sig.drought || null,
       bay, alerts, doy,

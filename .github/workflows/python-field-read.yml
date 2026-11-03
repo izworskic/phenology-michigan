@@ -1,0 +1,39 @@
+name: Phenology Python field intelligence
+
+on:
+  schedule:
+    # After the 13:00 UTC daily snapshot refresh; exact start can drift.
+    - cron: '30 15 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: phenology-python-field-read
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test scientific and freshness guards
+        run: python3 -m unittest discover -s scripts -p 'test_field_intelligence.py' -v
+      - name: Compute evidence read from banked records
+        run: python3 scripts/build-phenology-field-read.py
+      - name: Commit generated evidence without redeploy
+        run: |
+          git config user.name "phenology-field-bot"
+          git config user.email "phenology-field-bot@users.noreply.github.com"
+          git add data/phenology-field-read.json
+          if git diff --cached --quiet; then echo "No change"; exit 0; fi
+          git commit -m "field evidence $(date -u +%F) [skip deploy]"
+          git pull --rebase origin main
+          git push origin HEAD:main
