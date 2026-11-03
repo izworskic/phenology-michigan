@@ -84,7 +84,7 @@ assert.ok(player.includes('snapshots.length<2')&&player.includes('only the days 
 assert.ok(player.includes('previous&&snapshot?compareCaptures'),'Only compare two genuinely captured frames');
 assert.ok(player.includes("url.searchParams.set('date',snapshot.asOfDate)"),'Historical frame deep links must be exact captured dates');
 assert.ok(player.includes('missed>0')&&player.includes('gap>0'),'Gaps must be visible, not interpolated');
-assert.ok(player.includes('reporting samples')&&player.includes('overlapping'),'Users need an explicit overlap interpretation');
+assert.ok(player.includes('overlapping 15-calendar-day sample')&&player.includes('cannot sum adjacent frames'),'Visitors must be warned not to add or subtract overlapping windows as daily biological events');
 assert.ok(player.includes('sourceStatus.iNaturalistFailedQueries')&&player.includes('sourceStatus.iNaturalistCappedQueries'),'Partial source evidence must persist');
 assert.ok(map.includes('isHistorical')&&map.includes("No eligible reports in this archived sample"),'Do not label historical maps current or missing samples as biological absence');
 assert.ok(page.includes('phenophase-time-machine.css')&&page.includes('<link rel="canonical" href={SITE + "/"} />'),'Preserve existing SEO canonical and site styling');
