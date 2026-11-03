@@ -61,6 +61,7 @@ const worker=fs.readFileSync(new URL('./archive-michigan-phenophase.py',import.m
 assert.ok(api.includes('readHistoryIndex')&&api.includes('readHistoryYear'));
 assert.ok(api.includes("state:'not-collected'"),'A missed collection day is not a missing biological event');
 assert.ok(api.includes('s-maxage=600'),'Cache the index and annual archive');
+assert.ok(api.includes('history.snapshots.length!==yearInfo.snapshotDays'),'Never mistake an incomplete fallback archive for an uncollected day');
 assert.ok(job.includes('archive-michigan-phenophase.py'),'Daily source workflow must archive every successful capture');
 assert.ok(job.includes('michigan-phenophase-archive-index.json'),'Daily source workflow must publish archival discovery');
 assert.ok(job.includes('michigan-phenophase-archive'),'Year rollover must commit newly created archive files');
