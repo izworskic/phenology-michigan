@@ -1,0 +1,90 @@
+name: Publish owner-reviewed trillium monitoring visit
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Existing open [Trillium monitoring visit] public issue number'
+        required: true
+        type: string
+      site_verified:
+        description: 'I inspected evidence that this was the named managed public preserve, not a nearby observation'
+        required: true
+        type: boolean
+        default: false
+      species_verified:
+        description: 'I independently verified large-flowered trillium identification and the reported open-flower status'
+        required: true
+        type: boolean
+        default: false
+      same_plot_verified:
+        description: 'I verified the same anonymous A/B/C repeat patch, not a new visitor sighting'
+        required: true
+        type: boolean
+        default: false
+      review_note:
+        description: '30+ character evidence review rationale, with NO precise plant location or visitor private data'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  issues: read
+
+concurrency:
+  group: trillium-owner-site-research
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Confirm explicitly authorized owner dispatch
+        env:
+          REVIEWER: ${{ github.actor }}
+          OWNER: ${{ github.repository_owner }}
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+        run: |
+          if [ "$REVIEWER" != "$OWNER" ]; then echo "Only the repository owner can approve reviewed field science"; exit 1; fi
+          if ! [[ "$ISSUE_NUMBER" =~ ^[1-9][0-9]*$ ]]; then echo "Invalid issue"; exit 1; fi
+      - name: Read public issue, never from untrusted runtime code
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+        run: gh issue view "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" --json number,title,body,state --jq '.' > /tmp/trillium-monitoring-issue.json
+      - name: Owner review and on-site evidence gate
+        env:
+          TRILLIUM_MONITORING_ISSUE_FILE: /tmp/trillium-monitoring-issue.json
+          SITE_VERIFIED: ${{ inputs.site_verified }}
+          SPECIES_VERIFIED: ${{ inputs.species_verified }}
+          SAME_PLOT_VERIFIED: ${{ inputs.same_plot_verified }}
+          REVIEW_NOTE: ${{ inputs.review_note }}
+        run: node scripts/review-trillium-monitoring-visit.mjs
+      - name: Recompute site-level onset intervals and model-eligibility
+        run: python3 scripts/build-trillium-site-onset.py
+      - name: Full scientific tests and production build before accepting evidence
+        run: |
+          npm ci
+          npm test
+          npm run build
+      - name: Commit audited field evidence, not an unverified bloom verdict
+        env:
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+        run: |
+          git config user.name "phenology-site-research-bot"
+          git config user.email "phenology-site-research-bot@users.noreply.github.com"
+          git add data/trillium-monitoring-visits.json data/trillium-site-onset-summary.json
+          if git diff --cached --quiet; then echo "No eligible field visit to add"; exit 1; fi
+          git commit -m "Store reviewed patch phenophase visit #$ISSUE_NUMBER [skip deploy]"
+          git pull --rebase origin main
+          git push origin HEAD:main
