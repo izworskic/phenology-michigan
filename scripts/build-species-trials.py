@@ -274,8 +274,8 @@ def build(flowering, thermal, bird_archive, today=None):
             "trillium": flowering.get("retrievedAt"), "temperature": thermal.get("retrievedAt"),
             "hummingbird": bird_archive.get("provenance", {}).get("extractedOn")},
         "trainingPolicy": {
-            "thermalBaseF": 40, "thermalStart": "March 1", "historicalYears": "2019–2026",
-            "rollingOriginHoldout": "Years 2024–2026, each trained only on previous eligible springs",
+            "thermalBaseF": 40, "thermalStart": "March 1", "historicalYears": "2019–" + str(max(int(key[:4]) for entry in flowering["regions"].values() for key, _ in entry["weekly"])),
+            "rollingOriginHoldout": "Years 2024 onward, each trained only on previous eligible springs",
             "independentCheck": "Leave-one-year-out across all eligible springs; must also beat calendar",
             "skillGate": "At least 7 eligible springs, 3 later holdouts, maximum rolling error 14 days, both MAEs at most 9 days, 15% rolling and 10% leave-year-out improvement",
             "speciesScope": "Regional annotated flowering reporting midpoint only. No site or first-bloom forecast.",
