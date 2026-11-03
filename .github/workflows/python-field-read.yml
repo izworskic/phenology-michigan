@@ -1,6 +1,13 @@
 name: Phenology Python field intelligence
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/build-phenology-field-read.py'
+      - 'scripts/python_intelligence/**'
+      - 'scripts/test_field_intelligence.py'
+      - '.github/workflows/python-field-read.yml'
   schedule:
     # After the 13:00 UTC daily snapshot refresh; exact start can drift.
     - cron: '30 15 * * *'
