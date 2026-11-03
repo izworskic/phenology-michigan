@@ -41,6 +41,14 @@ export default async function handler(req,res){
   return res.status(503).json({state:'unavailable',message:'Verified yearly archive unavailable; no observations inferred.'});
  }
  if(rawDay!=null){
+  // If GitHub's current index reports more captures than our trusted bundled
+  // fallback can read, an absent day could be a source outage, NOT a missing
+  // collection. Never convert an unavailable newer history into a false 404.
+  const yearInfo=index.years.find(y=>y.year===year);
+  if(yearInfo && history.snapshots.length!==yearInfo.snapshotDays){
+   res.setHeader('Cache-Control','no-store');
+   return res.status(503).json({state:'unavailable',message:'Complete dated archive temporarily unavailable; collection gaps cannot be determined.'});
+  }
   const item=history.snapshots.find(s=>s.asOfDate===rawDay);
   if(!item){
    res.setHeader('Cache-Control','public, s-maxage=300');
