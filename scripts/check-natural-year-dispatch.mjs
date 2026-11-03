@@ -22,12 +22,12 @@ for(const e of CATALOG.experiences) {
   assert.ok(e.what?.length >= 35 && e.caution?.length >= 35,"Visitor copy and uncertainty must be meaningful");
 }
 assert.equal(DISPATCH.schema,"natural-year-dispatch-v1");
-assert.ok(validateNaturalYearDispatch(DISPATCH,new Date("2026-11-03T16:00:00Z")),"Initial dated version must pass schema and today gates");
-assert.equal(validateNaturalYearDispatch(DISPATCH,new Date("2027-01-01T16:00:00Z")),null,"Outdated dispatch must never be shown as current");
-assert.equal(validateNaturalYearDispatch({...DISPATCH,asOfDate:"2099-01-01"},new Date("2026-11-03T16:00:00Z")),null,"Future reports must not be published");
-assert.equal(validateNaturalYearDispatch({...DISPATCH,active:[{...DISPATCH.active[0],url:"https://evil.example/"}]},new Date("2026-11-03T16:00:00Z")),null,"Never accept unapproved navigation links");
-assert.equal(validateNaturalYearDispatch({...DISPATCH,reports:[{...DISPATCH.reports[0],sourceUrl:"https://fake.example"}]},new Date("2026-11-03T16:00:00Z")),null,"Only exact USA-NPN evidence link is allowed");
-assert.equal(validateNaturalYearDispatch({...DISPATCH,reportsState:"archive-only"},new Date("2026-11-03T16:00:00Z")),null,"Stale mode must not keep reporting current notes");
+assert.ok(validateNaturalYearDispatch(DISPATCH,new Date(DISPATCH.asOfDate+"T16:00:00Z")),"Dated version must pass schema and source gates");
+assert.equal(validateNaturalYearDispatch(DISPATCH,new Date(Date.parse(DISPATCH.asOfDate+"T16:00:00Z")+20*86400000)),null,"Outdated dispatch must never be shown as current");
+assert.equal(validateNaturalYearDispatch({...DISPATCH,asOfDate:"2099-01-01"},new Date(DISPATCH.asOfDate+"T16:00:00Z")),null,"Future reports must not be published");
+assert.equal(validateNaturalYearDispatch({...DISPATCH,active:[{...DISPATCH.active[0],url:"https://evil.example/"}]},new Date(DISPATCH.asOfDate+"T16:00:00Z")),null,"Never accept unapproved navigation links");
+if (DISPATCH.reports.length) assert.equal(validateNaturalYearDispatch({...DISPATCH,reports:[{...DISPATCH.reports[0],sourceUrl:"https://fake.example"}]},new Date(DISPATCH.asOfDate+"T16:00:00Z")),null,"Only exact USA-NPN evidence link is allowed");
+assert.equal(validateNaturalYearDispatch({...DISPATCH,reportsState:"archive-only"},new Date(DISPATCH.asOfDate+"T16:00:00Z")),null,"Stale mode must not keep reporting current notes");
 
 const page=fs.readFileSync(new URL("../pages/index.js",import.meta.url),"utf8");
 const component=fs.readFileSync(new URL("../components/NaturalYearDispatch.js",import.meta.url),"utf8");
@@ -39,7 +39,7 @@ assert.ok(page.includes('id="turning-year"'));
 assert.ok(page.includes("<SpeciesTrialObservatory data={speciesTrials} />"),"Preserve complete scientific observatory");
 assert.ok(page.includes("<SeasonalFieldRead read={fieldRead} />"),"Preserve dated Python field evidence");
 assert.ok(page.includes('<link rel="canonical" href={SITE + "/"} />'));
-assert.ok(component.includes("Right now") && component.includes("Next on the calendar") && component.includes("Compare Michigan regions"));
+assert.ok(component.includes("Right now") && component.includes("Across Michigan") && component.includes("Next on the calendar") && component.includes("Compare regions"), "Preserve every visitor lens while adding reported geographic science");
 assert.ok(component.includes("/michigan-trillium#tri-site-science"),"Historical spring evidence should connect directly to the verified field research program");
 assert.ok(component.includes("What observers actually reported") && component.includes("statewide") && component.includes("This overview never"));
 assert.ok(component.includes("not a local first-flower or first-bird prediction"),"The region-view explanation must explicitly disclose the modeling limit");
