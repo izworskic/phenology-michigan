@@ -557,6 +557,7 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
         <meta name="description" content="An interpreted real-time read on the natural year across Saginaw Bay and northeastern Michigan: live river conditions, projected hatches, bird movement, and growing degree days, by Chris Izworski." />
         <link rel="canonical" href={SITE + "/"} />
         <link rel="stylesheet" href="/natural-year-dispatch.css" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
         <link rel="stylesheet" href="/michigan-phenophase-geography.css" />
         <meta property="og:title" content="Michigan Phenology by Chris Izworski" />
         <meta property="og:description" content="The natural year of Saginaw Bay and the AuSable, interpreted in real time." />
