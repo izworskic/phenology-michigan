@@ -1,4 +1,4 @@
-import { Leaf, Thermometer, Waves, NotebookPen, ExternalLink, Info, AlertTriangle } from "lucide-react";
+import { Leaf, Thermometer, Waves, BookOpen, ExternalLink, Info, AlertTriangle } from "lucide-react";
 
 const SOURCE = { heat: Thermometer, river: Waves };
 const COLORS = { heat: "#76632b", river: "#2c6771" };
@@ -30,7 +30,7 @@ export default function SeasonalFieldRead({ read }) {
             </article>;
           })}
           <article style={{ border: "1px solid #dfe5d7", background: "#fff", borderRadius: 12, padding: 14 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7, color: "#58693a", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".04em" }}><NotebookPen size={15} />Michigan observer notebook</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, color: "#58693a", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".04em" }}><BookOpen size={15} />Michigan observer notebook</div>
             {archived ? <p style={{ fontSize: 12.5, lineHeight: 1.5, color: "#546252" }}>Current observations withheld because the archive is too old.</p> : read.observations?.length ? (
               <>
                 <p style={{ fontSize: 12, color: "#66775e", margin: "7px 0" }}>Reports from across Michigan, not verified locally:</p>
