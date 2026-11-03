@@ -93,7 +93,7 @@ function Instrument({ Icon, label, value, unit, sub, live, accent }) {
 
 function EventRow({ ev, doy, state, onSelect }) {
   const C = CAT[ev.cat]; const Icon = CAT_ICON[ev.cat];
-  const tag = state === "active" ? "now" : state === "imminent" ? `${ev.s - doy} d` : `${doy - ev.e} d ago`;
+  const tag = state === "active" ? "window" : state === "imminent" ? `${ev.s - doy} d` : `${doy - ev.e} d ago`;
   const tagColor = state === "active" ? "#5a8a4a" : state === "imminent" ? "#b08828" : "#a89c83";
   return (
     <div onClick={onSelect ? () => onSelect(ev) : undefined} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "9px 0", borderBottom: "1px solid #ece4d2", cursor: onSelect ? "pointer" : "default" }}>
@@ -191,8 +191,8 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
   const year = useMemo(() => turningYear(), []);
   const thisMonth = monthOfDoy(doy);
   const { active, imminent, recent } = useMemo(
-    () => classify(doy, river ? river.hatchOffset : 0, seasonOffset || 0),
-    [doy, river, seasonOffset],
+    () => classify(doy, river ? river.hatchOffset : 0, 0),
+    [doy, river],
   );
 
   const chart = useMemo(() => {
@@ -509,7 +509,7 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
     }
     if (!best) return null;
     const [a, b] = best;
-    return `${a.name} and ${b.name} overlap on the calendar right now. Watch whether they track together as the years bank up.`;
+    return `${a.name} and ${b.name} share a usual seasonal window. This is a calendar overlap, not evidence that both occurred locally or are biologically correlated.`;
   }, [doy, activeTags]);
 
   // banked daily record
@@ -659,7 +659,7 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
                 </div>
                 <div style={{ fontSize: 12, color: "#9a8f76", marginTop: 6, lineHeight: 1.5 }}>
                   {actualTotal != null ? `${actualTotal} growing degree days gathered so far against ${gddNow} normal for the date. ` : ""}
-                  This early-season thermal comparison is provisional, not a measured event date. Plant and insect timing varies by species and location; bird migration and lake levels follow other drivers.
+                  This spring-only thermal comparison is provisional. Event dates are not shifted from this single heat measure; plant and insect timing requires species-specific evidence.
                 </div>
               </div>
             )}
@@ -751,7 +751,7 @@ export default function Home({ almanac, regional, rivers, gddActual, birds, stat
           <p style={{ fontSize: 12.5, color: "#9a8f76", margin: "0 0 16px", fontStyle: "italic" }}>
             All seventy-one events, filed under the month each one peaks in. These are the ordinary dates, the year as it usually runs here.
             {seasonPhrase && seasonOffset !== null && Math.abs(seasonOffset) >= 3
-              ? ` Early-season thermal timing is estimated as ${seasonPhrase}; individual species need their own observations and models.`
+              ? ` The spring heat curve is estimated as ${seasonPhrase}; calendar windows are not moved without species-specific evidence.`
               : ""}
             {" "}The months are uneven on purpose. May carries fifteen of them and January carries two, which is what the year is actually like here.
           </p>
