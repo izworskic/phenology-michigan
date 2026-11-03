@@ -33,7 +33,7 @@ const page=fs.readFileSync(new URL("../pages/index.js",import.meta.url),"utf8");
 const component=fs.readFileSync(new URL("../components/NaturalYearDispatch.js",import.meta.url),"utf8");
 const css=fs.readFileSync(new URL("../public/natural-year-dispatch.css",import.meta.url),"utf8");
 const worker=fs.readFileSync(new URL("./build-natural-year-dispatch.py",import.meta.url),"utf8");
-assert.ok(page.includes('<NaturalYearDispatch read={naturalYear} />'));
+assert.ok(page.includes('<NaturalYearDispatch read={naturalYear} geography={geographyEvidence} />'), 'Preserve original dispatch and add regional observations without replacing the visitor journey');
 assert.ok(page.includes("readNaturalYearDispatch()"));
 assert.ok(page.includes('id="turning-year"'));
 assert.ok(page.includes("<SpeciesTrialObservatory data={speciesTrials} />"),"Preserve complete scientific observatory");
