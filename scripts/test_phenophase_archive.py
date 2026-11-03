@@ -66,6 +66,13 @@ class ArchiveTests(unittest.TestCase):
         later_geo["asOfDate"] = "2026-11-04"
         later_geo["windowStart"] = "2026-10-21"
         later_geo["windowEnd"] = "2026-11-04"
+        # Synthetic future sample: preserve overlapping report counts, but make
+        # the dated example sightings consistent with the new fetch window.
+        for region in later_geo["regions"]:
+            for phase in region["phases"]:
+                phase["latest"] = "2026-11-04"
+                for item in phase["species"]:
+                    item["date"] = "2026-11-04"
         second = M.snapshot_from_geography(later_geo, self.config, dt.date(2026, 11, 4))
         a, stat = M.add_snapshot(a, second, self.config)
         self.assertEqual(stat, "captured")
@@ -91,6 +98,11 @@ class ArchiveTests(unittest.TestCase):
         late["asOfDate"] = "2026-11-08"
         late["windowStart"] = "2026-10-25"
         late["windowEnd"] = "2026-11-08"
+        for region in late["regions"]:
+            for phase in region["phases"]:
+                phase["latest"] = "2026-11-08"
+                for item in phase["species"]:
+                    item["date"] = "2026-11-08"
         a, _ = M.add_snapshot(a, late, self.config)
         idx = M.index_from_archives([a])
         self.assertEqual(idx["years"][0]["missingCollectionDaysBetweenSnapshots"], 4)
@@ -103,10 +115,16 @@ class ArchiveTests(unittest.TestCase):
         dec["asOfDate"] = "2026-12-31"
         dec["windowStart"] = "2026-12-17"
         dec["windowEnd"] = "2026-12-31"
+        for region in dec["regions"]:
+            region["sampledReports"] = 0
+            region["phases"] = []
         jan = deepcopy(last)
         jan["asOfDate"] = "2027-01-01"
         jan["windowStart"] = "2026-12-18"
         jan["windowEnd"] = "2027-01-01"
+        for region in jan["regions"]:
+            region["sampledReports"] = 0
+            region["phases"] = []
         older, _ = M.add_snapshot(None, dec, self.config)
         newer, _ = M.add_snapshot(None, jan, self.config)
         out = M.index_from_archives([newer, older])
@@ -165,6 +183,9 @@ class ArchiveTests(unittest.TestCase):
             future["asOfDate"] = "2027-01-01"
             future["windowStart"] = "2026-12-18"
             future["windowEnd"] = "2027-01-01"
+            for region in future["regions"]:
+                region["sampledReports"] = 0
+                region["phases"] = []
             next_year, _ = M.add_snapshot(None,future,self.config)
             (directory/"2027.json").write_text(json.dumps(next_year))
             index = M.index_from_archives([M.validate_archive(json.loads(f.read_text()),int(f.stem),self.config)
