@@ -20,6 +20,7 @@ export default function SeasonalFieldRead({ read }) {
         </p>
       </div>
       <div style={{ padding: "16px 20px 18px" }}>
+        <FieldSeasonDial timeline={read.timeline || []} caution={(read.quality || []).some(q => q.includes("declined"))} />
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(215px,1fr))", gap: 12 }}>
           {read.tracks.map(track => {
             const Icon = SOURCE[track.id] || Info;
@@ -43,7 +44,6 @@ export default function SeasonalFieldRead({ read }) {
             <a href="https://usanpn.org/data" target="_blank" rel="noreferrer" style={{ fontSize: 11.5, color: "#34654b", textDecoration: "underline" }}>USA-NPN reports <ExternalLink size={11} style={{ display: "inline" }}/></a>
           </article>
         </div>
-        <FieldSeasonDial timeline={read.timeline || []} caution={(read.quality || []).some(q => q.includes("declined"))} />
         <div style={{ marginTop: 13, display: "flex", gap: 10, alignItems: "flex-start", borderLeft: "3px solid #8bab75", background: "#f1f5e9", padding: "11px 13px", borderRadius: 7 }}>
           <Leaf size={17} color="#44704b" style={{ flexShrink: 0, marginTop: 2 }}/>
           <div><strong style={{ fontFamily: "Georgia, serif", color: "#314735", fontSize: 14 }}>Your field check</strong><p style={{ margin: "3px 0 0", fontSize: 13, lineHeight: 1.5, color: "#4a624a" }}>{read.fieldPrompt}</p></div>
