@@ -21,6 +21,9 @@ on:
   schedule:
     # Run after the existing USA-NPN daily signals and scientific dispatch pipelines.
     - cron: '40 16 * * *'
+    # Second attempt later the same Michigan date if the first upstream call
+    # timed out. Once captured, that day's immutable snapshot is not rewritten.
+    - cron: '40 22 * * *'
   workflow_dispatch: {}
 
 permissions:
@@ -33,7 +36,7 @@ concurrency:
 jobs:
   scientific-observations:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -44,13 +47,33 @@ jobs:
           python-version: '3.12'
       - name: Fail-closed source, geographic and privacy tests
         run: python3 -m unittest discover -s scripts -p 'test_michigan_phenophase_geography.py' -v
+      - name: See if today's immutable science snapshot is already preserved
+        id: archive-day
+        if: github.event_name != 'pull_request'
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import datetime as dt
+          import json
+          from pathlib import Path
+          from zoneinfo import ZoneInfo
+          today=dt.datetime.now(ZoneInfo('America/Detroit')).date()
+          path=Path(f'data/michigan-phenophase-archive/{today.year}.json')
+          exists=False
+          if path.exists():
+              saved=json.loads(path.read_text())
+              exists=any(s.get('asOfDate')==today.isoformat() for s in saved.get('snapshots',[]))
+          print('skip='+('true' if exists else 'false'))
+          PY
       - name: Fetch third-party observed phenophases automatically
+        if: github.event_name != 'pull_request' && steps.archive-day.outputs.skip != 'true'
         run: python3 scripts/build-michigan-phenophase-geography.py
       - name: Store one unmodified dated 14-day snapshot per local collection day
+        if: github.event_name != 'pull_request' && steps.archive-day.outputs.skip != 'true'
         run: |
           python3 -m unittest discover -s scripts -p 'test_phenophase_archive.py' -v
           python3 scripts/archive-michigan-phenophase.py
       - name: Assert the public artifact contains only regional aggregates
+        if: github.event_name != 'pull_request' && steps.archive-day.outputs.skip != 'true'
         run: |
           python3 - <<'PY'
           import json
@@ -69,6 +92,7 @@ jobs:
           print('Region-only scientific evidence and no-user-submission policy verified.')
           PY
       - name: Validate the longitudinal archive and year index
+        if: github.event_name != 'pull_request' && steps.archive-day.outputs.skip != 'true'
         run: |
           python3 -m unittest discover -s scripts -p 'test_phenophase_archive.py' -v
           python3 - <<'PY'
@@ -90,7 +114,7 @@ jobs:
           print('Daily report snapshot, privacy, recorded gaps and year index verified.')
           PY
       - name: Publish dated approved aggregates and yearly reporting snapshots without deploying website code
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && steps.archive-day.outputs.skip != 'true'
         run: |
           git config user.name 'phenology-geography-bot'
           git config user.email 'phenology-geography-bot@users.noreply.github.com'
