@@ -98,7 +98,7 @@ function Instrument({ Icon, label, value, unit, sub, live, accent }) {
 
 function EventRow({ ev, doy, state, onSelect }) {
   const C = CAT[ev.cat]; const Icon = CAT_ICON[ev.cat];
-  const tag = state === "active" ? "window" : state === "imminent" ? `${ev.s - doy} d` : `${doy - ev.e} d ago`;
+  const tag = state === "active" ? "usual window" : state === "imminent" ? `${ev.s - doy} d to usual reference` : `reference ${doy - ev.p} d ago`;
   const tagColor = state === "active" ? "#5a8a4a" : state === "imminent" ? "#b08828" : "#a89c83";
   return (
     <div onClick={onSelect ? () => onSelect(ev) : undefined} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "9px 0", borderBottom: "1px solid #ece4d2", cursor: onSelect ? "pointer" : "default" }}>
@@ -236,11 +236,11 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
     const hexBay = bh.find((x) => /hex/i.test(x.name));
     if (bhOn.length) { parts.push(`The ${bhOn.join(" and ")} ${bhOn.length === 1 ? "is" : "are"} coming off the bay${hexBay && hexBay.ready ? ", and the walleye and perch are gorging on it" : ""}.`); if (hexBay && hexBay.ready) markHot(); }
     else if (hexBay && !hexBay.ready && /days out/.test(hexBay.status)) parts.push(`The Hex on the bay is ${hexBay.status}.`);
-    // Local rivers: Kawkawlin a half mile down the shore, Saginaw up the way.
+    // Local rivers: geographic reference independent of any reader's or author's home.
     const sag = rivers.find((r) => r.id === "saginaw") || {};
     if (sag.flow != null) {
       const sagTxt = sag.flow < 50 ? "running slack, pushed around by the bay's wind and seiche" : `running ${sag.flow} cfs${sag.trend && sag.trend !== "steady" ? `, ${sag.trend}` : ""}`;
-      parts.push(`The Kawkawlin reaches the bay a half mile down the shore, and the Saginaw River up the way is ${sagTxt}.`);
+      parts.push(`The Kawkawlin River enters Saginaw Bay along the western shore north of Bay City, and the nearby Saginaw River is ${sagTxt}.`);
     }
     // The AuSable, the occasional trip north, only in trout-relevant seasons.
     if ((doy >= 100 && doy <= 195) || (doy >= 255 && doy <= 300)) {
@@ -327,7 +327,7 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
     }
     // birds
     if (birds.length) {
-      const names = birds.slice(0, 2).map((b) => b.comName).join(" and ");
+      const names = birds.slice(0, 2).map((b) => b.comName === "American Redstart" && monthOfDoy(doy) === 11 && !b.obsReviewed ? "American Redstart (unverified November report)" : b.comName).join(" and ");
       parts.push(`On the bay, ${birds.length} notable ${birds.length === 1 ? "bird is" : "birds are"} being reported, including ${names}.`);
     }
     // drought context, only when it has something to say (bay ice is covered in the lead)
@@ -627,6 +627,7 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
           <section style={{ marginTop: 18, background: "rgba(255,255,255,0.5)", border: "1px solid #e4dcc8", borderLeft: `4px solid ${season.color}`, borderRadius: 14, padding: "16px 20px" }}>
             <div style={{ fontSize: 11.5, letterSpacing: "0.14em", textTransform: "uppercase", color: "#8a7d62", marginBottom: 6 }}>The read</div>
             <p style={{ margin: 0, fontSize: 16, lineHeight: 1.6, color: "#3a3527", fontFamily: "Newsreader, Georgia, serif" }}>{read}</p>
+            {birds.length > 0 && <p style={{ margin: "9px 0 0", fontSize: 12, lineHeight: 1.5, color: "#786e58" }}>Bird-report source: <a href="https://ebird.org/region/US-MI-017/recent" target="_blank" rel="noopener noreferrer">eBird, Bay County notable observations</a> (recent 10-day reports). A submitted eBird report is not an independently verified local sighting. {monthOfDoy(doy) === 11 && birds.some((b) => b.comName === "American Redstart" && !b.obsReviewed) ? "The unusually late American Redstart report is unverified here; check its original eBird record and review status before treating it as confirmed." : ""}</p>}
             {correlations && <p style={{ margin: "12px 0 0", fontSize: 14, lineHeight: 1.5, color: "#6a5f4a", fontFamily: "Newsreader, Georgia, serif", fontStyle: "italic", borderTop: "1px solid #e4dcc8", paddingTop: 12 }}>Calendar overlap: {correlations}</p>}
           </section>
         )}
@@ -700,7 +701,7 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
             <p style={{ fontSize: 11.5, color: "#786e58", margin: "0 0 8px" }}>Calendar guidance only. A window is not a verified local sighting, flowering date, hatch or migration arrival.</p>
             {active.length ? active.map((ev, i) => <EventRow key={i} ev={ev} doy={doy} state="active" onSelect={setSel} />) : <div style={{ fontSize: 13, color: "#9a8f76", padding: "8px 0" }}>A quiet stretch on the calendar.</div>}
             {imminent.length > 0 && <><h2 style={{ fontSize: 17, margin: "20px 0 8px", color: "#b08828" }}>Next three weeks</h2>{imminent.map((ev, i) => <EventRow key={i} ev={ev} doy={doy} state="imminent" onSelect={setSel} />)}</>}
-            {recent.length > 0 && <><h2 style={{ fontSize: 17, margin: "20px 0 8px", color: "#a89c83" }}>Just past</h2>{recent.map((ev, i) => <EventRow key={i} ev={ev} doy={doy} state="recent" onSelect={setSel} />)}</>}
+            {recent.length > 0 && <><h2 style={{ fontSize: 17, margin: "20px 0 8px", color: "#a89c83" }}>Just past on the usual calendar</h2><p style={{ fontSize: 11.5, color: "#786e58", margin: "0 0 8px" }}>Days ago count from the usual reference date, not a verified event this year. For example, first hard frost has an October 10 calendar reference; no 2026 local frost observation is asserted.</p>{recent.map((ev, i) => <EventRow key={i} ev={ev} doy={doy} state="recent" onSelect={setSel} />)}</>}
           </div>
         </section>
 
@@ -785,8 +786,7 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
                 <div key={mo.m} style={{ border: isNow ? `1px solid ${season.color}` : "1px solid #e4dcc8", borderRadius: 10, padding: "12px 14px", background: isNow ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.45)" }}>
                   <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
                     <h3 style={{ fontFamily: "Georgia, serif", fontSize: 17, margin: 0, color: isNow ? season.color : "#2b2a1f" }}>{mo.name}</h3>
-                    {isNow && <span style={{ fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: season.color, fontWeight: 600 }}>we are here</span>}
-                    <span style={{ marginLeft: "auto", fontSize: 11, color: "#a89b80" }}>{mo.events.length}</span>
+                    {isNow && <span style={{ fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: season.color, fontWeight: 600 }}>current month</span>}
                   </div>
                   <p style={{ fontSize: 13, lineHeight: 1.55, color: "#5b5340", margin: "6px 0 10px" }}>{mo.line}</p>
                   <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
