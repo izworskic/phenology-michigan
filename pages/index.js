@@ -787,6 +787,7 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
                   <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
                     <h3 style={{ fontFamily: "Georgia, serif", fontSize: 17, margin: 0, color: isNow ? season.color : "#2b2a1f" }}>{mo.name}</h3>
                     {isNow && <span style={{ fontSize: 9.5, letterSpacing: "0.08em", textTransform: "uppercase", color: season.color, fontWeight: 600 }}>current month</span>}
+                    {!isNow && <span style={{ marginLeft: "auto", fontSize: 11, color: "#a89b80" }}>{mo.events.length} seasonal events</span>}
                   </div>
                   <p style={{ fontSize: 13, lineHeight: 1.55, color: "#5b5340", margin: "6px 0 10px" }}>{mo.line}</p>
                   <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
