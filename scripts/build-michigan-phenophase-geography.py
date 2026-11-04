@@ -16,6 +16,7 @@ import datetime as dt
 import json
 import math
 import re
+import socket
 import sys
 import time
 import urllib.error
@@ -30,6 +31,11 @@ INAT = "https://api.inaturalist.org/v1/observations"
 NPN = "https://services.usanpn.org/npn_portal/observations/getObservations.json"
 MAX_FETCH_BYTES = 22 * 1024 * 1024
 WINDOW_DAYS = 14
+# Keep the original inclusive 15-date sample, but divide the large NPN
+# response into small, contiguous requests. The upstream service timed out
+# on the statewide fortnight query on Nov 3, 2026.
+NPN_SLICE_DAYS = 4
+NPN_FETCH_ATTEMPTS = 3
 MAX_INAT_PAGE = 125
 MIN_INTERVAL_BETWEEN_REQUESTS = 1.15
 RECORD_LIMIT = 180000
@@ -258,17 +264,57 @@ def fetch_json(url, *, size=MAX_FETCH_BYTES):
 
 
 def acquire_npn(today, config):
+    """Fetch the same 15 calendar dates in small, disjoint, complete slices.
+
+    A failed slice invalidates the whole daily sample. Do not publish a
+    partial statewide sample as 'ok' or impute the missing observations.
+    Only transport timeouts and transient HTTP errors are retried.
+    """
     begin = today - dt.timedelta(days=WINDOW_DAYS)
-    q = urllib.parse.urlencode({
-        "request_src": "chrisizworski.com", "start_date": begin.isoformat(),
-        "end_date": today.isoformat(), "state[0]": "MI"
-    })
-    data = fetch_json(NPN + "?" + q)
-    # Validate the upstream schema now, but return RAW records. build()
-    # performs the single normalization pass. Returning already-normalized
-    # dictionaries made every NPN phase disappear on the second pass.
-    normalize_npn(data, config, today)
-    return data, len(data)
+    cursor = begin
+    records = []
+    while cursor <= today:
+        end = min(today, cursor + dt.timedelta(days=NPN_SLICE_DAYS - 1))
+        q = urllib.parse.urlencode({
+            "request_src": "chrisizworski.com", "start_date": cursor.isoformat(),
+            "end_date": end.isoformat(), "state[0]": "MI"
+        })
+        url = NPN + "?" + q
+        for attempt in range(NPN_FETCH_ATTEMPTS):
+            try:
+                chunk = fetch_json(url)
+                if not isinstance(chunk, list):
+                    raise ValueError("Unexpected USA-NPN JSON response; aborting this collection day")
+                if len(records) + len(chunk) > RECORD_LIMIT:
+                    raise ValueError("USA-NPN daily sample exceeds safe record limit")
+                # Ensure NPN doesn't return overlapping dates or silently
+                # ignore the requested date window. Other kinds of records
+                # can still be discarded by normalize_npn().
+                for row in chunk:
+                    if not isinstance(row, dict):
+                        raise ValueError("Malformed USA-NPN observation entry")
+                    date = read_date(row.get("observation_date"))
+                    if date is None or not cursor <= date <= end:
+                        raise ValueError("USA-NPN returned a row outside the requested dates")
+                records.extend(chunk)
+                break
+            except urllib.error.HTTPError as exc:
+                if exc.code not in (408, 429, 500, 502, 503, 504) or attempt + 1 == NPN_FETCH_ATTEMPTS:
+                    raise
+                print("USA-NPN temporary HTTP error:", exc.code, cursor, end,
+                      "attempt", attempt + 1, file=sys.stderr)
+                time.sleep(2 * (attempt + 1))
+            except (urllib.error.URLError, TimeoutError, socket.timeout, ConnectionError) as exc:
+                if attempt + 1 == NPN_FETCH_ATTEMPTS:
+                    raise
+                print("USA-NPN network retry:", type(exc).__name__, cursor, end,
+                      "attempt", attempt + 1, file=sys.stderr)
+                time.sleep(2 * (attempt + 1))
+        cursor = end + dt.timedelta(days=1)
+    # Preserve original, unnormalized data for the single normalization pass
+    # in build(). Each requested day appears in exactly one source slice.
+    normalize_npn(records, config, today)
+    return records, len(records)
 
 
 def inat_query(region, item, today, config):

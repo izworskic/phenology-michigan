@@ -50,16 +50,61 @@ class GeographyScienceTests(unittest.TestCase):
         self.assertIsNone(M.assign_region(25, -80, CONFIG))
 
     def test_live_npn_acquisition_preserves_raw_records_for_one_normalization(self):
-        # Production previously normalized the source in acquire_npn and again
-        # inside build(), silently discarding every valid phenophase.
+        import urllib.parse
         row=npn(site_id=999,phenophase_description="Colored leaves")
-        with patch.object(M,"fetch_json",return_value=[row]):
+        requested=[]
+        def fetch(url, **kwargs):
+            q=urllib.parse.parse_qs(urllib.parse.urlsplit(url).query)
+            begin,end=q["start_date"][0],q["end_date"][0]
+            requested.append((begin,end))
+            return [row] if begin <= row["observation_date"] <= end else []
+        with patch.object(M,"fetch_json",side_effect=fetch):
             raw,count=M.acquire_npn(NOW,CONFIG)
+        self.assertEqual(requested,[
+            ("2026-10-20","2026-10-23"),
+            ("2026-10-24","2026-10-27"),
+            ("2026-10-28","2026-10-31"),
+            ("2026-11-01","2026-11-03"),
+        ])
         self.assertEqual(count,1)
         self.assertEqual(raw[0]["phenophase_status"],1)
         output=M.build(CONFIG,raw,[],NOW)
         region=next(x for x in output["regions"] if x["id"]=="saginaw-bay")
         self.assertEqual(region["phases"][0]["sourceReports"]["usa-npn"],1)
+
+    def test_npn_timeout_retries_only_failed_batch_and_does_not_duplicate_days(self):
+        import urllib.parse
+        from urllib.error import URLError
+        requested=[]
+        attempts={}
+        def fetch(url, **kwargs):
+            q=urllib.parse.parse_qs(urllib.parse.urlsplit(url).query)
+            begin=q["start_date"][0]
+            requested.append(begin)
+            attempts[begin]=attempts.get(begin,0)+1
+            if begin=="2026-10-28" and attempts[begin]==1:
+                raise URLError("transient upstream timeout")
+            if begin=="2026-11-01":
+                return [npn(site_id=601)]
+            return []
+        with patch.object(M,"fetch_json",side_effect=fetch),patch.object(M.time,"sleep") as sleeper:
+            raw,count=M.acquire_npn(NOW,CONFIG)
+        self.assertEqual(count,1)
+        self.assertEqual(len(raw),1)
+        self.assertEqual(attempts["2026-10-28"],2)
+        self.assertEqual(attempts["2026-11-01"],1)
+        self.assertEqual(requested.count("2026-10-28"),2)
+        self.assertEqual(sleeper.call_count,1)
+
+    def test_permanent_upstream_failure_or_wrong_date_window_fails_closed(self):
+        from urllib.error import URLError
+        with patch.object(M,"fetch_json",side_effect=URLError("no response")),patch.object(M.time,"sleep") as sleeper:
+            with self.assertRaises(URLError):
+                M.acquire_npn(NOW,CONFIG)
+        self.assertEqual(sleeper.call_count,M.NPN_FETCH_ATTEMPTS-1)
+        with patch.object(M,"fetch_json",return_value=[npn(observation_date="2026-11-01")]):
+            with self.assertRaises(ValueError):
+                M.acquire_npn(NOW,CONFIG)
 
     def test_npn_positive_only_and_no_deduced_absence(self):
         raw = [npn(), npn(phenophase_status=0, observation_id=2),
