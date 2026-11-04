@@ -146,7 +146,7 @@ export default function NaturalYearDispatch({read,geography}) {
           <HistoricalBand name="Large-flowered trillium" entry={chosen.trillium} note={"Flowering-annotated public reports · "+chosen.trilliumSampleRegion} href="/michigan-trillium"/>
           <HistoricalBand name="Ruby-throated hummingbird" entry={chosen.hummingbird} note={"First public spring reports"+(chosen.birdSampleRegion?" · "+chosen.birdSampleRegion:"")} href="/hummingbird-tracker"/>
         </div>
-        <div className="ny-region-fine"><Microscope size={17}/><div>These windows come from the independently tested historical species archives, not a local first-flower or first-bird prediction. Where history is insufficient, the date is withheld.<p><a href="/michigan-trillium#tri-site-science">Help build real first-flower records at monitored preserves <ArrowRight size={13}/></a></p></div></div>
+        <div className="ny-region-fine"><Microscope size={17}/><div>These windows come from the independently tested historical species archives, not a local first-flower or first-bird prediction. Where history is insufficient, the date is withheld.<p><a href="/michigan-trillium#tri-site-science">See how first-flower research is evaluated <ArrowRight size={13}/></a></p></div></div>
       </div>}
       <details className="ny-method">
         <summary>How this dispatch distinguishes evidence</summary>
