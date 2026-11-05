@@ -15,6 +15,8 @@ import SeasonalFieldRead from "../components/SeasonalFieldRead";
 import SpeciesTrialObservatory from "../components/SpeciesTrialObservatory";
 import { readSpeciesTrials } from "../lib/species-trials";
 import NaturalYearDispatch from "../components/NaturalYearDispatch";
+import FirstFreezeJourney from "../components/FirstFreezeJourney";
+import {buildFirstFreezeEvidence} from "../lib/first-freeze.mjs";
 import { readNaturalYearDispatch } from "../lib/natural-year-dispatch.mjs";
 import { readGeographyEvidence } from "../lib/michigan-phenophase-geography.mjs";
 
@@ -178,7 +180,7 @@ const SIGNAL_CHECKS = {
   "First hard frost": { kind: "frost" },
 };
 
-export default function Home({ almanac, archivedAlmanac, regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt, fieldRead, speciesTrials, naturalYear, geographyEvidence }) {
+export default function Home({ almanac, archivedAlmanac, regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt, fieldRead, speciesTrials, naturalYear, geographyEvidence, firstFreeze }) {
   const [mounted, setMounted] = useState(false);
   const [riverId, setRiverId] = useState("ausable");
   const [sel, setSel] = useState(null);
@@ -557,6 +559,7 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
         <meta name="description" content="An interpreted real-time read on the natural year across Saginaw Bay and northeastern Michigan: live river conditions, projected hatches, bird movement, and growing degree days, by Chris Izworski." />
         <link rel="canonical" href={SITE + "/"} />
         <link rel="stylesheet" href="/natural-year-dispatch.css" />
+        <link rel="stylesheet" href="/first-freeze.css" />
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
         <link rel="stylesheet" href="/michigan-phenophase-geography.css" />
         <link rel="stylesheet" href="/phenophase-time-machine.css" />
@@ -620,7 +623,9 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
           </section>
         )}
 
+        {[10,11,12,1,2,3].includes(monthOfDoy(doy)) && <FirstFreezeJourney evidence={firstFreeze} />}
         <NaturalYearDispatch read={naturalYear} geography={geographyEvidence} />
+        {![10,11,12,1,2,3].includes(monthOfDoy(doy)) && <FirstFreezeJourney evidence={firstFreeze} />}
         <SeasonalFieldRead read={fieldRead} />
 
         {read && (
@@ -1149,6 +1154,12 @@ export async function getServerSideProps({ res }) {
   ]);
   const sig = signals || emptySignals();
   const bay = { ...buoy, ...(sig.bayDaily || {}) };
+  // Foundry pilot: classify independent NOAA, modeled weather and county bird
+  // evidence once on the server. Never treat offshore ice as a park access signal.
+  const firstFreeze = buildFirstFreezeEvidence({
+    now, bay: sig.bayDaily || {}, forecast, birds,
+    signalGeneratedAt: sig.generatedAt || null
+  });
   const sky = skyTonight(43.5945, -83.8889, now);
   const latestAlmanac = (almanacRows || []).slice(-1)[0] || null;
   const localDateParts = Object.fromEntries(new Intl.DateTimeFormat("en-US", { timeZone: "America/Detroit", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(now).filter(p => p.type !== "literal").map(p => [p.type, p.value]));
@@ -1159,7 +1170,7 @@ export async function getServerSideProps({ res }) {
     props: {
       almanac: recentAlmanac,
       archivedAlmanac: recentAlmanac ? null : latestAlmanac,
-      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, fieldRead, speciesTrials, naturalYear, geographyEvidence,
+      regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, fieldRead, speciesTrials, naturalYear, geographyEvidence, firstFreeze,
       springIndex: sig.springIndex || emptySignals().springIndex,
       observations: sig.observations || [], inat: sig.inat || [], drought: sig.drought || null,
       bay, alerts, doy,

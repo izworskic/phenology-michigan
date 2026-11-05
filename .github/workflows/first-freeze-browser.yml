@@ -1,0 +1,52 @@
+name: First Freeze Foundry browser acceptance
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'lib/first-freeze.mjs'
+      - 'components/FirstFreezeJourney.js'
+      - 'public/first-freeze.css'
+      - 'pages/index.js'
+      - 'scripts/first-freeze-browser.cjs'
+      - 'scripts/check-first-freeze.mjs'
+      - 'package.json'
+      - '.github/workflows/first-freeze-browser.yml'
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node scripts/check-first-freeze.mjs
+      - run: npm run build
+      - name: Install isolated browser driver (no production dependency)
+        run: npm install --prefix /tmp/first-freeze-browser --no-save --ignore-scripts playwright-core@1.56.1
+      - name: Test real page, all viewports and controls, no-JS, and capture screenshots
+        env:
+          NODE_PATH: /tmp/first-freeze-browser/node_modules
+          CHROME_BIN: /usr/bin/google-chrome
+          BASE: http://localhost:3000
+          SHOTS: /tmp/first-freeze-shots
+        run: |
+          npx next start -p 3000 > /tmp/first-freeze-next.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:3000/ > /dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/first-freeze-browser.cjs || { tail -n 100 /tmp/first-freeze-next.log; exit 1; }
+      - name: Preserve actual browser screenshots for design review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: first-freeze-browser-proof
+          path: /tmp/first-freeze-shots/
+          if-no-files-found: warn
+          retention-days: 14
