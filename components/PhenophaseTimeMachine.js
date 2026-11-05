@@ -1,8 +1,9 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
-import {ArrowLeft,ArrowRight,BookOpen,CalendarDays,ChevronLeft,ChevronRight,Clock3,Info,Layers3,Map,Pause,Play,RotateCcw,Share2,ShieldCheck,History,AlertTriangle} from 'lucide-react';
+import {ArrowLeft,ArrowRight,BookOpen,CalendarDays,ChevronLeft,ChevronRight,Clock3,Info,Layers3,Map,Pause,Play,RotateCcw,Share2,ShieldCheck,History,AlertTriangle,Maximize2,Minimize2} from 'lucide-react';
 import REGION_CONFIG from '../data/michigan-observation-regions.json' with {type:'json'};
 import {archiveToMap,betweenCaptureDays,compareCaptures} from '../lib/phenophase-playback.mjs';
+import {archiveHealth,archiveHealthLabel} from '../lib/phenophase-archive-health.mjs';
 
 const MichiganPhenophaseMap=dynamic(()=>import('./MichiganPhenophaseMap'),{ssr:false});
 const ROOT='/api/phenophase-history';
@@ -63,6 +64,8 @@ export default function PhenophaseTimeMachine(){
  const [error,setError]=useState('');
  const [playing,setPlaying]=useState(false);
  const [copied,setCopied]=useState(false);
+ const [focusMode,setFocusMode]=useState(false);
+ const [healthNow,setHealthNow]=useState(null);
  const requested=useRef(null);
  const snapshots=archive?.snapshots||[];
  const snapshot=snapshots[selectedIndex]||null;
@@ -70,6 +73,14 @@ export default function PhenophaseTimeMachine(){
  const mapped=useMemo(()=>archiveToMap(snapshot),[snapshot]);
  const comparison=useMemo(()=>previous&&snapshot?compareCaptures(previous,snapshot,region):null,[previous,snapshot,region]);
  const yearRecord=index?.years?.find(x=>x.year===year)||null;
+ const health=useMemo(()=>index&&healthNow?archiveHealth(index,healthNow):null,[index,healthNow]);
+ const viewArgs='?view=history'+(year?'&year='+year:'')+(snapshot?'&date='+snapshot.asOfDate:'');
+ const focusUrl='/'+viewArgs+'&focus=1#living-season';
+ const standardUrl='/'+viewArgs+'#living-season';
+ useEffect(()=>{
+  setFocusMode(new URLSearchParams(window.location.search).get('focus')==='1');
+  setHealthNow(new Date());
+ },[]);
  useEffect(()=>{
   requested.current=parseRequested();
   const ctrl=new AbortController();
@@ -132,6 +143,7 @@ export default function PhenophaseTimeMachine(){
    <div><span className="nytm-eyebrow"><History size={15}/> Field Archive / The Living Season</span>
     <h4 id="nytm-title">Watch Michigan's natural year unfold.</h4>
     <p>Step through real collected observation snapshots across nine Michigan regions. Every frame is an actual archived reporting sample, not a simulated season or an invented day.</p>
+    <a className="nytm-focus-link" href={focusMode?standardUrl:focusUrl}>{focusMode?<Minimize2 size={15}/>:<Maximize2 size={15}/>} {focusMode?'Return to standard site view':'Open uninterrupted field viewer'}</a>
    </div>
    <div className="nytm-ledger" aria-label="Verified archive coverage">
     <span>Archived collection days</span><strong>{index?.snapshotCount??'—'}</strong>
@@ -139,6 +151,13 @@ export default function PhenophaseTimeMachine(){
    </div>
   </div>
   {loadingIndex?<p className="nytm-notice" role="status">Opening the verified annual field ledger…</p>:error&&!index?<p className="nytm-notice" role="alert">{error} The live map remains available in the “Across Michigan” view.</p>:null}
+  {health&&<div className={'nytm-health nytm-health--'+health.state} role={health.state==='stale'||health.state==='overdue'?'alert':'status'}>
+    {health.state==='stale'||health.state==='overdue'||health.state==='invalid'?<AlertTriangle size={17}/>:<ShieldCheck size={17}/>}
+    <span><strong>{archiveHealthLabel(health)}</strong> · Last stored collection: {health.asOf?formatDay(health.asOf):'unavailable'}.
+     {health.daysSince>=2?' No new capture has been recorded recently; this is not evidence that the seasonal activity stopped.':''}
+     {health.missingCollectionDays>0?' '+health.missingCollectionDays+' missing capture day(s) between archived dates.':''}
+     <small>Source check is based on the dated archive, not an independent live network probe. No visitor reports are required.</small></span>
+   </div>}
   {index&&<div className="nytm-controls">
    <div className="nytm-topline">
     <label>Archive year <select aria-label="Archive year" value={year||''} onChange={e=>selectYear(e.target.value)}>
