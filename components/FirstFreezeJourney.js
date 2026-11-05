@@ -24,7 +24,7 @@ export default function FirstFreezeJourney({evidence}) {
   const chapter=FIRST_FREEZE_CHAPTERS.find(x=>x.id===chapterId)||FIRST_FREEZE_CHAPTERS[0];
   const site=FIRST_FREEZE_SITES.find(x=>x.id===siteId)||FIRST_FREEZE_SITES[0];
   const access=firstFreezeSiteAccess(site,evidence.asOf);
-  const current=chapterId===evidence.chapterId;
+  const current=evidence.inSeason && chapterId===evidence.chapterId;
 
   // Only symbolic IDs are sent; no coordinates or visitors' private positions.
   const sendChoice=(dimension,id)=>{
@@ -38,7 +38,7 @@ export default function FirstFreezeJourney({evidence}) {
         <p className="ff-eyebrow">Saginaw Bay · A living field journey · Foundry pilot 01</p>
         <h2 id="ff-title">The First Freeze</h2>
         <p className="ff-deck">Watch the coastal marsh move from open water toward winter. Choose a chapter of the season, then a public viewing destination. See what the evidence says and what remains unknown.</p>
-        <p className="ff-dateline">Evidence checked for <strong>{evidence.asOf}</strong> · Chapters are interpretive, not claims that a biological event occurred.</p>
+        <p className="ff-dateline">Evidence checked for <strong>{evidence.asOf}</strong> · {evidence.inSeason?"Calendar chapter shown for this season.":"Outside the October–April First Freeze season; explore the chapters as a seasonal preview."} No chapter confirms a biological event.</p>
       </div>
       <div className="ff-horizon" aria-hidden="true">
         <div className="ff-moon"/><div className="ff-reeds"><i/><i/><i/><i/><i/></div>
@@ -63,7 +63,7 @@ export default function FirstFreezeJourney({evidence}) {
       </nav>
       <div className="ff-focus">
         <div className="ff-focus-text" aria-live="polite">
-          <p className="ff-overline">{current?"Calendar chapter for this date":"Exploring another seasonal chapter"} · {chapter.window}</p>
+          <p className="ff-overline">{current?"Typical calendar chapter, not an observed stage":evidence.inSeason?"Exploring another seasonal chapter":"Off-season seasonal preview"} · {chapter.window}</p>
           <h3>{chapter.heading}</h3>
           <p>{chapter.story}</p>
           <blockquote>{chapter.question}</blockquote>
