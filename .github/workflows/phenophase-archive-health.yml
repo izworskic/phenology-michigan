@@ -1,0 +1,23 @@
+name: Watch Michigan phenophase archive coverage
+on:
+  schedule:
+    # After both Michigan local-time collection opportunities have passed.
+    - cron: '25 4 * * *'
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  archive-coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Verify archive health logic against dated fixtures
+        run: node scripts/check-phenophase-archive-health.mjs
+      - name: Flag overdue or invalid daily data, never biological absence
+        run: node scripts/run-phenophase-archive-health.mjs
