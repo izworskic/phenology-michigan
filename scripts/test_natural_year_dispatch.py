@@ -20,10 +20,21 @@ class DispatchTests(unittest.TestCase):
     def setUpClass(cls):
         cls.catalog = data("natural-year-connections.json")
         cls.signals = data("signals.json")
+        # A fixed 2026-11-03 scenario must not depend on a *live* daily feed.
+        # All observations here are synthetic test inputs, never published.
+        cls.fixed_signals = {
+            "generatedAt": "2026-11-03T16:00:00.000Z",
+            "observations": [
+                {"name": "Norway maple", "phase": "Colored leaves",
+                 "date": "2026-11-01", "kingdom": "Plantae"},
+                {"name": "Fox squirrel", "phase": "Nut gathering",
+                 "date": "2026-11-02", "kingdom": "Animalia"},
+            ],
+        }
         cls.trials = data("phenology-species-trials.json")
 
-    def test_real_michigan_2026_fall_has_honest_scope(self):
-        out = M.build(self.catalog, self.signals, self.trials, dt.date(2026, 11, 3))
+    def test_fixed_michigan_fall_sample_has_honest_scope(self):
+        out = M.build(self.catalog, self.fixed_signals, self.trials, dt.date(2026, 11, 3))
         self.assertEqual(out["schema"], "natural-year-dispatch-v1")
         self.assertEqual(len(out["historicalRegions"]), 7)
         self.assertIn("leaf-change", [e["id"] for e in out["active"]])
@@ -38,7 +49,7 @@ class DispatchTests(unittest.TestCase):
         self.assertFalse(any("probability" in json.dumps(x).lower() for x in out["reports"]))
 
     def test_stale_signal_bundle_cannot_look_current(self):
-        stale = deepcopy(self.signals)
+        stale = deepcopy(self.fixed_signals)
         stale["generatedAt"] = "2026-09-04T13:00:00.000Z"
         out = M.build(self.catalog, stale, self.trials, dt.date(2026, 11, 3))
         self.assertEqual(out["reportsState"], "archive-only")
@@ -46,7 +57,7 @@ class DispatchTests(unittest.TestCase):
         self.assertTrue(out["active"], "The editorial calendar remains useful but is not a field sighting")
 
     def test_undated_future_and_duplicate_reports_are_excluded(self):
-        signals = deepcopy(self.signals)
+        signals = deepcopy(self.fixed_signals)
         signals["observations"] = [
             {"name":"Norway maple","phase":"Colored leaves","date":"2026-11-01","kingdom":"Plantae"},
             {"name":"Norway maple","phase":"Colored leaves","date":"2026-11-01","kingdom":"Plantae"},
@@ -56,6 +67,15 @@ class DispatchTests(unittest.TestCase):
         out = M.build(self.catalog, signals, self.trials, dt.date(2026, 11, 3))
         self.assertEqual(len(out["reports"]), 1)
         self.assertEqual(out["reports"][0]["evidence"], "statewide-reported-phenophase")
+
+    def test_future_signal_bundle_is_not_misrepresented_as_past_observation(self):
+        # This was the original CI regression: a live Nov 4 bundle was used
+        # against a fixed Nov 3 historical scenario.
+        future = deepcopy(self.fixed_signals)
+        future["generatedAt"] = "2026-11-04T16:00:00.000Z"
+        out = M.build(self.catalog, future, self.trials, dt.date(2026, 11, 3))
+        self.assertEqual(out["reportsState"], "archive-only")
+        self.assertEqual(out["reports"], [])
 
     def test_report_year_winter_window_wraps_without_fabricating_a_sighting(self):
         jan = M.build(self.catalog, {}, self.trials, dt.date(2027, 1, 10))
