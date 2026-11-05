@@ -103,6 +103,13 @@ export default function App({ Component, pageProps }) {
   const isBloomTracker = router.pathname === "/bloom-tracker";
   const isWisconsinBloom = router.pathname.startsWith("/wisconsin-bloom-tracker");
   const isHome = router.pathname === "/";
+  // A visitor-requested, same-canonical Time Machine focus view. The default
+  // homepage, all other tabs, and all other tool pages retain the existing
+  // network ad loader. We do not hide, relocate or alter Google ad elements.
+  // A native full-page link opens this view before the ad script can load.
+  const urlQuery = (router.asPath || "").split("?")[1]?.split("#")[0] || "";
+  const params = new URLSearchParams(urlQuery);
+  const isHistoricalFocus = isHome && params.get("view") === "history" && params.get("focus") === "1";
 
   return (
     <>
@@ -169,7 +176,7 @@ export default function App({ Component, pageProps }) {
       {isBloomTracker && <Script src="/bloom-map-v2.js" strategy="afterInteractive" />}
       {isBloomTracker && <Script src="/bloom-map-label-declutter.js" strategy="afterInteractive" />}
       {isBloomTracker && <Script src="/bloom-vignette-guard.js" strategy="afterInteractive" />}
-      {!isBloomTracker && !isWisconsinBloom && <script defer src="https://chrisizworski.com/assets/network-ads-v1.js"></script>}
+      {!isBloomTracker && !isWisconsinBloom && !isHistoricalFocus && <script defer src="https://chrisizworski.com/assets/network-ads-v1.js"></script>}
     </>
   );
 }
