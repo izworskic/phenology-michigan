@@ -43,6 +43,8 @@ assert.equal(invalid.birds.length,0);
 assert.equal(firstFreezeChapterForDate("2027-01-05"),"deep-winter");
 assert.equal(firstFreezeChapterForDate("2027-03-01"),"spring-return");
 assert.equal(firstFreezeChapterForDate("2027-07-01"),"late-autumn");
+assert.equal(buildFirstFreezeEvidence({now:new Date("2027-07-01T12:00:00Z")}).inSeason,false);
+assert.equal(x.inSeason,true);
 
 const ferguson=FIRST_FREEZE_SITES.find(s=>s.id==="ferguson");
 assert.equal(firstFreezeSiteAccess(ferguson,"2026-11-05").kind,"listed-closure");
