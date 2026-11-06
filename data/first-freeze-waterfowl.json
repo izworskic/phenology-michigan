@@ -2,7 +2,6 @@
   "schemaVersion": 1,
   "method": "DNR official weekly management-area counts; not eBird, population census, current positions or viewing-site guaranteed encounters",
   "seededOn": "2026-11-06",
-  "season": "2026-27",
   "areas": {
     "nayanquing": {
       "name": "Nayanquing Point",
