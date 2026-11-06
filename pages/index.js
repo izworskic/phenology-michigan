@@ -17,6 +17,7 @@ import { readSpeciesTrials } from "../lib/species-trials";
 import NaturalYearDispatch from "../components/NaturalYearDispatch";
 import FirstFreezeJourney from "../components/FirstFreezeJourney";
 import {buildFirstFreezeEvidence} from "../lib/first-freeze.mjs";
+import waterfowlSurveyBank from "../data/first-freeze-waterfowl.json";
 import { readNaturalYearDispatch } from "../lib/natural-year-dispatch.mjs";
 import { readGeographyEvidence } from "../lib/michigan-phenophase-geography.mjs";
 
@@ -1189,7 +1190,7 @@ export async function getServerSideProps({ res, query }) {
   // evidence once on the server. Never treat offshore ice as a park access signal.
   const firstFreeze = buildFirstFreezeEvidence({
     now, bay: sig.bayDaily || {}, forecast, birds,
-    signalGeneratedAt: sig.generatedAt || null
+    signalGeneratedAt: sig.generatedAt || null, waterfowlBank:waterfowlSurveyBank
   });
   const sky = skyTonight(43.5945, -83.8889, now);
   const latestAlmanac = (almanacRows || []).slice(-1)[0] || null;
