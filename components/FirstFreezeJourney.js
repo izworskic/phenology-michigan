@@ -1,21 +1,6 @@
 import {useState} from "react";
+import FirstFreezePulse from "./FirstFreezePulse";
 import {FIRST_FREEZE_CHAPTERS,FIRST_FREEZE_SITES,firstFreezeSiteAccess} from "../lib/first-freeze.mjs";
-
-const kinds = {
-  "recent-reference":"Dated reference",
-  historical:"Historical only",forecast:"Forecast",
-  unavailable:"Unavailable"
-};
-
-function FieldSignal({label,entry,source}) {
-  return <div className="ff-signal">
-    <div className="ff-signal-top"><h4>{label}</h4><span className={"ff-kind ff-kind-"+entry.kind}>{kinds[entry.kind]||entry.kind}</span></div>
-    <strong>{entry.text}</strong>
-    <p>{entry.detail}</p>
-    {entry.date&&<time dateTime={entry.date}>Source date: {entry.date}</time>}
-    <a href={source} target="_blank" rel="noopener noreferrer">Examine source</a>
-  </div>;
-}
 
 export default function FirstFreezeJourney({evidence}) {
   const [chapterId,setChapterId]=useState(evidence?.chapterId||"first-freeze");
@@ -37,7 +22,7 @@ export default function FirstFreezeJourney({evidence}) {
       <div className="ff-mast-copy">
         <p className="ff-eyebrow">Saginaw Bay · A living field journey · Foundry pilot 01</p>
         <h2 id="ff-title">The First Freeze</h2>
-        <p className="ff-deck">Watch the coastal marsh move from open water toward winter. Choose a chapter of the season, then a public viewing destination. See what the evidence says and what remains unknown.</p>
+        <p className="ff-deck">Start with actual DNR waterfowl surveys, explore the coming cold nights, then follow the Saginaw Bay marsh through four changing seasons and four documented viewing places.</p>
         <p className="ff-dateline">Evidence checked for <strong>{evidence.asOf}</strong> · {evidence.inSeason?"Calendar chapter shown for this season.":"Outside the October–April First Freeze season; explore the chapters as a seasonal preview."} No chapter confirms a biological event.</p>
       </div>
       <div className="ff-horizon" aria-hidden="true">
@@ -49,8 +34,9 @@ export default function FirstFreezeJourney({evidence}) {
     </div>
 
     <div className="ff-body">
+      <FirstFreezePulse read={evidence.pulse} evidence={evidence} />
       <div className="ff-journal-heading">
-        <span className="ff-part">01 / Follow the change</span>
+        <span className="ff-part">02 / Read the landscape</span>
         <h3>Four chapters of the water year</h3>
         <p>Pick a season to change the interpretation. The NOAA, weather and bird observations below keep their actual dates and do not change just because you choose a chapter.</p>
       </div>
@@ -69,16 +55,11 @@ export default function FirstFreezeJourney({evidence}) {
           <blockquote>{chapter.question}</blockquote>
           <p className="ff-look"><strong>In the field:</strong> {chapter.lookFor}</p>
         </div>
-        <div className="ff-facts" aria-label="Source-qualified conditions">
-          <p className="ff-part">Evidence, not assumptions</p>
-          <FieldSignal label="Offshore ice reference" entry={evidence.ice} source={evidence.sourceLinks.ice}/>
-          <FieldSignal label="Offshore water temperature" entry={evidence.surface} source={evidence.sourceLinks.surface}/>
-          <FieldSignal label="Bay City cold outlook" entry={evidence.coldOutlook} source={evidence.sourceLinks.forecast}/>
-        </div>
+
       </div>
 
       <div className="ff-journal-heading ff-location-heading">
-        <span className="ff-part">02 / Choose where to watch</span>
+        <span className="ff-part">03 / Choose where to watch</span>
         <h3>A shoreline with a story</h3>
         <p>These are documented viewing destinations, not locations where a particular bird has been confirmed today. Select a land manager and see the access cautions before traveling.</p>
       </div>
@@ -94,6 +75,7 @@ export default function FirstFreezeJourney({evidence}) {
           <h3>{site.name}</h3>
           <p>{site.reason}</p>
           <p className="ff-habitat"><strong>Landscape:</strong> {site.habitat}</p>
+          <div className="ff-field-plan"><h4>What to watch for</h4><p>{site.watchFor}</p><h4>Make a field visit useful</h4><ol>{site.fieldPlan?.map((step,i)=><li key={i}>{step}</li>)}</ol></div>
           <p className="ff-next"><strong>Your next step:</strong> {site.fieldAction}</p>
           <p className="ff-access-note">{site.caution}</p>
         </div>
@@ -108,7 +90,7 @@ export default function FirstFreezeJourney({evidence}) {
 
       <div className="ff-reports">
         <div>
-          <span className="ff-part">03 / Listen to the actual record</span>
+          <span className="ff-part">04 / Supplementary checklists</span>
           <h3>What birders reported in Bay County</h3>
           <p>{evidence.birdsScope}</p>
           <a href={evidence.sourceLinks.birds} target="_blank" rel="noopener noreferrer">Open the original regional eBird reports</a>
