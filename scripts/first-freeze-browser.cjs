@@ -36,8 +36,12 @@ async function verify(browser,width,height){
   assert.match(await root.locator("h2").first().textContent(),/The First Freeze/);
   assert.equal(await root.locator(".ff-chapter").count(),4);
   assert.equal(await root.locator("#ff-place option").count(),4);
-  assert.equal(await root.locator(".ff-signal").count(),3);
-  assert.equal(await root.locator(".ff-signal a").count(),3);
+  assert.equal(await root.locator(".ffp").count(),1,"the quantified migration ledger leads the journey");
+  assert.equal(await root.locator(".ffp-week li").count(),7,"all seven days of Bay City lows visible");
+  assert.equal(await root.locator(".ffp-choices fieldset").count(),2);
+  assert.equal(await root.locator(".ffp-lake-details").count(),1,"missing NOAA data moves to transparent context, not oversized cards");
+  assert.equal(await root.locator(".ffp-count-table table").count(),1);
+  assert.equal(await root.locator(".ff-field-plan li").count(),3);
   assert.equal(await root.locator(".ff-chapter[aria-pressed=true]").count(),1);
 
   const style=await root.evaluate(el=>getComputedStyle(el).backgroundColor);
@@ -46,13 +50,23 @@ async function verify(browser,width,height){
   assert.ok(bounds.left>=-12&&bounds.right<=width+12,width+": pilot within phone viewport "+JSON.stringify(bounds));
   assert.ok(bounds.scrollWidth<=bounds.clientWidth+2,width+": no horizontal overflow inside pilot "+JSON.stringify(bounds));
 
-  const evidenceBefore=await root.locator(".ff-facts").textContent();
+  const evidenceBefore=await root.locator(".ffp-clock").textContent();
+  const survey=root.locator(".ffp-survey-content");
+  assert.match(await survey.textContent(),/Nayanquing Point|12,000|DNR/);
+  await root.locator(".ffp-choices fieldset").first().locator("button").nth(1).click();
+  assert.match(await survey.textContent(),/Fish Point|18,325|DNR/);
+  assert.equal(await root.locator(".ffp-clock").textContent(),evidenceBefore,"changing wildlife survey must not mutate weather");
+  await root.locator(".ffp-choices fieldset").nth(1).locator("button").nth(2).click();
+  assert.match(await survey.textContent(),/Swans/);
+  await root.locator(".ffp-choices fieldset").nth(1).locator("button").nth(0).click();
+  await root.locator(".ffp-choices fieldset").first().locator("button").nth(0).click();
+  assert.match(await survey.textContent(),/Nayanquing Point|12,000|DNR/);
   const firstFreezeButton=root.locator(".ff-chapter").nth(1);
   await firstFreezeButton.focus();
   await page.keyboard.press("Enter");
   assert.equal(await firstFreezeButton.getAttribute("aria-pressed"),"true",width+": keyboard selects first freeze");
   assert.match(await root.locator(".ff-focus-text h3").textContent(),/edge of the water changes/);
-  assert.equal(await root.locator(".ff-facts").textContent(),evidenceBefore,width+": chapter must not mutate measured conditions");
+  assert.equal(await root.locator(".ffp-clock").textContent(),evidenceBefore,width+": chapter must not mutate measured conditions");
   await root.locator(".ff-chapter").nth(2).click();
   assert.match(await root.locator(".ff-focus-text h3").textContent(),/Wildlife follows/);
   await firstFreezeButton.click();
@@ -66,7 +80,7 @@ async function verify(browser,width,height){
   const access=await root.locator(".ff-access").textContent();
   assert.match(access,/FWS lists this trail CLOSED|Access not verified for today/);
   assert.doesNotMatch(access, /\bopen now\b|\bsafe to visit\b/i);
-  assert.equal(await root.locator(".ff-facts").textContent(),evidenceBefore,width+": site choice must not alter NOAA/NWS evidence");
+  assert.equal(await root.locator(".ffp-clock").textContent(),evidenceBefore,width+": site choice must not alter NOAA/NWS evidence");
   await root.locator("#ff-place").selectOption("bay-city");
   assert.match(await root.locator(".ff-place-body h3").textContent(),/Bay City State Park/);
   assert.equal(await root.locator(".ff-access-listed-closure").count(),0,width+": no inherited Ferguson warning");
@@ -100,6 +114,8 @@ async function verify(browser,width,height){
    assert.equal(await page.locator(".ny-dispatch").count(),0);
    assert.equal(await page.locator("#first-freeze .ff-offline h4").count(),4,"no-JS chapter text rendered on server");
    assert.equal(await page.locator("#first-freeze .ff-offline li a").count(),4,"no-JS agency links remain visible in source");
+   assert.equal(await page.locator("#first-freeze .ffp").count(),1,"no-JS DNR migration report is server rendered");
+   assert.equal(await page.locator("#first-freeze .ffp-count-table table").count(),1,"no-JS source data accessible");
    await ctx.close();
    console.log("First Freeze focus QA passed: uncluttered homepage, immersive focus, 4 viewports, keyboard, source scope and no-JS.");
  }finally{await browser.close();}
