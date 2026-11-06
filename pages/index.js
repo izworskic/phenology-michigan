@@ -180,7 +180,7 @@ const SIGNAL_CHECKS = {
   "First hard frost": { kind: "frost" },
 };
 
-export default function Home({ almanac, archivedAlmanac, regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt, fieldRead, speciesTrials, naturalYear, geographyEvidence, firstFreeze }) {
+export default function Home({ almanac, archivedAlmanac, regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, springIndex, observations, bay, inat, drought, alerts, doy, season, normToday, dateStr, generatedAt, fieldRead, speciesTrials, naturalYear, geographyEvidence, firstFreeze, firstFreezeFocused }) {
   const [mounted, setMounted] = useState(false);
   const [riverId, setRiverId] = useState("ausable");
   const [sel, setSel] = useState(null);
@@ -552,6 +552,31 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
     ],
   };
 
+  // Deliberate same-canonical focus, not another full-length block on the homepage.
+  // Native ?experience link requests the focused HTML from the server, so a visitor
+  // never has to navigate the entire Natural Year page to use the First Freeze.
+  if (firstFreezeFocused) {
+    return (
+      <div className="ff-focus-shell">
+        <Head>
+          <title>The First Freeze | Saginaw Bay field journey · Michigan Phenology</title>
+          <meta name="description" content="Explore the changing Saginaw Bay marsh through dated ice, weather and bird evidence, with official public-viewing access information." />
+          <meta name="robots" content="noindex,follow" />
+          <link rel="canonical" href={SITE + "/"} />
+          <link rel="stylesheet" href="/first-freeze.css" />
+        </Head>
+        <main className="ff-focus-main">
+          <nav className="ff-focus-return" aria-label="Return to Michigan Phenology">
+            <a href="/">← Michigan Phenology</a>
+            <span>One landscape, one seasonal journey</span>
+          </nav>
+          <FirstFreezeJourney evidence={firstFreeze} />
+          <p className="ff-focus-bottom"><a href="/">Return to the full Michigan Phenology field desk</a></p>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div style={{ minHeight: "100vh", background: "radial-gradient(1200px 600px at 70% -10%, #fbf7ec 0%, #f4eede 55%, #efe7d3 100%)", color: "#2b2a1f", padding: "0 0 40px" }}>
       <Head>
@@ -623,9 +648,15 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
           </section>
         )}
 
-        {[10,11,12,1,2,3].includes(monthOfDoy(doy)) && <FirstFreezeJourney evidence={firstFreeze} />}
+        <aside className="ff-invite" id="first-freeze" aria-label="The First Freeze seasonal experience">
+          <div className="ff-invite-copy">
+            <span className="ff-invite-eyebrow">Saginaw Bay · {firstFreeze?.inSeason ? "Seasonal field journey" : "Explore the winter season"}</span>
+            <strong>The First Freeze</strong>
+            <span>Follow the changing marsh, dated evidence and public wildlife viewing sites.</span>
+          </div>
+          <a className="ff-invite-link" href="/?experience=first-freeze#first-freeze">Explore the journey <span aria-hidden="true">→</span></a>
+        </aside>
         <NaturalYearDispatch read={naturalYear} geography={geographyEvidence} />
-        {![10,11,12,1,2,3].includes(monthOfDoy(doy)) && <FirstFreezeJourney evidence={firstFreeze} />}
         <SeasonalFieldRead read={fieldRead} />
 
         {read && (
@@ -1122,7 +1153,7 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
   );
 }
 
-export async function getServerSideProps({ res }) {
+export async function getServerSideProps({ res, query }) {
   res.setHeader("Cache-Control", "s-maxage=600, stale-while-revalidate=1800");
   const now = new Date();
   const doy = dayOfYear(now);
@@ -1171,6 +1202,7 @@ export async function getServerSideProps({ res }) {
       almanac: recentAlmanac,
       archivedAlmanac: recentAlmanac ? null : latestAlmanac,
       regional, rivers, gddActual, birds, stats, forecast, gddHistory, history, riverForecast, sky, aurora, fieldRead, speciesTrials, naturalYear, geographyEvidence, firstFreeze,
+      firstFreezeFocused: query?.experience === "first-freeze",
       springIndex: sig.springIndex || emptySignals().springIndex,
       observations: sig.observations || [], inat: sig.inat || [], drought: sig.drought || null,
       bay, alerts, doy,

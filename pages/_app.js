@@ -110,6 +110,7 @@ export default function App({ Component, pageProps }) {
   const urlQuery = (router.asPath || "").split("?")[1]?.split("#")[0] || "";
   const params = new URLSearchParams(urlQuery);
   const isHistoricalFocus = isHome && params.get("view") === "history" && params.get("focus") === "1";
+  const isFirstFreezeFocus = isHome && params.get("experience") === "first-freeze";
 
   return (
     <>
@@ -166,7 +167,7 @@ export default function App({ Component, pageProps }) {
       {isWisconsinBloom && <WisconsinAnalytics />}
       <Component {...pageProps} />
       {isBloomTracker && <nav className="bloom-authority-link">Explore the other Great Lakes bloom guide: <a href="/wisconsin-bloom-tracker">Wisconsin Bloom Tracker 2027 — Door County, Madison, lavender and sunflowers</a> · <a href="/firefly-tracker">Michigan Firefly Emergence Tracker</a> · <a href="/salamander-migration">Michigan Salamander Migration Tracker</a> · <a href="/woodcock-sky-dance">Michigan Woodcock Sky Dance</a> · <a href="/michigan-trillium">Michigan Trilliums</a> · <a href="/hummingbird-tracker">Michigan Hummingbird Arrival Tracker</a> · <a href="/frog-chorus">Michigan Frog Chorus Forecast</a> · <a href="/lake-smoke">Great Lakes Lake Smoke Predictor</a> · <a href="/frosty-mornings">Michigan Frosty Morning Predictor</a></nav>}
-      {isHome && (
+      {isHome && !isFirstFreezeFocus && (
         <nav className="bloom-authority-link" aria-label="Featured seasonal tool">
           Flower-season planning: <a href="/bloom-tracker">Michigan Bloom Tracker — what’s blooming and when to go</a> · <a href="/wisconsin-bloom-tracker">Wisconsin flower-season map and trip guide</a> · <a href="/firefly-tracker">Michigan Firefly Emergence Tracker</a> · <a href="/salamander-migration">Michigan Salamander Migration Tracker</a> · <a href="/frog-chorus">Michigan Frog Chorus Forecast</a> · <a href="/lake-smoke">Great Lakes Lake Smoke Predictor</a> · <a href="/frosty-mornings">Michigan Frosty Morning Predictor</a>
         </nav>
@@ -176,7 +177,7 @@ export default function App({ Component, pageProps }) {
       {isBloomTracker && <Script src="/bloom-map-v2.js" strategy="afterInteractive" />}
       {isBloomTracker && <Script src="/bloom-map-label-declutter.js" strategy="afterInteractive" />}
       {isBloomTracker && <Script src="/bloom-vignette-guard.js" strategy="afterInteractive" />}
-      {!isBloomTracker && !isWisconsinBloom && !isHistoricalFocus && <script defer src="https://chrisizworski.com/assets/network-ads-v1.js"></script>}
+      {!isBloomTracker && !isWisconsinBloom && !isHistoricalFocus && !isFirstFreezeFocus && <script defer src="https://chrisizworski.com/assets/network-ads-v1.js"></script>}
     </>
   );
 }

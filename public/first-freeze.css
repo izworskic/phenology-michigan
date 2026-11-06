@@ -107,3 +107,22 @@
  .ff-reports{grid-template-columns:1fr;gap:10px}.ff-place-story{padding:18px}.ff-location-choice select{width:100%}
 }
 @media(prefers-reduced-motion:no-preference){.ff-chapter{transition:background-color .16s ease}.ff a{text-decoration-thickness:1px}}
+
+/* Same-canonical focus mode: First Freeze receives room to breathe.
+   The ordinary phenology homepage receives only a small, unobtrusive invitation. */
+.ff-invite{display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:20px 0 18px;padding:15px 18px;border:1px solid #b9c8bc;border-left:4px solid #48695e;border-radius:12px;background:#eef2e9;color:#273e38;font-family:system-ui,-apple-system,sans-serif}
+.ff-invite-copy{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1 1 300px}
+.ff-invite-eyebrow{font:700 10px/1.4 system-ui;letter-spacing:.1em;text-transform:uppercase;color:#537269}
+.ff-invite-copy>strong{font:600 18px/1.2 Georgia,serif;color:#253d36}
+.ff-invite-copy>span:last-child{font:12px/1.5 system-ui;color:#415c50}
+.ff-invite-link{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;background:#2e594b;color:#fff!important;border-radius:8px;font:700 12px/1.4 system-ui;text-decoration:none!important;min-height:44px}
+.ff-invite-link:hover{background:#1c4034}
+.ff-invite-link:focus-visible{outline:3px solid #9f6434;outline-offset:2px}
+.ff-focus-shell{min-height:100vh;background:radial-gradient(1000px 400px at 70% -5%,#dfe9df 0%,#f1f0e7 70%);color:#23382f;padding:0 16px 35px}
+.ff-focus-main{max-width:1120px;margin:0 auto;padding:15px 0 35px}
+.ff-focus-return{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px;border-bottom:1px solid #b6c4b7;padding:10px 3px 15px;font:12px/1.5 system-ui;color:#597066}
+.ff-focus-return a,.ff-focus-bottom a{color:#234e3e;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.ff-focus-return a:focus-visible,.ff-focus-bottom a:focus-visible{outline:3px solid #9f6434;outline-offset:3px}
+.ff-focus-main>.ff{margin:20px 0 0}
+.ff-focus-bottom{text-align:center;padding:20px;font:13px/1.5 system-ui}
+@media(max-width:610px){.ff-invite{padding:12px 14px;gap:10px}.ff-invite-copy>strong{font-size:16px}.ff-invite-link{width:100%}.ff-focus-shell{padding:0 10px}.ff-focus-main>.ff{margin:14px 0 0}}

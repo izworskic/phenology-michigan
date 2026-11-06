@@ -1,7 +1,7 @@
 # Experience Foundry pilot 01 — The First Freeze
 
 **Owner:** `izworskic/phenology-michigan`  
-**Canonical:** `https://phenology.chrisizworski.com/` (existing homepage section `#first-freeze`)  
+**Canonical:** `https://phenology.chrisizworski.com/` (normal homepage contains a compact invitation; the visitor-requested full experience opens at `/?experience=first-freeze#first-freeze` and is `noindex,follow` with the original homepage canonical)  
 **Date researched:** 2026-11-05  
 **Scope:** Source-qualified autumn → spring field journey around Saginaw Bay. No new indexable page, provider, map/geolocation, realtime wildlife model, Python task, or infrastructure.
 
@@ -73,3 +73,18 @@ Required: `npm test`, `npm run build`, deployment preview smoke, mobile screensh
 **Release stages:** source implemented (when merged), local regression test as CI confirms, deployment preview (when verified), production (only after owning-repo merge and public smoke), outcome measured (after GSC and non-PII engagement evidence). Source/link checks are not official access opening times or field observations.
 
 The pilot's purpose is to test **composition across independent specialist data sources and a legally informed visitor decision**, not to generate another public Saginaw Bay URL or promise a migration forecast. Follow-on success condition: the Foundry produces a distinctly different, real-data maritime experience using comparable evidence/quality contracts without a common page skin.
+
+## 2026-11-05 layout correction — no stacked full-length experience
+
+The initial pilot rendered the entire immersive experience above `NaturalYearDispatch` during the winter months and beneath it at other times. That crowded a substantial homepage and contradicted the Foundry's distinctiveness purpose.
+
+**Corrected layout:** The ordinary `/` homepage contains one restrained `.ff-invite` at `#first-freeze` and continues into the existing Natural Year Dispatch, Seasonal Field Read and other engines. **It does not render the long First Freeze component at all.** The native, keyboard-accessible link opens `/?experience=first-freeze#first-freeze`, which Next.js renders server-side as a single-purpose journey. It shows a return link and no unrelated homepage widgets or extra seasonal footer navigation. The site's existing opt-in focus-mode safeguard is applied; ordinary homepage ad loading and monetization behavior remain unchanged.
+
+A query focus is not a second SEO page: its canonical stays `/` and the focus variant is `noindex,follow`. No new sitemap route, metadata ownership, analytics service, external fetch, or model was introduced.
+
+Regression acceptance:
+- The default page has a compact invite of no more than 180px at 360px and 390px and **zero** `.ff` immersive sections.
+- Focus has exactly one interactive `#first-freeze` and **zero** `.ny-dispatch` elements.
+- The 4 seasonal buttons and 4 site options still work, A→B→A remains reversible, NOAA evidence does not mutate, and official access warnings remain truthful.
+- Native navigation plus no-JavaScript focus both retain visible source links and all written chapters.
+- Browser screenshots at 360/390/768/1440 test each focused state, while the default homepage remains a clean phenology tool.
