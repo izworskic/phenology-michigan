@@ -66,7 +66,7 @@ const css=fs.readFileSync("public/first-freeze.css","utf8");
 const home=fs.readFileSync("pages/index.js","utf8");
 assert.ok(home.includes('import FirstFreezeJourney from "../components/FirstFreezeJourney"'));
 assert.ok(home.includes('import {buildFirstFreezeEvidence} from "../lib/first-freeze.mjs"'));
-assert.equal((home.match(/<FirstFreezeJourney evidence=\{firstFreeze\}/g)||[]).length,2,"summer and winter positions use the same single runtime instance");
+assert.equal((home.match(/<FirstFreezeJourney evidence=\{firstFreeze\}/g)||[]).length,1,"one focused journey, not stacked homepage sections");
 assert.ok(home.includes('href="/first-freeze.css"'));
 assert.ok(home.includes("signalGeneratedAt: sig.generatedAt"));
 assert.ok(jsx.includes('aria-pressed={chapter.id===c.id}'));
