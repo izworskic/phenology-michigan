@@ -565,6 +565,7 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
           <meta name="robots" content="noindex,follow" />
           <link rel="canonical" href={SITE + "/"} />
           <link rel="stylesheet" href="/first-freeze.css" />
+          <link rel="stylesheet" href="/first-freeze-depth.css" />
         </Head>
         <main className="ff-focus-main">
           <nav className="ff-focus-return" aria-label="Return to Michigan Phenology">
