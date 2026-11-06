@@ -68,6 +68,13 @@ assert.ok(home.includes('import FirstFreezeJourney from "../components/FirstFree
 assert.ok(home.includes('import {buildFirstFreezeEvidence} from "../lib/first-freeze.mjs"'));
 assert.equal((home.match(/<FirstFreezeJourney evidence=\{firstFreeze\}/g)||[]).length,1,"one focused journey, not stacked homepage sections");
 assert.ok(home.includes('href="/first-freeze.css"'));
+assert.ok(home.includes('className="ff-invite"'),"normal homepage must use only a compact First Freeze invitation");
+assert.ok(home.includes('href="/?experience=first-freeze#first-freeze"'),"invitation opens dedicated focus");
+assert.ok(home.includes('firstFreezeFocused: query?.experience === "first-freeze"'),"focus is resolved on server");
+assert.ok(home.includes('<meta name="robots" content="noindex,follow" />'),"query variant must not become a competing indexable page");
+const app=fs.readFileSync("pages/_app.js","utf8");
+assert.ok(app.includes('isHome && !isFirstFreezeFocus'),"focused view excludes unrelated homepage footer links");
+
 assert.ok(home.includes("signalGeneratedAt: sig.generatedAt"));
 assert.ok(jsx.includes('aria-pressed={chapter.id===c.id}'));
 assert.ok(jsx.includes('aria-live="polite"'));
