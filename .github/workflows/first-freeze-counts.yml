@@ -35,6 +35,6 @@ jobs:
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m "Refresh dated DNR First Freeze waterfowl counts [skip deploy]"
+          git commit -m "Refresh dated DNR First Freeze waterfowl counts"
           git pull --rebase origin main
           git push origin HEAD:main
