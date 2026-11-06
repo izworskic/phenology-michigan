@@ -2,6 +2,7 @@
 /** Foundry pilot 01 fail-closed regression, included in the owning repository npm test. */
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import {buildWaterfowlRead,buildColdWeek,makeFieldBrief} from "../lib/first-freeze-depth.mjs";
 import {FIRST_FREEZE_CHAPTERS,FIRST_FREEZE_SITES,buildFirstFreezeEvidence,firstFreezeSiteAccess,firstFreezeChapterForDate} from "../lib/first-freeze.mjs";
 
 const date = "2026-11-05T14:00:00Z";
@@ -46,6 +47,34 @@ assert.equal(firstFreezeChapterForDate("2027-07-01"),"late-autumn");
 assert.equal(buildFirstFreezeEvidence({now:new Date("2027-07-01T12:00:00Z")}).inSeason,false);
 assert.equal(x.inSeason,true);
 
+
+const surveyBank=JSON.parse(fs.readFileSync("data/first-freeze-waterfowl.json","utf8"));
+const seasonRead=buildWaterfowlRead(surveyBank,"2026-11-06");
+assert.equal(seasonRead.season,"2026–27");
+assert.equal(seasonRead.areas.nayanquing.counts.ducks.latest.count,12000);
+assert.equal(seasonRead.areas.nayanquing.counts.ducks.latest.date,"2026-11-01");
+assert.equal(seasonRead.areas.nayanquing.counts.ducks.delta,1400);
+assert.equal(seasonRead.areas["fish-point"].counts.ducks.latest.count,18325);
+assert.equal(seasonRead.areas["fish-point"].counts.swans.latest.count,504);
+assert.equal(seasonRead.areas["fish-point"].species.items.find(x=>x.name==="Tundra swan").count,450);
+assert.equal(seasonRead.areas.nayanquing.counts.swans.latest.count,0,"DNR zero is a counted sample, not missing data");
+const archiveRead=buildWaterfowlRead(surveyBank,"2027-01-18");
+assert.equal(archiveRead.areas.nayanquing.counts.ducks.status,"archive-only");
+assert.equal(buildWaterfowlRead(surveyBank,"2027-11-06").available,false,
+ "Previous season's surveys must not appear as current fall data");
+assert.equal(buildWaterfowlRead(surveyBank,"2026-10-01").areas.nayanquing.counts.ducks.latest.date,"2026-09-27",
+ "A future-dated area survey must never be shown early");
+const coldWeek=buildColdWeek(fixture.forecast,"2026-11-05");
+assert.equal(coldWeek.days.length,7);
+assert.equal(coldWeek.below32,6);
+assert.equal(coldWeek.days[0].date,"2026-11-05");
+assert.equal(coldWeek.days[1].date,"2026-11-06");
+assert.match(makeFieldBrief({waterfowl:seasonRead,weather:coldWeek,today:"2026-11-06"}).interpretation,/12,000 ducks/);
+assert.equal(buildColdWeek({lows:[null,null]},"2026-11-05").availableDays,0);
+const integrated=buildFirstFreezeEvidence({...fixture,waterfowlBank:surveyBank});
+assert.equal(integrated.pulse.waterfowl.areas.nayanquing.counts.ducks.latest.count,12000);
+assert.equal(integrated.pulse.weather.below32,6);
+
 const ferguson=FIRST_FREEZE_SITES.find(s=>s.id==="ferguson");
 assert.equal(firstFreezeSiteAccess(ferguson,"2026-11-05").kind,"listed-closure");
 assert.equal(firstFreezeSiteAccess(ferguson,"2026-11-15").kind,"listed-closure");
@@ -77,6 +106,16 @@ assert.ok(app.includes('isHome && !isFirstFreezeFocus'),"focused view excludes u
 
 assert.ok(home.includes("signalGeneratedAt: sig.generatedAt"));
 assert.ok(jsx.includes('aria-pressed={chapter.id===c.id}'));
+assert.ok(jsx.includes('<FirstFreezePulse read={evidence.pulse} evidence={evidence} />'));
+assert.ok(!jsx.includes('className="ff-facts"'),"two giant empty NOAA cards removed from visitor first screen");
+const pulse=fs.readFileSync("components/FirstFreezePulse.js","utf8");
+const depthCss=fs.readFileSync("public/first-freeze-depth.css","utf8");
+assert.ok(pulse.includes("Weekly field count")||pulse.includes("weekly field count"));
+assert.ok(pulse.includes("SurveyDetail")&&pulse.includes("ColdClock"));
+assert.ok(pulse.includes("ffp-count-table"));
+assert.ok(pulse.includes("no recent usable point value")||pulse.includes("No recent usable point value"));
+assert.ok(depthCss.includes("@media(max-width:650px)"));
+assert.ok(home.includes('href="/first-freeze-depth.css"'));
 assert.ok(jsx.includes('aria-live="polite"'));
 assert.ok(jsx.includes('Check current operator notice'));
 assert.ok(jsx.includes('All four seasonal chapters and land-manager references'));

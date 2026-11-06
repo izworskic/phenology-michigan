@@ -88,3 +88,28 @@ Regression acceptance:
 - The 4 seasonal buttons and 4 site options still work, A→B→A remains reversible, NOAA evidence does not mutate, and official access warnings remain truthful.
 - Native navigation plus no-JavaScript focus both retain visible source links and all written chapters.
 - Browser screenshots at 360/390/768/1440 test each focused state, while the default homepage remains a clean phenology tool.
+
+## Evidence-depth release (November 6, 2026)
+
+The original November 5 pilot showed two empty NOAA cards and a single 7-day minimum, without the published local counts that make a migration trip meaningful. This version **moves the source-backed DNR survey ledger to the top** of the focused page and changes the field decision from generic agency referral into an evidence- and habitat-based visit plan.
+
+**New visitor value:** Switch between Nayanquing Point and Fish Point and ducks/geese/swans to see dated weekly area surveys, change from the preceding survey, visual time series with accessible table, and species composition. Each number is a management-area survey count, not a live observation, single-spot view, regional population, or guarantee. Zero and missing values have separate meanings. No sums of the two areas are used because dates and survey methods may differ.
+
+**Nayanquing official source** https://www.michigan.gov/dnr/things-to-do/hunting/where/wetland-wonders/nayanquing-point-swa/waterfowl-counts
+
+**Fish Point official source** https://www.michigan.gov/dnr/things-to-do/hunting/where/wetland-wonders/fish-point-swa/waterfowl-counts
+
+The initial bank is a directly source-checked 2026 set: Nayanquing ducks 12,000 on Nov 1; Fish Point ducks 18,325 on Oct 25; Fish Point swans 504 on Nov 1 including 450 tundra. These numbers are **dated historical counts, not current today**. In addition, the Bay City forecast now shows the available daily minimum for each of seven dates, the count of modeled lows at or below 32°F, wind and daylight where supplied. It does **not** infer freeze-up from air forecasts.
+
+**NOAA GLERL caveat:** CoastWatch ERDDAP is serving Anubis automated-access restrictions as of this research. The ice dataset's public metadata lists a coverage end around February 2026 in a previous crawl; seasonal winter maps are not necessarily published in November. It would be dishonest to render missing ice or water temperature as zero. The NOAA section has been moved into a labeled science disclosure with links to the official daily GLSEA analysis and seasonal ice charts. No challenge bypass or substitute invented water measurement is attempted.
+
+### Evergreen update protocol and test limits
+
+- `data/first-freeze-waterfowl.json` is the local authoritative **DNR-source copy** for these two management areas only. `scripts/refresh-first-freeze-waterfowl.py` uses Python standard-library HTML parsing to fetch precisely the two official pages and parse dated numeric `Total ducks`, `Total geese`, `Total swans` tables.
+- A new row is accepted only if the source provides a valid week-ending date, numeric nonnegative count, and date no later than today's calendar date. Future planning rows, NA, blocked pages and changed layouts are not converted into observations. The script logs unavailable sources and leaves previous verified bank values unchanged.
+- `.github/workflows/first-freeze-counts.yml` runs twice weekly (Mon/Thu) plus manual invocation, commits a changed DNR bank and triggers the normal production rebuild. There is no visitor-time government scraping or new database. If source automation fails, the workflow reports failure and **keeps the last dated data**, which becomes visibly historical rather than silently current.
+- `lib/first-freeze-depth.mjs` computes the current September–August waterfowl year. 2026 data remain in the archive when the 2027 season arrives, but will not be presented as 2027 observations. Dated source freshness is per species-group and place; same-day extrapolation and combination across sites are forbidden.
+- GitHub CI runs Python parser fixtures and probes both real sources; `npm test` checks fixed-date numerical examples and season rollover, and real browser acceptance checks place and species switching, accessible survey table, no-JS, stable NOAA data, and mobile layout.
+
+The immersive experience remains on `/?experience=first-freeze` as a noindex same-canonical focus. The default phenology homepage remains the compact invitation. **No change to ordinary homepage ad loading or indexable route structure.**
+

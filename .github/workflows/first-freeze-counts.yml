@@ -1,0 +1,40 @@
+name: Refresh DNR First Freeze waterfowl surveys
+on:
+  schedule:
+    - cron: '21 13 * * 1,4'
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: first-freeze-dnr-surveys
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check parser independently
+        run: python3 scripts/refresh-first-freeze-waterfowl.py --self-test
+      - name: Refresh dated official weekly surveys, or fail without overwriting
+        run: python3 scripts/refresh-first-freeze-waterfowl.py
+      - name: Validate current and past seasons before publishing
+        run: node scripts/check-first-freeze.mjs
+      - name: Commit only verified numeric DNR data
+        run: |
+          git add data/first-freeze-waterfowl.json
+          if git diff --cached --quiet; then
+            echo "No new DNR survey counts; no commit"
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "Refresh dated DNR First Freeze waterfowl counts"
+          git pull --rebase origin main
+          git push origin HEAD:main

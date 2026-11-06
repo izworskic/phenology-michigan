@@ -1,0 +1,72 @@
+/* The First Freeze / evidence-depth v2: editorial migration ledger.
+   All selectors scoped to this focused experience; no ads or generic site layouts. */
+.ff .ff-body{padding-top:24px}
+.ff .ff-focus{grid-template-columns:minmax(0,1fr)}
+.ff .ff-focus-text{max-width:880px}
+.ffp{margin:0 0 37px;padding:clamp(16px,3vw,27px);border:1px solid #668078;border-radius:15px;background:linear-gradient(150deg,#143741 0%,#0b2631 67%,#163e45 100%);color:#ebeee8;box-shadow:inset 0 1px 0 rgba(255,255,255,.09)}
+.ffp a{color:#e8d3a6}
+.ffp-title{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:14px;margin:2px 0 18px}
+.ffp-title>div:first-child{max-width:720px;flex:1 1 400px}
+.ffp-kicker{font:700 10px/1.5 system-ui;letter-spacing:.13em;text-transform:uppercase;color:#c0d4c6;margin:0 0 6px}
+.ffp h3{font:normal clamp(26px,3.3vw,39px)/1.12 Georgia,serif;color:#fff;margin:4px 0 10px}
+.ffp-title p:last-child,.ffp-section-head>p{font:14px/1.6 system-ui;color:#d2e0dc;max-width:72ch;margin:0}
+.ffp-season{font:11px/1.5 system-ui;text-transform:uppercase;letter-spacing:.05em;border:1px solid #76908a;border-radius:7px;padding:10px 13px;background:#173940}
+.ffp-season strong{display:block;font:700 17px Georgia,serif;color:#f4dfb7;margin-top:3px}
+.ffp-choices{display:flex;flex-wrap:wrap;gap:13px 23px;margin:16px 0 18px}
+.ffp-choices fieldset{display:flex;flex-wrap:wrap;gap:7px;min-width:0;border:0;margin:0;padding:0}
+.ffp-choices legend{font:700 11px/1.5 system-ui;color:#bbd4cb;margin:0 0 7px}
+.ffp-choices button{font:700 12px/1.4 system-ui;padding:10px 12px;min-height:44px;color:#eaf3ef;background:#21505a;border:1px solid #769b9b;border-radius:7px;cursor:pointer}
+.ffp-choices button[aria-pressed=true]{background:#f0d7a6;color:#203a3a;border-color:#f0d7a6}
+.ffp button:focus-visible,.ffp a:focus-visible,.ffp summary:focus-visible{outline:3px solid #f5d397;outline-offset:3px}
+.ffp-survey-content{border-top:1px solid #57757a;padding-top:16px}
+.ffp-survey-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(170px,.75fr);gap:16px;align-items:start}
+.ffp-num{font:normal clamp(40px,6vw,70px)/1 Georgia,serif;color:#f4deab;letter-spacing:-.025em;padding:3px 0}
+.ffp-survey-caption{font:13px/1.5 system-ui;color:#f0eee2;margin:5px 0 0}
+.ffp-source-state{border:1px solid #557979;background:#1d4650;padding:12px;border-radius:9px}
+.ffp-source-state strong{display:block;font:700 12px system-ui;color:#f8e6c1}
+.ffp-source-state p{font:12px/1.55 system-ui;color:#d4e0de;margin:7px 0 0}
+.ffp-source-archive-only,.ffp-source-older-survey{border-color:#b09f81}
+.ffp-delta{font:12px/1.55 system-ui;color:#d6e3d9;border-left:3px solid #b9ca9f;padding:8px 12px;margin:14px 0 0;background:#244b4b}
+.ffp-trend{margin:12px 0 0}
+.ffp-trend svg{display:block;width:100%;height:auto;max-height:190px}
+.ffp-muted{font:13px system-ui;color:#d3d4c4;padding:12px 0}
+.ffp-count-table{margin:4px 0 14px;border-top:1px solid #47656e;padding-top:12px}
+.ffp-count-table summary,.ffp-lake-details summary{cursor:pointer;font:700 13px/1.5 system-ui;color:#e9dbbd}
+.ffp-table-wrap{overflow-x:auto;margin-top:12px}
+.ffp table{border-collapse:collapse;width:min(100%,480px);font:13px/1.5 system-ui}
+.ffp th,.ffp td{border-bottom:1px solid #44636e;padding:8px 12px;text-align:left}
+.ffp td{text-align:right;font-variant-numeric:tabular-nums}
+.ffp-species{background:#1a4249;padding:16px;margin:14px 0;border-radius:11px}
+.ffp-species h4{font:normal 22px Georgia,serif;margin:0 0 6px;color:#fff}
+.ffp-species>p{font:12px/1.5 system-ui;margin:0 0 10px;color:#d1e2dc}
+.ffp-species ol{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 20px}
+.ffp-species li{display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid #53747b;padding:6px 0;gap:9px;font:13px/1.5 system-ui}
+.ffp-species li strong{color:#f6dba5;font-variant-numeric:tabular-nums}
+.ffp-dnr-link{display:inline-block;font:700 13px system-ui;margin:6px 0}
+.ffp-comparison-note{font:12px/1.5 system-ui;color:#b9d0cf;margin:12px 0 18px}
+.ffp-clock{border-top:1px solid #73908a;padding-top:20px;margin-top:20px}
+.ffp-section-head{display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:10px}
+.ffp-section-head>div{flex:1 1 250px}
+.ffp-section-head>p{flex:1 1 310px}
+.ffp-week{display:grid;grid-template-columns:repeat(7,minmax(65px,1fr));gap:6px;list-style:none;padding:6px 0 12px;margin:8px 0 0;overflow-x:auto;max-width:100%}
+.ffp-week li{text-align:center;background:#20444d;border:1px solid #4c7375;border-radius:8px;padding:10px 3px;min-height:100px}
+.ffp-week time{font:700 11px system-ui;display:block;color:#d7e2d9}
+.ffp-week strong{font:normal 28px Georgia,serif;color:#fff;display:block;margin:6px 0}
+.ffp-week small{font:10px/1.4 system-ui;display:block;color:#c4d4d3}
+.ffp-week .ffp-freezing{border-color:#c7d5d3;background:#2b5864}
+.ffp-week .ffp-freezing strong{color:#bfe9ef}
+.ffp-weather-notes{display:flex;flex-wrap:wrap;gap:7px 22px;font:12px/1.55 system-ui;color:#d9e6e2}
+.ffp-weather-notes p{flex:1 1 270px;margin:2px 0}
+.ffp-lake-details{margin-top:22px;border-top:1px solid #54747b;padding:15px 0 2px}
+.ffp-lake-body{font:12px/1.6 system-ui;color:#d7e2de;max-width:850px}
+.ffp-lake-body p{margin:10px 0}
+.ff-field-plan{padding:12px 15px;background:rgba(13,45,54,.42);border:1px solid #577b78;border-radius:10px;margin:14px 0;color:#ebf2ed}
+.ff-field-plan h4{margin:7px 0;font:normal 20px Georgia,serif}
+.ff-field-plan p,.ff-field-plan li{font:13px/1.6 system-ui}
+.ff-field-plan ol{padding-left:20px;margin:8px 0}
+.ff-field-plan li{padding-bottom:6px}
+@media(max-width:650px){
+ .ffp{padding:15px}.ffp-survey-head{grid-template-columns:1fr}.ffp-species ol{grid-template-columns:1fr}
+ .ffp-num{font-size:50px}.ffp-week{gap:4px}.ffp-weather-notes{gap:9px}
+ .ffp-choices fieldset{width:100%}
+}
