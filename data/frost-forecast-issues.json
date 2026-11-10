@@ -9372,8 +9372,23 @@
         "windMph": 12.7
       },
       "verification": {
-        "status": "pending",
-        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+        "status": "station_weather_compared",
+        "checkedAt": "2026-11-10T21:47:23.623Z",
+        "stationId": "KAPN",
+        "distanceKm": 10.6,
+        "observedAt": "2026-11-10T12:15:00.000Z",
+        "observed": {
+          "tempF": 44.6,
+          "dewF": 41,
+          "windMph": 29
+        },
+        "difference": {
+          "tempF": -0.4,
+          "dewF": -1,
+          "windMph": 16.3
+        },
+        "weatherAgreement": "mixed",
+        "note": "Nearby NWS station air-weather comparison only. This neither confirms nor disproves hoarfrost at the forecast grid."
       },
       "sourceGridUpdatedAt": "2026-11-10T00:08:51+00:00"
     },
@@ -9391,8 +9406,23 @@
         "windMph": 9.2
       },
       "verification": {
-        "status": "pending",
-        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+        "status": "station_weather_compared",
+        "checkedAt": "2026-11-10T21:47:23.623Z",
+        "stationId": "KARB",
+        "distanceKm": 6.3,
+        "observedAt": "2026-11-10T11:53:00.000Z",
+        "observed": {
+          "tempF": 34,
+          "dewF": 33.1,
+          "windMph": 12.1
+        },
+        "difference": {
+          "tempF": -8,
+          "dewF": -7.9,
+          "windMph": 2.9
+        },
+        "weatherAgreement": "different",
+        "note": "Nearby NWS station air-weather comparison only. This neither confirms nor disproves hoarfrost at the forecast grid."
       },
       "sourceGridUpdatedAt": "2026-11-09T21:13:17+00:00"
     },
@@ -9410,8 +9440,23 @@
         "windMph": 9.2
       },
       "verification": {
-        "status": "pending",
-        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+        "status": "station_weather_compared",
+        "checkedAt": "2026-11-10T21:47:23.623Z",
+        "stationId": "KBAX",
+        "distanceKm": 2.9,
+        "observedAt": "2026-11-10T12:15:00.000Z",
+        "observed": {
+          "tempF": 44.6,
+          "dewF": 41,
+          "windMph": 25
+        },
+        "difference": {
+          "tempF": 2.6,
+          "dewF": 0,
+          "windMph": 15.8
+        },
+        "weatherAgreement": "mixed",
+        "note": "Nearby NWS station air-weather comparison only. This neither confirms nor disproves hoarfrost at the forecast grid."
       },
       "sourceGridUpdatedAt": "2026-11-09T21:13:17+00:00"
     },
@@ -9429,8 +9474,23 @@
         "windMph": 6.9
       },
       "verification": {
-        "status": "pending",
-        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+        "status": "station_weather_compared",
+        "checkedAt": "2026-11-10T21:47:23.623Z",
+        "stationId": "KMBS",
+        "distanceKm": 17.4,
+        "observedAt": "2026-11-10T12:15:00.000Z",
+        "observed": {
+          "tempF": 42.8,
+          "dewF": 39.2,
+          "windMph": 33.2
+        },
+        "difference": {
+          "tempF": 1.8,
+          "dewF": -1.8,
+          "windMph": 26.3
+        },
+        "weatherAgreement": "mixed",
+        "note": "Nearby NWS station air-weather comparison only. This neither confirms nor disproves hoarfrost at the forecast grid."
       },
       "sourceGridUpdatedAt": "2026-11-09T21:13:17+00:00"
     },
@@ -9448,8 +9508,23 @@
         "windMph": 11.5
       },
       "verification": {
-        "status": "pending",
-        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+        "status": "station_weather_compared",
+        "checkedAt": "2026-11-10T21:47:23.623Z",
+        "stationId": "KGLR",
+        "distanceKm": 2.1,
+        "observedAt": "2026-11-10T12:15:00.000Z",
+        "observed": {
+          "tempF": 44.6,
+          "dewF": 39.2,
+          "windMph": 24.9
+        },
+        "difference": {
+          "tempF": 2.6,
+          "dewF": -0.8,
+          "windMph": 13.4
+        },
+        "weatherAgreement": "mixed",
+        "note": "Nearby NWS station air-weather comparison only. This neither confirms nor disproves hoarfrost at the forecast grid."
       },
       "sourceGridUpdatedAt": "2026-11-10T00:08:51+00:00"
     },
@@ -9467,8 +9542,23 @@
         "windMph": 3.5
       },
       "verification": {
-        "status": "pending",
-        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+        "status": "station_weather_compared",
+        "checkedAt": "2026-11-10T21:47:23.623Z",
+        "stationId": "KGRR",
+        "distanceKm": 14.9,
+        "observedAt": "2026-11-10T12:15:00.000Z",
+        "observed": {
+          "tempF": 44.6,
+          "dewF": 42.8,
+          "windMph": 24.9
+        },
+        "difference": {
+          "tempF": 1.6,
+          "dewF": -0.2,
+          "windMph": 21.4
+        },
+        "weatherAgreement": "mixed",
+        "note": "Nearby NWS station air-weather comparison only. This neither confirms nor disproves hoarfrost at the forecast grid."
       },
       "sourceGridUpdatedAt": "2026-11-10T00:03:30+00:00"
     },
@@ -9486,8 +9576,23 @@
         "windMph": 8.1
       },
       "verification": {
-        "status": "pending",
-        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+        "status": "station_weather_compared",
+        "checkedAt": "2026-11-10T21:47:23.623Z",
+        "stationId": "KIWD",
+        "distanceKm": 9.7,
+        "observedAt": "2026-11-10T12:56:00.000Z",
+        "observed": {
+          "tempF": 37,
+          "dewF": 33.1,
+          "windMph": 16.9
+        },
+        "difference": {
+          "tempF": 1,
+          "dewF": 0.1,
+          "windMph": 8.8
+        },
+        "weatherAgreement": "mixed",
+        "note": "Nearby NWS station air-weather comparison only. This neither confirms nor disproves hoarfrost at the forecast grid."
       },
       "sourceGridUpdatedAt": "2026-11-10T00:07:02+00:00"
     },
@@ -9505,8 +9610,23 @@
         "windMph": 2.3
       },
       "verification": {
-        "status": "pending",
-        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+        "status": "station_weather_compared",
+        "checkedAt": "2026-11-10T21:47:23.623Z",
+        "stationId": "KAZO",
+        "distanceKm": 7.8,
+        "observedAt": "2026-11-10T12:15:00.000Z",
+        "observed": {
+          "tempF": 42.8,
+          "dewF": 39.2,
+          "windMph": 0
+        },
+        "difference": {
+          "tempF": -1.2,
+          "dewF": -4.8,
+          "windMph": -2.3
+        },
+        "weatherAgreement": "close",
+        "note": "Nearby NWS station air-weather comparison only. This neither confirms nor disproves hoarfrost at the forecast grid."
       },
       "sourceGridUpdatedAt": "2026-11-10T00:03:30+00:00"
     },
@@ -9524,8 +9644,23 @@
         "windMph": 5.8
       },
       "verification": {
-        "status": "pending",
-        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+        "status": "station_weather_compared",
+        "checkedAt": "2026-11-10T21:47:23.623Z",
+        "stationId": "KLAN",
+        "distanceKm": 6.1,
+        "observedAt": "2026-11-10T12:15:00.000Z",
+        "observed": {
+          "tempF": 44.6,
+          "dewF": 39.2,
+          "windMph": 20.7
+        },
+        "difference": {
+          "tempF": 1.6,
+          "dewF": -3.8,
+          "windMph": 14.9
+        },
+        "weatherAgreement": "mixed",
+        "note": "Nearby NWS station air-weather comparison only. This neither confirms nor disproves hoarfrost at the forecast grid."
       },
       "sourceGridUpdatedAt": "2026-11-10T00:03:30+00:00"
     },
@@ -9543,8 +9678,23 @@
         "windMph": 11.5
       },
       "verification": {
-        "status": "pending",
-        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+        "status": "station_weather_compared",
+        "checkedAt": "2026-11-10T21:47:23.623Z",
+        "stationId": "KSAW",
+        "distanceKm": 20.7,
+        "observedAt": "2026-11-10T12:29:00.000Z",
+        "observed": {
+          "tempF": 41,
+          "dewF": 35.6,
+          "windMph": 33
+        },
+        "difference": {
+          "tempF": -2,
+          "dewF": -4.4,
+          "windMph": 21.5
+        },
+        "weatherAgreement": "mixed",
+        "note": "Nearby NWS station air-weather comparison only. This neither confirms nor disproves hoarfrost at the forecast grid."
       },
       "sourceGridUpdatedAt": "2026-11-10T00:07:02+00:00"
     },
@@ -9562,8 +9712,23 @@
         "windMph": 13.8
       },
       "verification": {
-        "status": "pending",
-        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+        "status": "station_weather_compared",
+        "checkedAt": "2026-11-10T21:47:23.623Z",
+        "stationId": "KP53",
+        "distanceKm": 0.2,
+        "observedAt": "2026-11-10T12:56:00.000Z",
+        "observed": {
+          "tempF": 37,
+          "dewF": 35.1,
+          "windMph": 16.9
+        },
+        "difference": {
+          "tempF": -6,
+          "dewF": -4.9,
+          "windMph": 3.1
+        },
+        "weatherAgreement": "mixed",
+        "note": "Nearby NWS station air-weather comparison only. This neither confirms nor disproves hoarfrost at the forecast grid."
       },
       "sourceGridUpdatedAt": "2026-11-10T00:07:02+00:00"
     },
@@ -9581,11 +9746,254 @@
         "windMph": 6.9
       },
       "verification": {
+        "status": "station_weather_compared",
+        "checkedAt": "2026-11-10T21:47:23.623Z",
+        "stationId": "KTVC",
+        "distanceKm": 4.7,
+        "observedAt": "2026-11-10T12:15:00.000Z",
+        "observed": {
+          "tempF": 42.8,
+          "dewF": 39.2,
+          "windMph": 20.7
+        },
+        "difference": {
+          "tempF": -2.2,
+          "dewF": -3.8,
+          "windMph": 13.8
+        },
+        "weatherAgreement": "mixed",
+        "note": "Nearby NWS station air-weather comparison only. This neither confirms nor disproves hoarfrost at the forecast grid."
+      },
+      "sourceGridUpdatedAt": "2026-11-10T00:08:51+00:00"
+    },
+    {
+      "siteId": "alpena",
+      "date": "2026-11-11",
+      "issuedAt": "2026-11-10T21:47:23.623Z",
+      "sunriseAt": "2026-11-11T12:25:00.000Z",
+      "predicted": {
+        "score": 30,
+        "photoStatus": "low",
+        "sampleAt": "2026-11-11T12:00:00.000Z",
+        "tempF": 39,
+        "dewF": 38,
+        "windMph": 2.3
+      },
+      "verification": {
         "status": "pending",
         "reason": "Sunrise-time nearby station weather has not yet been retrieved."
       },
-      "sourceGridUpdatedAt": "2026-11-10T00:08:51+00:00"
+      "sourceGridUpdatedAt": "2026-11-10T21:11:17+00:00"
+    },
+    {
+      "siteId": "ann-arbor",
+      "date": "2026-11-11",
+      "issuedAt": "2026-11-10T21:47:23.623Z",
+      "sunriseAt": "2026-11-11T12:20:00.000Z",
+      "predicted": {
+        "score": 58,
+        "photoStatus": "low",
+        "sampleAt": "2026-11-11T12:00:00.000Z",
+        "tempF": 37,
+        "dewF": 37,
+        "windMph": 0
+      },
+      "verification": {
+        "status": "pending",
+        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+      },
+      "sourceGridUpdatedAt": "2026-11-10T21:13:13+00:00"
+    },
+    {
+      "siteId": "bad-axe",
+      "date": "2026-11-11",
+      "issuedAt": "2026-11-10T21:47:23.623Z",
+      "sunriseAt": "2026-11-11T12:20:00.000Z",
+      "predicted": {
+        "score": 67,
+        "photoStatus": "low",
+        "sampleAt": "2026-11-11T12:00:00.000Z",
+        "tempF": 34,
+        "dewF": 34,
+        "windMph": 2.3
+      },
+      "verification": {
+        "status": "pending",
+        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+      },
+      "sourceGridUpdatedAt": "2026-11-10T21:13:13+00:00"
+    },
+    {
+      "siteId": "bay-city",
+      "date": "2026-11-11",
+      "issuedAt": "2026-11-10T21:47:23.623Z",
+      "sunriseAt": "2026-11-11T12:23:00.000Z",
+      "predicted": {
+        "score": 65,
+        "photoStatus": "low",
+        "sampleAt": "2026-11-11T12:00:00.000Z",
+        "tempF": 36,
+        "dewF": 36,
+        "windMph": 2.3
+      },
+      "verification": {
+        "status": "pending",
+        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+      },
+      "sourceGridUpdatedAt": "2026-11-10T21:13:13+00:00"
+    },
+    {
+      "siteId": "gaylord",
+      "date": "2026-11-11",
+      "issuedAt": "2026-11-10T21:47:23.623Z",
+      "sunriseAt": "2026-11-11T12:30:00.000Z",
+      "predicted": {
+        "score": 62,
+        "photoStatus": "low",
+        "sampleAt": "2026-11-11T12:00:00.000Z",
+        "tempF": 36,
+        "dewF": 36,
+        "windMph": 2.3
+      },
+      "verification": {
+        "status": "pending",
+        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+      },
+      "sourceGridUpdatedAt": "2026-11-10T21:11:17+00:00"
+    },
+    {
+      "siteId": "grand-rapids",
+      "date": "2026-11-11",
+      "issuedAt": "2026-11-10T21:47:23.623Z",
+      "sunriseAt": "2026-11-11T12:29:00.000Z",
+      "predicted": {
+        "score": 30,
+        "photoStatus": "low",
+        "sampleAt": "2026-11-11T12:00:00.000Z",
+        "tempF": 40,
+        "dewF": 40,
+        "windMph": 0
+      },
+      "verification": {
+        "status": "pending",
+        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+      },
+      "sourceGridUpdatedAt": "2026-11-10T21:03:31+00:00"
+    },
+    {
+      "siteId": "ironwood",
+      "date": "2026-11-11",
+      "issuedAt": "2026-11-10T21:47:23.623Z",
+      "sunriseAt": "2026-11-11T12:56:00.000Z",
+      "predicted": {
+        "score": 36,
+        "photoStatus": "low",
+        "sampleAt": "2026-11-11T13:00:00.000Z",
+        "tempF": 38,
+        "dewF": 38,
+        "windMph": 3.5
+      },
+      "verification": {
+        "status": "pending",
+        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+      },
+      "sourceGridUpdatedAt": "2026-11-10T20:17:29+00:00"
+    },
+    {
+      "siteId": "kalamazoo",
+      "date": "2026-11-11",
+      "issuedAt": "2026-11-10T21:47:23.623Z",
+      "sunriseAt": "2026-11-11T12:27:00.000Z",
+      "predicted": {
+        "score": 43,
+        "photoStatus": "low",
+        "sampleAt": "2026-11-11T12:00:00.000Z",
+        "tempF": 37,
+        "dewF": 37,
+        "windMph": 0
+      },
+      "verification": {
+        "status": "pending",
+        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+      },
+      "sourceGridUpdatedAt": "2026-11-10T21:03:31+00:00"
+    },
+    {
+      "siteId": "lansing",
+      "date": "2026-11-11",
+      "issuedAt": "2026-11-10T21:47:23.623Z",
+      "sunriseAt": "2026-11-11T12:24:00.000Z",
+      "predicted": {
+        "score": 36,
+        "photoStatus": "low",
+        "sampleAt": "2026-11-11T12:00:00.000Z",
+        "tempF": 39,
+        "dewF": 38,
+        "windMph": 1.2
+      },
+      "verification": {
+        "status": "pending",
+        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+      },
+      "sourceGridUpdatedAt": "2026-11-10T21:03:31+00:00"
+    },
+    {
+      "siteId": "marquette",
+      "date": "2026-11-11",
+      "issuedAt": "2026-11-10T21:47:23.623Z",
+      "sunriseAt": "2026-11-11T12:45:00.000Z",
+      "predicted": {
+        "score": 10,
+        "photoStatus": "low",
+        "sampleAt": "2026-11-11T13:00:00.000Z",
+        "tempF": 41,
+        "dewF": 40,
+        "windMph": 3.5
+      },
+      "verification": {
+        "status": "pending",
+        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+      },
+      "sourceGridUpdatedAt": "2026-11-10T20:17:29+00:00"
+    },
+    {
+      "siteId": "munising",
+      "date": "2026-11-11",
+      "issuedAt": "2026-11-10T21:47:23.623Z",
+      "sunriseAt": "2026-11-11T12:42:00.000Z",
+      "predicted": {
+        "score": 10,
+        "photoStatus": "low",
+        "sampleAt": "2026-11-11T13:00:00.000Z",
+        "tempF": 41,
+        "dewF": 39,
+        "windMph": 3.5
+      },
+      "verification": {
+        "status": "pending",
+        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+      },
+      "sourceGridUpdatedAt": "2026-11-10T20:17:29+00:00"
+    },
+    {
+      "siteId": "traverse-city",
+      "date": "2026-11-11",
+      "issuedAt": "2026-11-10T21:47:23.623Z",
+      "sunriseAt": "2026-11-11T12:33:00.000Z",
+      "predicted": {
+        "score": 23,
+        "photoStatus": "low",
+        "sampleAt": "2026-11-11T13:00:00.000Z",
+        "tempF": 42,
+        "dewF": 42,
+        "windMph": 2.3
+      },
+      "verification": {
+        "status": "pending",
+        "reason": "Sunrise-time nearby station weather has not yet been retrieved."
+      },
+      "sourceGridUpdatedAt": "2026-11-10T21:11:17+00:00"
     }
   ],
-  "lastRunAt": "2026-11-10T00:14:10.583Z"
+  "lastRunAt": "2026-11-10T21:47:23.623Z"
 }
