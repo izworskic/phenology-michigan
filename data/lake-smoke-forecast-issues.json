@@ -6258,6 +6258,282 @@
       ],
       "available": 12,
       "method": "one-day-ahead_hourly_nws_noaa_ice_gated"
+    },
+    {
+      "date": "2026-11-10",
+      "issuedAt": "2026-11-10T18:42:09.462Z",
+      "targetDay": "2026-11-11",
+      "sites": [
+        {
+          "id": "marquette",
+          "iceState": "sampled-clear",
+          "waterAt": "2026-11-09T12:00:00.000Z",
+          "forecastAt": "2026-11-10T18:22:09.000Z",
+          "next": {
+            "time": "2026-11-11T10:00:00.000Z",
+            "score": 60,
+            "gapC": 4.1,
+            "windMph": 5,
+            "windFrom": "NW",
+            "drift": "alongshore"
+          },
+          "view": {
+            "time": "2026-11-11T10:00:00.000Z",
+            "score": 60,
+            "gapC": 4.1,
+            "windMph": 5,
+            "windFrom": "NW",
+            "drift": "alongshore"
+          }
+        },
+        {
+          "id": "munising",
+          "iceState": "unavailable",
+          "waterAt": "2026-11-10T07:50:57.000Z",
+          "forecastAt": "2026-11-10T18:37:01.000Z",
+          "next": null,
+          "view": null
+        },
+        {
+          "id": "grand-marais",
+          "iceState": "sampled-clear",
+          "waterAt": "2026-11-09T12:00:00.000Z",
+          "forecastAt": "2026-11-10T18:22:09.000Z",
+          "next": {
+            "time": "2026-11-11T10:00:00.000Z",
+            "score": 60,
+            "gapC": 5.4,
+            "windMph": 5,
+            "windFrom": "NW",
+            "drift": "alongshore"
+          },
+          "view": {
+            "time": "2026-11-11T10:00:00.000Z",
+            "score": 60,
+            "gapC": 5.4,
+            "windMph": 5,
+            "windFrom": "NW",
+            "drift": "alongshore"
+          }
+        },
+        {
+          "id": "whitefish-point",
+          "iceState": "sampled-clear",
+          "waterAt": "2026-11-09T12:00:00.000Z",
+          "forecastAt": "2026-11-10T18:24:36.000Z",
+          "next": {
+            "time": "2026-11-11T10:00:00.000Z",
+            "score": 60,
+            "gapC": 4,
+            "windMph": 10,
+            "windFrom": "NW",
+            "drift": "alongshore"
+          },
+          "view": {
+            "time": "2026-11-11T10:00:00.000Z",
+            "score": 60,
+            "gapC": 4,
+            "windMph": 10,
+            "windFrom": "NW",
+            "drift": "alongshore"
+          }
+        },
+        {
+          "id": "frankfort",
+          "iceState": "sampled-clear",
+          "waterAt": "2026-11-09T12:00:00.000Z",
+          "forecastAt": "2026-11-10T18:24:36.000Z",
+          "next": {
+            "time": "2026-11-11T10:00:00.000Z",
+            "score": 32,
+            "gapC": 3.8,
+            "windMph": 5,
+            "windFrom": "NW",
+            "drift": "shoreward"
+          },
+          "view": null
+        },
+        {
+          "id": "ludington",
+          "iceState": "sampled-clear",
+          "waterAt": "2026-11-09T12:00:00.000Z",
+          "forecastAt": "2026-11-10T18:21:17.000Z",
+          "next": {
+            "time": "2026-11-11T13:00:00.000Z",
+            "score": 32,
+            "gapC": 2,
+            "windMph": 3,
+            "windFrom": "ENE",
+            "drift": "lakeward"
+          },
+          "view": null
+        },
+        {
+          "id": "grand-haven",
+          "iceState": "sampled-clear",
+          "waterAt": "2026-11-09T12:00:00.000Z",
+          "forecastAt": "2026-11-10T18:21:17.000Z",
+          "next": {
+            "time": "2026-11-11T10:00:00.000Z",
+            "score": 32,
+            "gapC": 2.1,
+            "windMph": 5,
+            "windFrom": "S",
+            "drift": "alongshore"
+          },
+          "view": null
+        },
+        {
+          "id": "st-joseph",
+          "iceState": "sampled-clear",
+          "waterAt": "2026-11-09T12:00:00.000Z",
+          "forecastAt": "2026-11-10T18:29:57.000Z",
+          "next": {
+            "time": "2026-11-11T10:00:00.000Z",
+            "score": 60,
+            "gapC": 6.4,
+            "windMph": 5,
+            "windFrom": "S",
+            "drift": "alongshore"
+          },
+          "view": {
+            "time": "2026-11-11T10:00:00.000Z",
+            "score": 60,
+            "gapC": 6.4,
+            "windMph": 5,
+            "windFrom": "S",
+            "drift": "alongshore"
+          }
+        },
+        {
+          "id": "mackinaw-city",
+          "iceState": "sampled-clear",
+          "waterAt": "2026-11-09T12:00:00.000Z",
+          "forecastAt": "2026-11-10T18:24:36.000Z",
+          "next": {
+            "time": "2026-11-11T10:00:00.000Z",
+            "score": 60,
+            "gapC": 5.5,
+            "windMph": 5,
+            "windFrom": "W",
+            "drift": "lakeward"
+          },
+          "view": {
+            "time": "2026-11-11T10:00:00.000Z",
+            "score": 60,
+            "gapC": 5.5,
+            "windMph": 5,
+            "windFrom": "W",
+            "drift": "lakeward"
+          }
+        },
+        {
+          "id": "alpena",
+          "iceState": "unavailable",
+          "waterAt": "2026-11-10T07:50:57.000Z",
+          "forecastAt": "2026-11-10T18:24:36.000Z",
+          "next": null,
+          "view": null
+        },
+        {
+          "id": "tawas",
+          "iceState": "sampled-clear",
+          "waterAt": "2026-11-09T12:00:00.000Z",
+          "forecastAt": "2026-11-10T18:24:36.000Z",
+          "next": {
+            "time": "2026-11-11T10:00:00.000Z",
+            "score": 60,
+            "gapC": 6.6,
+            "windMph": 5,
+            "windFrom": "NW",
+            "drift": "lakeward"
+          },
+          "view": {
+            "time": "2026-11-11T11:00:00.000Z",
+            "score": 60,
+            "gapC": 6.6,
+            "windMph": 5,
+            "windFrom": "N",
+            "drift": "alongshore"
+          }
+        },
+        {
+          "id": "saginaw-bay",
+          "iceState": "sampled-clear",
+          "waterAt": "2026-11-09T12:00:00.000Z",
+          "forecastAt": "2026-11-10T18:24:32.000Z",
+          "next": {
+            "time": "2026-11-11T10:00:00.000Z",
+            "score": 79,
+            "gapC": 9.7,
+            "windMph": 3,
+            "windFrom": "NNW",
+            "drift": "alongshore"
+          },
+          "view": {
+            "time": "2026-11-11T10:00:00.000Z",
+            "score": 79,
+            "gapC": 9.7,
+            "windMph": 3,
+            "windFrom": "NNW",
+            "drift": "alongshore"
+          }
+        },
+        {
+          "id": "lexington",
+          "iceState": "sampled-clear",
+          "waterAt": "2026-11-09T12:00:00.000Z",
+          "forecastAt": "2026-11-10T18:24:32.000Z",
+          "next": {
+            "time": "2026-11-11T10:00:00.000Z",
+            "score": 79,
+            "gapC": 8.8,
+            "windMph": 5,
+            "windFrom": "WNW",
+            "drift": "lakeward"
+          },
+          "view": {
+            "time": "2026-11-11T10:00:00.000Z",
+            "score": 79,
+            "gapC": 8.8,
+            "windMph": 5,
+            "windFrom": "WNW",
+            "drift": "lakeward"
+          }
+        },
+        {
+          "id": "monroe",
+          "iceState": "unavailable",
+          "waterAt": null,
+          "forecastAt": "2026-11-10T18:24:32.000Z",
+          "next": null,
+          "view": null
+        },
+        {
+          "id": "oswego",
+          "iceState": "sampled-clear",
+          "waterAt": "2026-11-09T12:00:00.000Z",
+          "forecastAt": "2026-11-10T18:22:21.000Z",
+          "next": {
+            "time": "2026-11-11T10:00:00.000Z",
+            "score": 79,
+            "gapC": 7.5,
+            "windMph": 8,
+            "windFrom": "NW",
+            "drift": "shoreward"
+          },
+          "view": {
+            "time": "2026-11-11T10:00:00.000Z",
+            "score": 79,
+            "gapC": 7.5,
+            "windMph": 8,
+            "windFrom": "NW",
+            "drift": "shoreward"
+          }
+        }
+      ],
+      "available": 12,
+      "method": "one-day-ahead_hourly_nws_noaa_ice_gated"
     }
   ]
 }
