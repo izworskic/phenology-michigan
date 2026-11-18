@@ -621,9 +621,9 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
     (regionFilter==='all' || areaFor(e)===regionFilter) &&
     matchesPlanningMonth(e.id, planningMonth, { autumnMums: flowerFilter === 'mum' }));
   const counts = decisionCounts(liveDestinations);
-  const useful = liveDestinations.filter((entry) => ['GO', 'GO_BEFORE'].includes(entry?.decision?.decision));
-  const featured = useful[0] || liveDestinations.find((entry) => entry?.decision?.decision === 'WAIT') || liveDestinations[0] || null;
-  const allWeak = liveDestinations.length > 0 && liveDestinations.every((entry) => ['UNKNOWN', 'LIMITED'].includes(entry?.decision?.decision));
+  const useful = visibleDestinations.filter((entry) => ['GO', 'GO_BEFORE'].includes(entry?.decision?.decision));
+  const featured = useful[0] || visibleDestinations.find((entry) => entry?.decision?.decision === 'WAIT') || visibleDestinations[0] || null;
+  const allWeak = visibleDestinations.length > 0 && visibleDestinations.every((entry) => ['UNKNOWN', 'LIMITED'].includes(entry?.decision?.decision));
   const featuredExperience = featured ? getBloomExperience(featured.id) : null;
   const featuredPhoto = preferredPhoto(featuredExperience);
   const editorial = snapshot?.editorial || null;
