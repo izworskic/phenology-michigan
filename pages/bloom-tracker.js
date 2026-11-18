@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowUpRight, ChevronDown, Clock3, Flower2, LocateFixed, MapPin, RefreshCw, ShieldCheck, X } from 'lucide-react';
 import { BLOOM_DESTINATIONS } from '../lib/bloom/destinations.mjs';
 import { getBloomVisitGuide, BLOOM_FAQS } from '../lib/bloom/visit-guides.mjs';
+import { BLOOM_VISIT_MONTHS, matchesPlanningMonth } from '../lib/bloom/visit-months.mjs';
 import { getBloomExperience, photoFitLabel } from '../lib/bloom/experience-layer.mjs';
 import { buildBloomSeasonContext, BLOOM_SEASON_STATES, seasonalItemFor } from '../lib/bloom/seasonal-context.mjs';
 import { editorialItemFor } from '../lib/bloom/editorial.mjs';
@@ -583,6 +584,7 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
   const [refreshing, setRefreshing] = useState(false);
   const [flowerFilter, setFlowerFilter] = useState('all');
   const [regionFilter, setRegionFilter] = useState('all');
+  const [planningMonth, setPlanningMonth] = useState('all');
   const [pageLoadedAt] = useState(() => new Date().toISOString());
   const generatedAt = snapshot?.generatedAt || pageLoadedAt;
   const liveDestinations = useMemo(() => {
@@ -616,7 +618,8 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
     return (seasonContext.items || []).map((item) => byId.get(item.destinationId)).filter(Boolean);
   }, [seasonalMode, liveDestinations, seasonBase, seasonContext, generatedAt]);
   const visibleDestinations = destinations.filter(e=>matchesBloomType(e,flowerFilter) &&
-    (regionFilter==='all' || areaFor(e)===regionFilter));
+    (regionFilter==='all' || areaFor(e)===regionFilter) &&
+    matchesPlanningMonth(e.id, planningMonth, { autumnMums: flowerFilter === 'mum' }));
   const counts = decisionCounts(liveDestinations);
   const useful = liveDestinations.filter((entry) => ['GO', 'GO_BEFORE'].includes(entry?.decision?.decision));
   const featured = useful[0] || liveDestinations.find((entry) => entry?.decision?.decision === 'WAIT') || liveDestinations[0] || null;
@@ -690,6 +693,13 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
         {seasonalMode && <SeasonRouteStrip seasonContext={seasonContext} />}
 
         <div className="bloom-filters" aria-label="Filter Michigan bloom destinations">
+                <div className="bloom-month-planner">
+                  <label htmlFor="bloom-planning-month"><strong>When would you like to visit?</strong></label>
+                  <select id="bloom-planning-month" value={planningMonth} onChange={(event)=>setPlanningMonth(event.target.value)}>
+                    {BLOOM_VISIT_MONTHS.map(([value,label])=><option key={value} value={value}>{label}</option>)}
+                  </select>
+                  <p>Select a month to see destinations with a typical seasonal window then use the live evidence and official visitor information before choosing a date. A planning window never confirms bloom.</p>
+                </div>
                 <div><strong>Flower type</strong><div className="bloom-filter-chips">
                   {BLOOM_TYPES.map(([value,label])=><button type="button" key={value} className={flowerFilter===value?'selected':''} aria-pressed={flowerFilter===value} onClick={()=>setFlowerFilter(value)}>{label}</button>)}
                 </div></div>
@@ -697,7 +707,7 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
                   {[['all','All regions'],['west','West Michigan'],['north','Northern Michigan'],['central','Central'],['southeast','Southeast']].map(([value,label])=><button type="button" key={value} className={regionFilter===value?'selected':''} aria-pressed={regionFilter===value} onClick={()=>setRegionFilter(value)}>{label}</button>)}
                 </div></div>
               </div>
-              <p className="bloom-filter-count" aria-live="polite">Showing {visibleDestinations.length} of {destinations.length} destinations. The map follows these filters.</p>
+              <p className="bloom-filter-count" aria-live="polite">Showing {visibleDestinations.length} of {destinations.length} destinations{planningMonth !== 'all' ? ` with a typical ${BLOOM_VISIT_MONTHS.find(([id])=>id===planningMonth)?.[1] || 'selected-month'} window` : ''}. The map follows these filters. Current bloom decisions are not changed by the month selection.</p>
 
 
         {!destinations.length ? <EmptyState /> : (
