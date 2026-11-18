@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import { BLOOM_DESTINATIONS } from '../lib/bloom/destinations.mjs';
 import { BLOOM_VISIT_GUIDES, BLOOM_EXPANDED_VISIT_GUIDES, BLOOM_FAQS, getBloomVisitGuide } from '../lib/bloom/visit-guides.mjs';
 import { BLOOM_EXPERIENCES } from '../lib/bloom/experience-layer.mjs';
+import { BLOOM_VISIT_MONTHS, matchesPlanningMonth } from '../lib/bloom/visit-months.mjs';
 import { BLOOM_PLANNING_WINDOWS, BLOOM_SEASON_STATES, buildBloomSeasonContext } from '../lib/bloom/seasonal-context.mjs';
 import { getBloomTrackerFixture } from '../lib/bloom/tracker-fixtures.mjs';
 import { decisionCounts, evidenceStrength, goBeforeWindow, humanDecisionLabel } from '../lib/bloom/tracker-product.mjs';
@@ -42,6 +43,23 @@ assert.equal(Object.keys(BLOOM_VISIT_GUIDES).length, 9, '2027 visitor guides cov
 assert.equal(BLOOM_FAQS.length, 12, 'twelve expanded search FAQs include apple blooms and autumn mums');
 assert.equal(Object.keys(BLOOM_EXPANDED_VISIT_GUIDES).length, 10, 'ten new places have operator-grounded logistics');
 assert.equal(BLOOM_DESTINATIONS.length, 19, 'all 19 originals plus expansion stops registered');
+assert.equal(BLOOM_VISIT_MONTHS.length, 9, 'planning covers March through October plus all months');
+assert.equal(matchesPlanningMonth('holland-tulips', '4'), true, 'Holland spring window includes April');
+assert.equal(matchesPlanningMonth('holland-tulips', '5'), true, 'Holland spring window includes May');
+assert.equal(matchesPlanningMonth('holland-tulips', '6'), false, 'June does not belong to Holland typical window');
+assert.equal(matchesPlanningMonth('fruit-ridge-apples', '4'), true, 'new 2027 Fruit Ridge site appears in spring planning');
+assert.equal(matchesPlanningMonth('mackinac-lilacs', '6'), true, 'lilac planning includes June');
+assert.equal(matchesPlanningMonth('blakes-sunflowers', '4'), false, 'summer sunflowers cannot be spring results');
+assert.equal(matchesPlanningMonth('meijer-gardens-cherries', '10', {autumnMums:true}), true, 'October mums are a distinct visit');
+assert.equal(matchesPlanningMonth('meijer-gardens-cherries', '4', {autumnMums:true}), false, 'mums never inherit cherry stage');
+assert.equal(matchesPlanningMonth('meijer-gardens-cherries', '10'), false, 'autumn event does not change cherry bloom window');
+assert.equal(matchesPlanningMonth('holland-tulips', '04'), false, 'invalid month selection fails closed');
+assert.equal(matchesPlanningMonth('missing-destination', '5'), false, 'unregistered destinations are not invented');
+for (const d of BLOOM_DESTINATIONS) {
+  assert.ok(BLOOM_VISIT_MONTHS.slice(1).some(([value]) => matchesPlanningMonth(d.id, value)),
+    `every destination must be discoverable within its sourced typical season: ${d.id}`);
+}
+
 for(const d of BLOOM_DESTINATIONS) assert.ok(getBloomVisitGuide(d.id), `missing visitor logistics for ${d.id}`);
 for (const guide of Object.values(BLOOM_VISIT_GUIDES)) {
   for (const field of ['tickets', 'hours', 'parking', 'crowds', 'tip']) {
@@ -102,6 +120,10 @@ assert.ok(page.includes('map-season-label'), 'off-season map must put time label
 assert.ok(page.includes('Read the year across the map:'), 'off-season map must explain how to interpret the April-to-September flower season');
 
 assert.ok(page.includes('function OpportunityCard'), 'experience must be integrated into each ranked destination');
+assert.ok(page.includes('id="bloom-planning-month"') && page.includes('matchesPlanningMonth(e.id, planningMonth'), 'visitor planning month must filter destination cards and the map');
+assert.ok(page.includes('A planning window never confirms bloom.'), 'month filter must preserve observation authority');
+const visitCss = await fs.readFile(new URL('../public/bloom-visit-guide.css', import.meta.url), 'utf8');
+assert.ok(visitCss.includes('.bloom-month-planner select:focus-visible'), 'month picker needs visible keyboard focus');
 assert.ok(page.includes('ExperienceThumbnail'), 'ranked destinations must carry visual context');
 assert.ok(page.includes('See the place + evidence'), 'richer active-season experience and evidence must be optional expansion');
 assert.ok(page.includes('Picture the place'), 'off-season expansion must focus on sense of place rather than stale evidence');
