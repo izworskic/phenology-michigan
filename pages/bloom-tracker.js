@@ -2,6 +2,8 @@ import Head from 'next/head';
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowUpRight, ChevronDown, Clock3, Flower2, LocateFixed, MapPin, RefreshCw, ShieldCheck, X } from 'lucide-react';
 import { BLOOM_DESTINATIONS } from '../lib/bloom/destinations.mjs';
+import ARCHIVED_BLOOM_OBSERVATIONS from '../data/bloom-observation-history.json';
+import { buildBloomHistoryDesk } from '../lib/bloom/field-history.mjs';
 import { getBloomVisitGuide, BLOOM_FAQS } from '../lib/bloom/visit-guides.mjs';
 import { BLOOM_VISIT_MONTHS, matchesPlanningMonth, isAutumnMumsPlanningView } from '../lib/bloom/visit-months.mjs';
 import { getBloomExperience, photoFitLabel } from '../lib/bloom/experience-layer.mjs';
@@ -258,7 +260,31 @@ function SeasonRouteStrip({ seasonContext }) {
   );
 }
 
-function OpportunityCard({ entry, rank, generatedAt, seasonContext, editorial, seasonalMode, mumView = false }) {
+function HistoricalBloomRecord({ history, isAutumnMums = false }) {
+  const records = isAutumnMums ? [] : history?.records || [];
+  return (
+    <section className="bloom-history-record" aria-label="Archived source-linked stages">
+      <span className="eyebrow">What the historical record actually says</span>
+      {records.length ? (
+        <>
+          <p><strong>{history.count} archived stage {history.count === 1 ? 'record' : 'records'}</strong> from {history.years.join(', ')}. These are dates of source reports, not first flower or a confirmed peak.</p>
+          <ol>{records.map((report) => (
+            <li key={report.sourceUrl + report.observedAt + report.stage}>
+              <time dateTime={report.observedAt}>{new Date(report.observedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'America/Detroit'})}</time>
+              <strong>{stageLabel(report.stage)}</strong>
+              <span>{report.evidenceType}. {report.zone || report.scope}.</span>
+              <a href={report.sourceUrl} target="_blank" rel="noopener noreferrer">{report.sourceName} <ArrowUpRight size={12} /></a>
+            </li>
+          ))}</ol>
+        </>
+      ) : (
+        <p>{isAutumnMums ? 'No archived October mum stage report is available here. Spring cherry records are not evidence for this separate display.' : 'No source-linked historical stage report has been archived for this destination yet. A normal season calendar does not fill that gap.'}</p>
+      )}
+    </section>
+  );
+}
+
+function OpportunityCard({ entry, rank, generatedAt, seasonContext, editorial, seasonalMode, mumView = false, history = null }) {
   const decision = entry?.decision || {};
   const state = decision.decision || 'UNKNOWN';
   const experience = getBloomExperience(entry.id);
@@ -373,6 +399,7 @@ function OpportunityCard({ entry, rank, generatedAt, seasonContext, editorial, s
             </>
           )}
 
+          <HistoricalBloomRecord history={history} isAutumnMums={mumView} />
           <div className="trip-links">
             {experience?.experienceSource?.url && <a href={experience.experienceSource.url} target="_blank" rel="noreferrer">Visitor context: {experience.experienceSource.label} <ArrowUpRight size={13} /></a>}
             {seasonItem?.sourceUrl && seasonalMode && <a href={seasonItem.sourceUrl} target="_blank" rel="noreferrer">Season timing source <ArrowUpRight size={13} /></a>}
@@ -594,6 +621,7 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
   const [regionFilter, setRegionFilter] = useState('all');
   const [planningMonth, setPlanningMonth] = useState('all');
   const [pageLoadedAt] = useState(() => new Date().toISOString());
+  const [historyDesk, setHistoryDesk] = useState(() => buildBloomHistoryDesk(ARCHIVED_BLOOM_OBSERVATIONS));
   const generatedAt = snapshot?.generatedAt || pageLoadedAt;
   const liveDestinations = useMemo(() => {
     const clock = new Date(fixtureName ? generatedAt : pageLoadedAt).getTime();
@@ -658,6 +686,15 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
     const timer = setInterval(refresh, 5 * 60 * 1000);
     return () => clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    fetch('/api/bloom-history', { cache: 'no-store' })
+      .then((response) => { if (!response.ok) throw new Error('History unavailable'); return response.json(); })
+      .then((desk) => { if (active && desk?.schemaVersion === 1) setHistoryDesk(desk); })
+      .catch(() => { /* Keep the committed archive and mark no extra records. */ });
+    return () => { active = false; };
   }, []);
 
   const structuredData = {
@@ -747,8 +784,9 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
 
             <section className="opportunity-section" aria-labelledby="where-title">
               <div className="section-heading"><div><span className="eyebrow">{seasonalMode ? 'Michigan flower season, place by place' : 'Statewide opportunity desk'}</span><h2 id="where-title">{seasonalMode ? 'What does each stop feel like?' : 'Where should I go?'}</h2></div><span className="count">{destinations.length} tracked displays</span></div>
+              <p className="bloom-history-summary">Historical field record: {historyDesk.totalRecords} source-linked stage {historyDesk.totalRecords === 1 ? 'entry' : 'entries'} across {historyDesk.destinationsWithRecords} of {historyDesk.destinationsTracked} destinations. The archive does not measure first bloom or peak; missing reports are not evidence of no flowers.</p>
               <p className="opportunity-intro">{seasonalMode ? 'The season has a geography as well as a calendar. Compare 19 locations from spring orchard blossoms and woodland wildflowers to summer flower fields and late garden color; filters update both the destinations and map.' : 'The live decision stays primary. Each place gets just enough visual context to show what you are driving toward; expand only the destinations you care about.'}</p>
-              {visibleDestinations.length ? <div className="opportunity-list">{visibleDestinations.map((entry, index) => <OpportunityCard key={entry.id} entry={entry} rank={index + 1} generatedAt={generatedAt} seasonContext={seasonContext} editorial={editorial} seasonalMode={seasonalMode} mumView={isAutumnMumsPlanningView(entry.id, planningMonth, flowerFilter)} />)}</div>
+              {visibleDestinations.length ? <div className="opportunity-list">{visibleDestinations.map((entry, index) => <OpportunityCard key={entry.id} entry={entry} rank={index + 1} generatedAt={generatedAt} seasonContext={seasonContext} editorial={editorial} seasonalMode={seasonalMode} mumView={isAutumnMumsPlanningView(entry.id, planningMonth, flowerFilter)} history={historyDesk.byDestination?.[entry.id]} />)}</div>
               : <p className="bloom-filter-empty">No tracked destinations match both filters. Choose another flower type or region.</p>}
             </section>
 
