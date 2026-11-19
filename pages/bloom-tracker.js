@@ -5,7 +5,7 @@ import { BLOOM_DESTINATIONS } from '../lib/bloom/destinations.mjs';
 import ARCHIVED_BLOOM_OBSERVATIONS from '../data/bloom-observation-history.json';
 import { buildBloomHistoryDesk } from '../lib/bloom/field-history.mjs';
 import { getBloomVisitGuide, BLOOM_FAQS } from '../lib/bloom/visit-guides.mjs';
-import { BLOOM_VISIT_MONTHS, matchesPlanningMonth, isAutumnMumsPlanningView } from '../lib/bloom/visit-months.mjs';
+import { BLOOM_VISIT_MONTHS, matchesPlanningMonth, isAutumnMumsPlanningView, summarizeVisitMonths } from '../lib/bloom/visit-months.mjs';
 import { getBloomExperience, photoFitLabel } from '../lib/bloom/experience-layer.mjs';
 import { buildBloomSeasonContext, BLOOM_SEASON_STATES, seasonalItemFor } from '../lib/bloom/seasonal-context.mjs';
 import { editorialItemFor } from '../lib/bloom/editorial.mjs';
@@ -659,14 +659,10 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
       isAutumnMumsPlanningView(e.id, planningMonth, flowerFilter)));
   // The season rail counts candidate visit windows, not flowering reports.
   // Use the same type, region and October-mums contract as the map and cards.
-  const monthWave = BLOOM_VISIT_MONTHS.slice(1).map(([value, label]) => ({
-    value, label,
-    count: destinations.filter(entry =>
-      matchesBloomType(entry, flowerFilter) &&
-      (regionFilter === 'all' || areaFor(entry) === regionFilter) &&
-      (matchesPlanningMonth(entry.id, value, { autumnMums: flowerFilter === 'mum' }) ||
-       isAutumnMumsPlanningView(entry.id, value, flowerFilter))).length,
-  }));
+  const candidateWaveDestinations = destinations.filter(entry =>
+    matchesBloomType(entry, flowerFilter) &&
+    (regionFilter === 'all' || areaFor(entry) === regionFilter));
+  const monthWave = summarizeVisitMonths(candidateWaveDestinations, { flowerFilter });
   const monthLabel = BLOOM_VISIT_MONTHS.find(([value]) => value === planningMonth)?.[1] || 'Any month';
   const monthExamples = visibleDestinations.slice(0, 3).map(entry =>
     isAutumnMumsPlanningView(entry.id, planningMonth, flowerFilter) ? 'Meijer Gardens October mums' : entry.name);
