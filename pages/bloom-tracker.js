@@ -296,7 +296,7 @@ function OpportunityCard({ entry, rank, generatedAt, seasonContext, editorial, s
   const visit = getBloomVisitGuide(entry.id);
 
   return (
-    <article className="opportunity-card" data-state={mumView ? 'UNKNOWN' : seasonalMode ? seasonItem?.state : state}
+    <article className="opportunity-card" id={`destination-${entry.id}`} data-state={mumView ? 'UNKNOWN' : seasonalMode ? seasonItem?.state : state}
       data-lat={DESTINATION_BY_ID[entry.id]?.coordinates?.lat}
       data-lon={DESTINATION_BY_ID[entry.id]?.coordinates?.lon}
       data-kind={mumView ? 'mum' : bloomKind(entry)}
@@ -664,8 +664,10 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
     (regionFilter === 'all' || areaFor(entry) === regionFilter));
   const monthWave = summarizeVisitMonths(candidateWaveDestinations, { flowerFilter });
   const monthLabel = BLOOM_VISIT_MONTHS.find(([value]) => value === planningMonth)?.[1] || 'Any month';
-  const monthExamples = visibleDestinations.slice(0, 3).map(entry =>
-    isAutumnMumsPlanningView(entry.id, planningMonth, flowerFilter) ? 'Meijer Gardens October mums' : entry.name);
+  const monthExamples = visibleDestinations.slice(0, 3).map(entry => ({
+    id: entry.id,
+    name: isAutumnMumsPlanningView(entry.id, planningMonth, flowerFilter) ? 'Meijer Gardens October mums' : entry.name,
+  }));
   const counts = decisionCounts(liveDestinations);
   const currentVisible = visibleDestinations.filter((entry) => !isAutumnMumsPlanningView(entry.id, planningMonth, flowerFilter));
   const useful = currentVisible.filter((entry) => ['GO', 'GO_BEFORE'].includes(entry?.decision?.decision));
@@ -766,10 +768,13 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
             <div className="bloom-wave-read" role="status" aria-live="polite">
               <div><strong>{planningMonth==='all' ? 'Start with a month' : `${monthLabel}: ${visibleDestinations.length} matching ${visibleDestinations.length===1?'stop':'stops'}`}</strong>
               <p>{planningMonth==='all' ? 'Select a month to reveal its possible flowers across Michigan. The counts reflect the flower type and region filters below.' :
-                visibleDestinations.length ? `Places to explore: ${monthExamples.join(' · ')}${visibleDestinations.length>3?' and more':''}. These are normal planning windows, not a report of flowers open today.` :
+                visibleDestinations.length ? 'Choose a named place below, then verify fresh bloom observations and operating hours. These are typical planning windows, not a report of flowers open today.' :
                 'No tracked display matches this month with your current flower and region choices. Select a different month or clear a filter.'}</p></div>
               <a href="#where-title">View matching places <ArrowUpRight size={14}/></a>
             </div>
+            {planningMonth!=='all' && monthExamples.length>0 && <nav className="bloom-wave-stops" aria-label="Jump to matching destination cards">
+              {monthExamples.map(entry=><a key={entry.id} href={`#destination-${entry.id}`}>{entry.name} <ArrowUpRight size={12}/></a>)}
+            </nav>}
           </section>
                 <div className="bloom-month-planner">
                   <label htmlFor="bloom-planning-month"><strong>When would you like to visit?</strong></label>
