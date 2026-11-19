@@ -36,6 +36,9 @@ assert.match(page, /onClick=\{\(\)=>setPlanningMonth\(planningMonth===value\?'al
 assert.match(page, /aria-pressed=\{planningMonth===value\}/, 'keyboard users need a visible selected state');
 assert.match(page, /role="status" aria-live="polite"/, 'month choice must announce an interpretable result');
 assert.match(page, /visibleDestinations = destinations\.filter/, 'map and cards share the chosen month state');
+assert.ok(page.includes('id={`destination-${entry.id}`}'), 'month selection must have stable destination card anchors');
+assert.ok(page.includes('href={`#destination-${entry.id}`}'), 'selected month must lead to named, matching destinations');
+assert.ok(page.includes('monthExamples = visibleDestinations.slice(0, 3)'), 'named suggestions must derive from the filtered place list');
 assert.match(page, /id="bloom-planning-month" value=\{planningMonth\}/, 'native month picker must stay synchronized');
 assert.match(css, /\.bloom-wave-track\{[^}]*overflow-x:auto/, 'phone scroll must be contained within timeline');
 assert.match(css, /\.bloom-wave-track button:focus-visible/, 'controls need obvious keyboard focus');
