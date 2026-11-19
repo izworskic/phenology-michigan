@@ -55,6 +55,7 @@ assert.equal(matchesPlanningMonth('meijer-gardens-cherries', '4', {autumnMums:tr
 assert.equal(matchesPlanningMonth('meijer-gardens-cherries', '10'), false, 'autumn event does not change cherry bloom window');
 assert.equal(isAutumnMumsPlanningView('meijer-gardens-cherries', '10', 'all'), true, 'October All flowers must include the autumn mum display');
 assert.equal(isAutumnMumsPlanningView('meijer-gardens-cherries', '10', 'mum'), true, 'October mums category must include the separate autumn display');
+assert.equal(isAutumnMumsPlanningView('meijer-gardens-cherries', 'all', 'mum'), true, 'Autumn mums category with Any month cannot show spring cherry status');
 assert.equal(isAutumnMumsPlanningView('meijer-gardens-cherries', '10', 'cherry'), false, 'October cherry filter cannot masquerade as mums');
 assert.equal(isAutumnMumsPlanningView('meijer-gardens-cherries', '4', 'all'), false, 'April cherry display is not the autumn mum exhibition');
 assert.equal(isAutumnMumsPlanningView('dow-gardens', '10', 'all'), false, 'other October destinations must not inherit Meijer mum identity');
