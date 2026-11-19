@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowUpRight, ChevronDown, Clock3, Flower2, LocateFixed, MapPin, RefreshCw, ShieldCheck, X } from 'lucide-react';
 import { BLOOM_DESTINATIONS } from '../lib/bloom/destinations.mjs';
 import { getBloomVisitGuide, BLOOM_FAQS } from '../lib/bloom/visit-guides.mjs';
-import { BLOOM_VISIT_MONTHS, matchesPlanningMonth } from '../lib/bloom/visit-months.mjs';
+import { BLOOM_VISIT_MONTHS, matchesPlanningMonth, isAutumnMumsPlanningView } from '../lib/bloom/visit-months.mjs';
 import { getBloomExperience, photoFitLabel } from '../lib/bloom/experience-layer.mjs';
 import { buildBloomSeasonContext, BLOOM_SEASON_STATES, seasonalItemFor } from '../lib/bloom/seasonal-context.mjs';
 import { editorialItemFor } from '../lib/bloom/editorial.mjs';
@@ -307,7 +307,7 @@ function OpportunityCard({ entry, rank, generatedAt, seasonContext, editorial, s
 
       <details className="opportunity-more" id={`details-${entry.id}`}>
         <summary>
-          <span>{seasonalMode ? 'Picture the place' : 'See the place + evidence'}</span>
+          <span>{mumView ? 'Plan an October visit' : seasonalMode ? 'Picture the place' : 'See the place + evidence'}</span>
           <ChevronDown className="opportunity-chevron" size={16} />
         </summary>
         <div className="opportunity-expanded">
@@ -331,7 +331,7 @@ function OpportunityCard({ entry, rank, generatedAt, seasonContext, editorial, s
           )}
 
 
-          {visit && (
+          {visit && !mumView && (
             <section className="bloom-logistics" aria-label={"2027 visit logistics for " + entry.name}>
               <span className="eyebrow">2027 visitor field guide</span>
               <h4>Tickets, hours, parking &amp; crowds</h4>
@@ -385,7 +385,7 @@ function OpportunityCard({ entry, rank, generatedAt, seasonContext, editorial, s
   );
 }
 
-function MapSelectedPanel({ entry, generatedAt, onClose, seasonContext, editorial, seasonalMode }) {
+function MapSelectedPanel({ entry, generatedAt, onClose, seasonContext, editorial, seasonalMode, mumView = false }) {
   if (!entry) return null;
   const decision = entry.decision || {};
   const seasonItem = seasonalItemFor(seasonContext, entry.id);
@@ -395,10 +395,16 @@ function MapSelectedPanel({ entry, generatedAt, onClose, seasonContext, editoria
     <div className="map-selected-panel" aria-live="polite">
       <button type="button" className="map-panel-close" onClick={onClose} aria-label="Close map detail"><X size={17} /></button>
       <div className="map-panel-top">
-        <div><span className="region">{entry.region}</span><strong>{entry.name}</strong></div>
-        {seasonalMode ? <SeasonPill item={seasonItem} /> : <DecisionPill value={decision.decision || 'UNKNOWN'} compact />}
+        <div><span className="region">{entry.region}</span><strong>{mumView ? 'Meijer Gardens October Mums' : entry.name}</strong></div>
+        {mumView ? <span className="season-pill">October planning · not live</span> : seasonalMode ? <SeasonPill item={seasonItem} /> : <DecisionPill value={decision.decision || 'UNKNOWN'} compact />}
       </div>
-      {seasonalMode ? (
+      {mumView ? (
+        <>
+          <p>Meijer Gardens advertises an October chrysanthemum exhibition. It is separate from the tracked spring cherry blossom display, and no live mum bloom stage is available here.</p>
+          <div className="map-panel-meta"><span>October event planning</span><span>·</span><span>not a current bloom report</span></div>
+          <a href="https://www.meijergardens.org/autumn/" target="_blank" rel="noopener noreferrer">Official autumn visitor information</a>
+        </>
+      ) : seasonalMode ? (
         <>
           <p>{editorialItem?.text || experience?.headline || `Typical planning window: ${seasonItem?.windowLabel || 'spring'}.`}</p>
           <div className="map-panel-meta"><span>Typical {seasonItem?.windowLabel || 'spring'}</span><span>·</span><span>not a current bloom claim</span></div>
@@ -414,7 +420,7 @@ function MapSelectedPanel({ entry, generatedAt, onClose, seasonContext, editoria
   );
 }
 
-function MichiganBloomMap({ destinations, generatedAt, seasonContext, editorial, seasonalMode }) {
+function MichiganBloomMap({ destinations, generatedAt, seasonContext, editorial, seasonalMode, planningMonth, flowerFilter }) {
   const [selectedId, setSelectedId] = useState(null);
   const [geography, setGeography] = useState(null);
   const [mapState, setMapState] = useState('loading');
@@ -430,8 +436,8 @@ function MichiganBloomMap({ destinations, generatedAt, seasonContext, editorial,
     return () => { cancelled = true; };
   }, []);
 
-  const mapTitle = seasonContext?.map?.title || 'Where is the bloom happening?';
-  const mapIntro = seasonContext?.map?.intro || 'Use geography to compare current bloom opportunities.';
+  const mapTitle = planningMonth === '10' ? 'Where can I see October flowers?' : seasonContext?.map?.title || 'Where is the bloom happening?';
+  const mapIntro = planningMonth === '10' ? 'These are typical October display destinations, not live bloom observations or confirmed 2027 event dates.' : seasonContext?.map?.intro || 'Use geography to compare current bloom opportunities.';
 
   return (
     <section className="map-section" aria-labelledby="map-title">
@@ -469,25 +475,27 @@ function MichiganBloomMap({ destinations, generatedAt, seasonContext, editorial,
               const [x, y] = projectCoordinate(destination.coordinates.lon, destination.coordinates.lat);
               const decisionState = entry?.decision?.decision || 'UNKNOWN';
               const seasonItem = seasonalItemFor(seasonContext, entry.id);
-              const tone = seasonalMode ? (SEASON_TONE[seasonItem?.state] || SEASON_TONE.OFF_SEASON) : (DECISION_TONE[decisionState] || DECISION_TONE.UNKNOWN);
+              const mumView = isAutumnMumsPlanningView(entry.id, planningMonth, flowerFilter);
+              const tone = mumView ? SEASON_TONE.OFF_SEASON : seasonalMode ? (SEASON_TONE[seasonItem?.state] || SEASON_TONE.OFF_SEASON) : (DECISION_TONE[decisionState] || DECISION_TONE.UNKNOWN);
+              const markerLabel = mumView ? 'Meijer Gardens October Mums: event planning, not a live bloom report' : seasonalMode ? `${entry.name}: typical ${seasonItem?.windowLabel || 'spring'}` : `${entry.name}: ${humanDecisionLabel(decisionState)}`;
               const selectedMarker = selectedId === entry.id;
               const activate = () => setSelectedId(entry.id);
               const offset = MAP_SEASON_LABEL_OFFSET[entry.id] || [20, -14];
               return (
                 <g key={entry.id}>
-                  <g transform={`translate(${x} ${y})`} role="button" tabIndex="0" aria-label={seasonalMode ? `${entry.name}: typical ${seasonItem?.windowLabel || 'spring'}` : `${entry.name}: ${humanDecisionLabel(decisionState)}`} onClick={activate} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); activate(); } }} style={{ cursor: 'pointer', outline: 'none' }}>
+                  <g transform={`translate(${x} ${y})`} role="button" tabIndex="0" aria-label={markerLabel} onClick={activate} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); activate(); } }} style={{ cursor: 'pointer', outline: 'none' }}>
                     <circle r="28" fill="transparent" />
                     <circle r={selectedMarker ? '19' : '17'} fill="#fffdf8" stroke={selectedMarker ? '#263b2c' : tone.border} strokeWidth={selectedMarker ? '4' : '3'} />
                     <circle r="9" fill={tone.dot} />
-                    <title>{seasonalMode ? `${entry.name}: typical ${seasonItem?.windowLabel || 'spring'}` : `${entry.name}: ${humanDecisionLabel(decisionState)}`}</title>
+                    <title>{markerLabel}</title>
                   </g>
-                  {seasonalMode && seasonItem?.shortLabel && <text x={x + offset[0]} y={y + offset[1]} className="map-season-label">{seasonItem.shortLabel}</text>}
+                  {seasonalMode && (mumView || seasonItem?.shortLabel) && <text x={x + offset[0]} y={y + offset[1]} className="map-season-label">{mumView ? 'Oct' : seasonItem.shortLabel}</text>}
                 </g>
               );
             })}
           </svg>
         )}
-        <MapSelectedPanel entry={selected} generatedAt={generatedAt} onClose={() => setSelectedId(null)} seasonContext={seasonContext} editorial={editorial} seasonalMode={seasonalMode} />
+        <MapSelectedPanel entry={selected} generatedAt={generatedAt} onClose={() => setSelectedId(null)} seasonContext={seasonContext} editorial={editorial} seasonalMode={seasonalMode} mumView={selected ? isAutumnMumsPlanningView(selected.id, planningMonth, flowerFilter) : false} />
       </div>
 
       {seasonalMode ? (
@@ -619,11 +627,13 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
   }, [seasonalMode, liveDestinations, seasonBase, seasonContext, generatedAt]);
   const visibleDestinations = destinations.filter(e=>matchesBloomType(e,flowerFilter) &&
     (regionFilter==='all' || areaFor(e)===regionFilter) &&
-    matchesPlanningMonth(e.id, planningMonth, { autumnMums: flowerFilter === 'mum' }));
+    (matchesPlanningMonth(e.id, planningMonth, { autumnMums: flowerFilter === 'mum' }) ||
+      isAutumnMumsPlanningView(e.id, planningMonth, flowerFilter)));
   const counts = decisionCounts(liveDestinations);
-  const useful = visibleDestinations.filter((entry) => ['GO', 'GO_BEFORE'].includes(entry?.decision?.decision));
-  const featured = useful[0] || visibleDestinations.find((entry) => entry?.decision?.decision === 'WAIT') || visibleDestinations[0] || null;
-  const allWeak = visibleDestinations.length > 0 && visibleDestinations.every((entry) => ['UNKNOWN', 'LIMITED'].includes(entry?.decision?.decision));
+  const currentVisible = visibleDestinations.filter((entry) => !isAutumnMumsPlanningView(entry.id, planningMonth, flowerFilter));
+  const useful = currentVisible.filter((entry) => ['GO', 'GO_BEFORE'].includes(entry?.decision?.decision));
+  const featured = useful[0] || currentVisible.find((entry) => entry?.decision?.decision === 'WAIT') || currentVisible[0] || null;
+  const allWeak = currentVisible.length > 0 && currentVisible.every((entry) => ['UNKNOWN', 'LIMITED'].includes(entry?.decision?.decision));
   const featuredExperience = featured ? getBloomExperience(featured.id) : null;
   const featuredPhoto = preferredPhoto(featuredExperience);
   const editorial = snapshot?.editorial || null;
@@ -738,11 +748,11 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
             <section className="opportunity-section" aria-labelledby="where-title">
               <div className="section-heading"><div><span className="eyebrow">{seasonalMode ? 'Michigan flower season, place by place' : 'Statewide opportunity desk'}</span><h2 id="where-title">{seasonalMode ? 'What does each stop feel like?' : 'Where should I go?'}</h2></div><span className="count">{destinations.length} tracked displays</span></div>
               <p className="opportunity-intro">{seasonalMode ? 'The season has a geography as well as a calendar. Compare 19 locations from spring orchard blossoms and woodland wildflowers to summer flower fields and late garden color; filters update both the destinations and map.' : 'The live decision stays primary. Each place gets just enough visual context to show what you are driving toward; expand only the destinations you care about.'}</p>
-              {visibleDestinations.length ? <div className="opportunity-list">{visibleDestinations.map((entry, index) => <OpportunityCard key={entry.id} entry={entry} rank={index + 1} generatedAt={generatedAt} seasonContext={seasonContext} editorial={editorial} seasonalMode={seasonalMode} mumView={flowerFilter === 'mum'} />)}</div>
+              {visibleDestinations.length ? <div className="opportunity-list">{visibleDestinations.map((entry, index) => <OpportunityCard key={entry.id} entry={entry} rank={index + 1} generatedAt={generatedAt} seasonContext={seasonContext} editorial={editorial} seasonalMode={seasonalMode} mumView={isAutumnMumsPlanningView(entry.id, planningMonth, flowerFilter)} />)}</div>
               : <p className="bloom-filter-empty">No tracked destinations match both filters. Choose another flower type or region.</p>}
             </section>
 
-            <MichiganBloomMap destinations={visibleDestinations} generatedAt={generatedAt} seasonContext={seasonContext} editorial={editorial} seasonalMode={seasonalMode} />
+            <MichiganBloomMap destinations={visibleDestinations} generatedAt={generatedAt} seasonContext={seasonContext} editorial={editorial} seasonalMode={seasonalMode} planningMonth={planningMonth} flowerFilter={flowerFilter} />
 
             <BloomWeeklyNotes snapshot={snapshot} referenceDate={pageLoadedAt} />
             <BloomFAQs />
