@@ -657,6 +657,19 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
     (regionFilter==='all' || areaFor(e)===regionFilter) &&
     (matchesPlanningMonth(e.id, planningMonth, { autumnMums: flowerFilter === 'mum' }) ||
       isAutumnMumsPlanningView(e.id, planningMonth, flowerFilter)));
+  // The season rail counts candidate visit windows, not flowering reports.
+  // Use the same type, region and October-mums contract as the map and cards.
+  const monthWave = BLOOM_VISIT_MONTHS.slice(1).map(([value, label]) => ({
+    value, label,
+    count: destinations.filter(entry =>
+      matchesBloomType(entry, flowerFilter) &&
+      (regionFilter === 'all' || areaFor(entry) === regionFilter) &&
+      (matchesPlanningMonth(entry.id, value, { autumnMums: flowerFilter === 'mum' }) ||
+       isAutumnMumsPlanningView(entry.id, value, flowerFilter))).length,
+  }));
+  const monthLabel = BLOOM_VISIT_MONTHS.find(([value]) => value === planningMonth)?.[1] || 'Any month';
+  const monthExamples = visibleDestinations.slice(0, 3).map(entry =>
+    isAutumnMumsPlanningView(entry.id, planningMonth, flowerFilter) ? 'Meijer Gardens October mums' : entry.name);
   const counts = decisionCounts(liveDestinations);
   const currentVisible = visibleDestinations.filter((entry) => !isAutumnMumsPlanningView(entry.id, planningMonth, flowerFilter));
   const useful = currentVisible.filter((entry) => ['GO', 'GO_BEFORE'].includes(entry?.decision?.decision));
@@ -740,6 +753,28 @@ export default function BloomTracker({ initialSnapshot = null, fixtureName = nul
         {seasonalMode && <SeasonRouteStrip seasonContext={seasonContext} />}
 
         <div className="bloom-filters" aria-label="Filter Michigan bloom destinations">
+          <section className="bloom-month-wave" aria-labelledby="bloom-wave-title">
+            <div className="bloom-wave-head">
+              <div><span className="eyebrow">The flower year</span><h2 id="bloom-wave-title">Follow the color, month by month</h2></div>
+              <span className="bloom-wave-legend">Typical visit windows only</span>
+            </div>
+            <div className="bloom-wave-track" role="group" aria-label="Choose a month to update the destinations and map">
+              {monthWave.map(({value, label, count}) => (
+                <button key={value} type="button" className={planningMonth===value?'active':''} aria-pressed={planningMonth===value}
+                  aria-label={`${label}: ${count} matching planned ${count===1?'destination':'destinations'}`}
+                  onClick={()=>setPlanningMonth(planningMonth===value?'all':value)}>
+                  <span>{label.slice(0,3)}</span><strong>{count}</strong>
+                </button>
+              ))}
+            </div>
+            <div className="bloom-wave-read" role="status" aria-live="polite">
+              <div><strong>{planningMonth==='all' ? 'Start with a month' : `${monthLabel}: ${visibleDestinations.length} matching ${visibleDestinations.length===1?'stop':'stops'}`}</strong>
+              <p>{planningMonth==='all' ? 'Select a month to reveal its possible flowers across Michigan. The counts reflect the flower type and region filters below.' :
+                visibleDestinations.length ? `Places to explore: ${monthExamples.join(' · ')}${visibleDestinations.length>3?' and more':''}. These are normal planning windows, not a report of flowers open today.` :
+                'No tracked display matches this month with your current flower and region choices. Select a different month or clear a filter.'}</p></div>
+              <a href="#where-title">View matching places <ArrowUpRight size={14}/></a>
+            </div>
+          </section>
                 <div className="bloom-month-planner">
                   <label htmlFor="bloom-planning-month"><strong>When would you like to visit?</strong></label>
                   <select id="bloom-planning-month" value={planningMonth} onChange={(event)=>setPlanningMonth(event.target.value)}>
