@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import { BLOOM_DESTINATIONS } from '../lib/bloom/destinations.mjs';
 import { BLOOM_VISIT_GUIDES, BLOOM_EXPANDED_VISIT_GUIDES, BLOOM_FAQS, getBloomVisitGuide } from '../lib/bloom/visit-guides.mjs';
 import { BLOOM_EXPERIENCES } from '../lib/bloom/experience-layer.mjs';
-import { BLOOM_VISIT_MONTHS, matchesPlanningMonth } from '../lib/bloom/visit-months.mjs';
+import { BLOOM_VISIT_MONTHS, matchesPlanningMonth, isAutumnMumsPlanningView } from '../lib/bloom/visit-months.mjs';
 import { BLOOM_PLANNING_WINDOWS, BLOOM_SEASON_STATES, buildBloomSeasonContext } from '../lib/bloom/seasonal-context.mjs';
 import { getBloomTrackerFixture } from '../lib/bloom/tracker-fixtures.mjs';
 import { decisionCounts, evidenceStrength, goBeforeWindow, humanDecisionLabel } from '../lib/bloom/tracker-product.mjs';
@@ -53,6 +53,11 @@ assert.equal(matchesPlanningMonth('blakes-sunflowers', '4'), false, 'summer sunf
 assert.equal(matchesPlanningMonth('meijer-gardens-cherries', '10', {autumnMums:true}), true, 'October mums are a distinct visit');
 assert.equal(matchesPlanningMonth('meijer-gardens-cherries', '4', {autumnMums:true}), false, 'mums never inherit cherry stage');
 assert.equal(matchesPlanningMonth('meijer-gardens-cherries', '10'), false, 'autumn event does not change cherry bloom window');
+assert.equal(isAutumnMumsPlanningView('meijer-gardens-cherries', '10', 'all'), true, 'October All flowers must include the autumn mum display');
+assert.equal(isAutumnMumsPlanningView('meijer-gardens-cherries', '10', 'mum'), true, 'October mums category must include the separate autumn display');
+assert.equal(isAutumnMumsPlanningView('meijer-gardens-cherries', '10', 'cherry'), false, 'October cherry filter cannot masquerade as mums');
+assert.equal(isAutumnMumsPlanningView('meijer-gardens-cherries', '4', 'all'), false, 'April cherry display is not the autumn mum exhibition');
+assert.equal(isAutumnMumsPlanningView('dow-gardens', '10', 'all'), false, 'other October destinations must not inherit Meijer mum identity');
 assert.equal(matchesPlanningMonth('holland-tulips', '04'), false, 'invalid month selection fails closed');
 assert.equal(matchesPlanningMonth('missing-destination', '5'), false, 'unregistered destinations are not invented');
 for (const d of BLOOM_DESTINATIONS) {
@@ -122,6 +127,9 @@ assert.ok(page.includes('Read the year across the map:'), 'off-season map must e
 assert.ok(page.includes('function OpportunityCard'), 'experience must be integrated into each ranked destination');
 assert.ok(page.includes('id="bloom-planning-month"') && page.includes('matchesPlanningMonth(e.id, planningMonth'), 'visitor planning month must filter destination cards and the map');
 assert.ok(page.includes('A planning window never confirms bloom.'), 'month filter must preserve observation authority');
+assert.ok(page.includes('isAutumnMumsPlanningView(e.id, planningMonth, flowerFilter)'), 'all-flowers October must include the separate autumn display');
+assert.ok(page.includes('mumView={isAutumnMumsPlanningView(entry.id, planningMonth, flowerFilter)}'), 'October mum card cannot reuse spring cherry stages');
+assert.ok(page.includes('mumView={selected ? isAutumnMumsPlanningView(selected.id, planningMonth, flowerFilter) : false}'), 'October mum map detail must not reuse spring cherry status');
 const visitCss = await fs.readFile(new URL('../public/bloom-visit-guide.css', import.meta.url), 'utf8');
 assert.ok(visitCss.includes('.bloom-month-planner select:focus-visible'), 'month picker needs visible keyboard focus');
 assert.ok(page.includes('ExperienceThumbnail'), 'ranked destinations must carry visual context');
