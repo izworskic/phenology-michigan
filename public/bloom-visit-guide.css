@@ -93,3 +93,33 @@
 .bloom-history-record li a{display:inline-flex;align-items:center;gap:4px;color:#346447;text-decoration:underline;font-weight:700}
 .bloom-history-record li a:focus-visible{outline:2px solid #86b99a;outline-offset:3px}
 @media(max-width:600px){.bloom-history-record{padding:11px}.bloom-history-record li{display:grid;gap:4px}}
+
+/* Experience Investment: a seasonal reading line, not another gallery or card grid.
+   Counts are typical destination windows, never current flowering observations. */
+.bloom-month-wave{min-width:0;padding:4px 2px 14px;border-bottom:1px solid #ccd6c8}
+.bloom-wave-head{display:flex;align-items:end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.bloom-wave-head h2{font:500 clamp(19px,2.7vw,26px)/1.18 Georgia,serif;color:#29402d;margin:3px 0 9px}
+.bloom-wave-legend{color:#6a755e;font-size:10px;font-weight:750;letter-spacing:.03em;margin-bottom:11px}
+.bloom-wave-track{display:flex;gap:3px;overflow-x:auto;max-width:100%;padding:2px 0 9px;overscroll-behavior-x:contain;scrollbar-width:thin}
+.bloom-wave-track button{flex:1 0 58px;position:relative;min-width:0;min-height:68px;border:0;border-top:3px solid #bdcdb4;border-radius:0 0 7px 7px;background:transparent;color:#56715c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;font:750 12px/1.2 system-ui,sans-serif}
+.bloom-wave-track button:nth-child(n+3){border-top-color:#b9a576}
+.bloom-wave-track button:nth-child(n+6){border-top-color:#c48d69}
+.bloom-wave-track button strong{display:block;font:500 20px/1.2 Georgia,serif;color:#334835}
+.bloom-wave-track button::before{position:absolute;content:'';width:7px;height:7px;top:-5px;left:calc(50% - 3.5px);border:2px solid #fff;border-radius:100%;background:#8d9f83}
+.bloom-wave-track button.active{background:#e7eedf;color:#214f35;border-top-color:#315a40}
+.bloom-wave-track button.active strong{color:#1f5037}
+.bloom-wave-track button.active::before{background:#29553b;width:11px;height:11px;top:-7px;left:calc(50% - 5.5px)}
+.bloom-wave-track button:hover:not(.active){background:#f0f3eb}
+.bloom-wave-track button:focus-visible{outline:3px solid #9ab485;outline-offset:-3px}
+.bloom-wave-read{display:flex;justify-content:space-between;align-items:center;gap:14px;padding-top:8px}
+.bloom-wave-read>div{min-width:0}
+.bloom-wave-read strong{font-size:13px;color:#2a4a32}
+.bloom-wave-read p{margin:3px 0 0;font-size:12px;line-height:1.55;color:#637366}
+.bloom-wave-read>a{flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;text-decoration:underline;text-underline-offset:3px;font-size:12px;font-weight:750;color:#315e40}
+.bloom-wave-read>a:focus-visible{outline:3px solid #9ab485;outline-offset:3px}
+@media(max-width:600px){.bloom-wave-read{display:block}.bloom-wave-read>a{margin-top:8px}.bloom-wave-track button{flex-basis:55px;min-height:62px}.bloom-wave-head h2{font-size:21px}}
+
+.bloom-wave-stops{display:flex;flex-wrap:wrap;gap:7px 14px;padding-top:10px}
+.bloom-wave-stops a{display:inline-flex;align-items:center;gap:3px;color:#2e6342;text-decoration:underline;text-underline-offset:3px;font-size:11.5px;font-weight:750;line-height:1.4}
+.bloom-wave-stops a:focus-visible{outline:3px solid #9ab485;outline-offset:3px}
+.opportunity-card[id^="destination-"]{scroll-margin-top:22px}
