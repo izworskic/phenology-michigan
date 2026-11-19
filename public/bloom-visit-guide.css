@@ -80,3 +80,16 @@
 
 /* No-match filters must never reveal the unfiltered fallback geographic display. */
 .map-section.bloom-map-no-matches{display:none!important}
+
+/* Source-backed bloom history is a quiet footnote within each destination, not a forecast chart. */
+.bloom-history-summary{font-size:11.5px;line-height:1.55;color:#607364;margin:8px 0 13px;padding:9px 12px;background:#f1f4ed;border-left:3px solid #a4b8a3}
+.bloom-history-record{margin:14px 0 8px;padding:13px 14px;border-top:1px solid #d9dfd3;background:#f9faf6;border-radius:0 0 10px 10px}
+.bloom-history-record>p{margin:6px 0 4px;color:#59685b;font-size:12px;line-height:1.55}
+.bloom-history-record ol{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:7px}
+.bloom-history-record li{display:flex;align-items:baseline;gap:6px 11px;flex-wrap:wrap;padding:9px 0;border-top:1px solid #e3e8e0;color:#57665a;font-size:11px;line-height:1.45}
+.bloom-history-record li time{font-weight:750;white-space:nowrap;color:#526b56}
+.bloom-history-record li strong{font-size:11px;color:#344b38}
+.bloom-history-record li span{flex:1 1 180px}
+.bloom-history-record li a{display:inline-flex;align-items:center;gap:4px;color:#346447;text-decoration:underline;font-weight:700}
+.bloom-history-record li a:focus-visible{outline:2px solid #86b99a;outline-offset:3px}
+@media(max-width:600px){.bloom-history-record{padding:11px}.bloom-history-record li{display:grid;gap:4px}}
