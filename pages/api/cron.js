@@ -61,10 +61,11 @@ export default async function handler(req, res) {
       const inWindow = EVENTS.filter((e) => doy >= e.s && doy <= e.e);
       const soonEvents = EVENTS.filter((e) => e.s > doy && e.s <= doy + 21);
       const offDays = seasonOffsetDays(snap.gdd, snap.doy);
-      const note = await writeAlmanac(snap, inWindow, soonEvents, seasonOffsetPhrase(offDays));
+      const note = r.ok ? await writeAlmanac(snap, inWindow, soonEvents, seasonOffsetPhrase(offDays)) : {ok:false,reason:"snapshot write failed"};
       if (note.ok) {
-        const a = await appendAlmanac({ date: snap.date, doy: snap.doy, text: note.text, words: note.words });
-        log.push(`[${ts()}] almanac ${snap.date}: ${a.ok ? `written, ${a.count} entries on record` : `write failed: ${a.reason}`}`);
+        const a = await appendAlmanac({ date: snap.date, doy: snap.doy, text: note.text, words: note.words, mode: note.mode });
+        if (!a.ok) failures.push(`almanac write: ${a.reason}`);
+        log.push(`[${ts()}] almanac ${snap.date}: ${a.ok ? `written (${note.mode}), ${a.count} entries on record` : `write failed: ${a.reason}`}`);
       } else {
         log.push(`[${ts()}] almanac ${snap.date}: not written (${note.reason})`);
       }

@@ -722,10 +722,10 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
               <div style={{ margin: "0 0 22px", padding: "16px 18px", background: "#fbf9f4", border: "1px solid #e6e0d2", borderRadius: 8 }}>
                 <h2 style={{ fontSize: 17, margin: "0 0 2px", color: season.color }}>The almanac</h2>
                 <p style={{ fontSize: 11.5, margin: "0 0 10px", color: "#9a8f76", letterSpacing: ".02em" }}>
-                  Where the year stands, read from the day&apos;s numbers and the calendar. Written each morning, kept as a record. Not a field report.
+                  Where the year stands, read from the day&apos;s numbers and the calendar. Kept as a record. Not a field report. {almanac.mode === "source-fallback" ? "Source-based entry." : ""}
                 </p>
                 <p style={{ fontSize: 15, lineHeight: 1.62, margin: 0, color: "#3c3a33" }}>{almanac.text}</p>
-                <p style={{ fontSize: 11.5, margin: "10px 0 0", color: "#9a8f76" }}>{almanac.date}</p>
+                <p style={{ fontSize: 11.5, margin: "10px 0 0", color: "#9a8f76" }}>{almanac.date}{almanac.mode === "source-fallback" ? " · Source-based summary" : ""}</p>
               </div>
             )}
             {archivedAlmanac?.text && (
