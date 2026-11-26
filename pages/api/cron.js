@@ -1,7 +1,7 @@
 import { fetchRegional, fetchRivers, fetchGddActual, fetchBirds, fetchForecast } from "../../lib/sources";
 import { dayOfYear, gddSeries, seasonOf, cToF, moonPhase, EVENTS, seasonOffsetDays, seasonOffsetPhrase } from "../../lib/phenology";
-import { appendSnapshot, historyConfigured, appendAlmanac } from "../../lib/history";
-import { writeAlmanac } from "../../lib/almanac";
+import { appendSnapshot, historyConfigured, appendAlmanac, readHistory, readAlmanac } from "../../lib/history";
+import { writeAlmanac, snapshotNote } from "../../lib/almanac";
 import { gatherSignals, writeSignals, signalsConfigured } from "../../lib/signals";
 
 const SITE = "https://phenology.chrisizworski.com";
@@ -11,6 +11,23 @@ export default async function handler(req, res) {
   const auth = req.headers["authorization"] || "";
   if (!process.env.CRON_SECRET || auth !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).json({ error: "unauthorized" });
+  }
+
+  if (req.method !== "GET") return res.status(405).json({ error: "GET only" });
+  if (req.query?.recovery === "1") {
+    const date = new Date().toLocaleDateString("en-CA", { timeZone: "America/Detroit" });
+    if (!historyConfigured()) return res.status(503).json({ok:false,error:"archive storage unavailable",date});
+    const existing=(await readAlmanac()).find(x=>x.date===date&&typeof x.text==="string"&&x.text.trim().split(/\s+/).length>=60);
+    if(existing)return res.status(200).json({ok:true,date,mode:existing.mode||"legacy",skipped:"already-published"});
+    const snap=(await readHistory()).find(x=>x.date===date);
+    if(!snap||!Number.isInteger(snap.doy))return res.status(502).json({ok:false,date,error:"current banked snapshot unavailable"});
+    const active=EVENTS.filter(e=>snap.doy>=e.s&&snap.doy<=e.e);
+    const soon=EVENTS.filter(e=>e.s>snap.doy&&e.s<=snap.doy+21);
+    const note=snapshotNote(snap,active,soon);
+    if(!note.ok)return res.status(502).json({ok:false,date,error:"insufficient banked evidence"});
+    const a=await appendAlmanac({date,doy:snap.doy,text:note.text,words:note.words,mode:note.mode});
+    if(!a.ok)return res.status(502).json({ok:false,date,error:"almanac archive write failed"});
+    return res.status(200).json({ok:true,date,mode:note.mode});
   }
 
   const log = [];
@@ -67,6 +84,7 @@ export default async function handler(req, res) {
         if (!a.ok) failures.push(`almanac write: ${a.reason}`);
         log.push(`[${ts()}] almanac ${snap.date}: ${a.ok ? `written (${note.mode}), ${a.count} entries on record` : `write failed: ${a.reason}`}`);
       } else {
+        failures.push("almanac not written: "+note.reason);
         log.push(`[${ts()}] almanac ${snap.date}: not written (${note.reason})`);
       }
     }

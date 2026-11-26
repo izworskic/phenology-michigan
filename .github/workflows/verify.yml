@@ -5,6 +5,11 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/verify.yml'
+      - '.github/workflows/daily.yml'
+      - 'pages/api/cron.js'
+      - 'lib/history.js'
+      - 'lib/almanac.js'
+      - 'scripts/check-almanac-resilience.mjs'
       - 'lib/bloom/**'
       - 'lib/trillium.mjs'
       - 'lib/trillium-local.mjs'

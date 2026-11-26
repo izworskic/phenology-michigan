@@ -3,14 +3,75 @@ name: Daily Phenology Refresh
 on:
   schedule:
     - cron: '0 13 * * *'
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      recovery:
+        description: "Recover today's almanac from its banked snapshot without AI"
+        type: boolean
+        default: true
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/daily.yml'
+      - 'pages/api/cron.js'
+      - 'lib/almanac.js'
+      - 'lib/history.js'
+
+permissions:
+  contents: read
+  statuses: read
+
+concurrency:
+  group: daily-phenology-refresh
+  cancel-in-progress: false
 
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Trigger /api/cron
+      - name: Wait for merged production deployment
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          curl -sS -X GET "https://phenology.chrisizworski.com/api/cron" \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            --fail --max-time 180 -w "\nHTTP %{http_code}\n"
+          set -euo pipefail
+          for i in $(seq 1 60); do
+            state="$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/status" --jq '[.statuses[] | select(.context=="Vercel")][0].state // "pending"')"
+            if [[ "$state" == "success" ]]; then exit 0; fi
+            if [[ "$state" == "failure" || "$state" == "error" ]]; then exit 1; fi
+            sleep 10
+          done
+          exit 1
+      - name: Trigger authenticated publisher and verify stored note
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          RECOVERY: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.recovery) }}
+        run: |
+          set -euo pipefail
+          test -n "$CRON_SECRET"
+          today="$(TZ=America/Detroit date +%F)"
+          url="https://phenology.chrisizworski.com/api/cron"
+          if [[ "$RECOVERY" == "true" ]]; then url="$url?recovery=1"; fi
+          rc=0
+          curl --fail-with-body --silent --show-error --max-time 180 \
+            -H "Authorization: Bearer $CRON_SECRET" "$url" -o "$RUNNER_TEMP/phenology-response.json" || rc=$?
+          if [[ "$rc" != "0" ]]; then
+            # Print only known safe diagnostic fields, never credentials or raw upstream responses.
+            if [[ -s "$RUNNER_TEMP/phenology-response.json" ]]; then
+              jq -c '{ok,date,error,failures,log}' "$RUNNER_TEMP/phenology-response.json" || echo "Publisher did not return JSON."
+            fi
+            exit "$rc"
+          fi
+          jq -e '.ok == true' "$RUNNER_TEMP/phenology-response.json"
+          for i in $(seq 1 12); do
+            if curl -fsS --max-time 20 "https://raw.githubusercontent.com/izworskic/phenology-michigan/main/data/almanac.json?verify=$GITHUB_RUN_ID-$i" \
+              -o "$RUNNER_TEMP/almanac.json" &&
+              jq -e --arg date "$today" 'any(.[]; .date==$date and (.text|type=="string") and (.text|length>=200))' "$RUNNER_TEMP/almanac.json"; then
+              echo "Verified almanac archive for $today."
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::Almanac was not present in the public archive."
+          exit 1
