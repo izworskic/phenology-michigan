@@ -33,3 +33,15 @@ assert.equal(snapshotNote({date:snap.date,daylightH:25,windSpeedMph:-1},[],[]).o
 calls=[];
 const denied=await writeAlmanac(forecastOnly,[],[],null,{env:{ANTHROPIC_API_KEY_FALL_COLOR:'a',ANTHROPIC_API_KEY:'b'},fetchImpl:async(_,o)=>{calls.push(o.headers['x-api-key']);return {status:403,ok:false}}});
 assert.deepEqual(calls,['a']);assert.equal(denied.mode,'source-fallback');
+
+assert.match(cron,/req\.query\?\.recovery === "1"/);
+const recovery=cron.slice(cron.indexOf('if (req.query?.recovery'),cron.indexOf('const log = []'));
+assert.match(recovery,/readHistory\(\)/);
+assert.match(recovery,/snapshotNote\(snap,active,soon\)/);
+assert.doesNotMatch(recovery,/writeAlmanac\(|fetchRegional\(|fetchForecast\(/);
+assert.match(recovery,/current banked snapshot unavailable/);
+assert.match(cron,/failures\.push\("almanac not written:/);
+const workflow=readFileSync(new URL('../.github/workflows/daily.yml',import.meta.url),'utf8');
+assert.match(workflow,/recovery=1/);
+assert.match(workflow,/data\/almanac\.json/);
+assert.match(workflow,/branches: \[main\]/);
