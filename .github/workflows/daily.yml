@@ -53,8 +53,16 @@ jobs:
           today="$(TZ=America/Detroit date +%F)"
           url="https://phenology.chrisizworski.com/api/cron"
           if [[ "$RECOVERY" == "true" ]]; then url="$url?recovery=1"; fi
+          rc=0
           curl --fail-with-body --silent --show-error --max-time 180 \
-            -H "Authorization: Bearer $CRON_SECRET" "$url" -o "$RUNNER_TEMP/phenology-response.json"
+            -H "Authorization: Bearer $CRON_SECRET" "$url" -o "$RUNNER_TEMP/phenology-response.json" || rc=$?
+          if [[ "$rc" != "0" ]]; then
+            # Print only known safe diagnostic fields, never credentials or raw upstream responses.
+            if [[ -s "$RUNNER_TEMP/phenology-response.json" ]]; then
+              jq -c '{ok,date,error,failures,log}' "$RUNNER_TEMP/phenology-response.json" || echo "Publisher did not return JSON."
+            fi
+            exit "$rc"
+          fi
           jq -e '.ok == true' "$RUNNER_TEMP/phenology-response.json"
           for i in $(seq 1 12); do
             if curl -fsS --max-time 20 "https://raw.githubusercontent.com/izworskic/phenology-michigan/main/data/almanac.json?verify=$GITHUB_RUN_ID-$i" \

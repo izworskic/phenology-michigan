@@ -45,3 +45,6 @@ const workflow=readFileSync(new URL('../.github/workflows/daily.yml',import.meta
 assert.match(workflow,/recovery=1/);
 assert.match(workflow,/data\/almanac\.json/);
 assert.match(workflow,/branches: \[main\]/);
+
+assert.match(workflow,/\|\| rc=\$\?/);
+assert.match(workflow,/jq -c '\{ok,date,error,failures,log\}'/);
