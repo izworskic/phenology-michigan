@@ -22,3 +22,14 @@ assert.deepEqual(calls,['a']);assert.equal(down.mode,'source-fallback');
 const cron=readFileSync(new URL('../pages/api/cron.js',import.meta.url),'utf8');
 assert.match(cron,/r\.ok \? await writeAlmanac/);assert.match(cron,/mode: note\.mode/);
 console.log('Almanac resilience checks passed.');
+
+const forecastOnly={date:snap.date,soilF:35,windSpeedMph:12,daylightH:9.3};
+const forecastNote=snapshotNote(forecastOnly,[],[]);
+assert.equal(forecastNote.ok,true);
+assert.match(forecastNote.text,/Modeled soil temperature: 35 F/);
+assert.match(forecastNote.text,/Forecast wind speed: 12 mph/);
+assert.match(forecastNote.text,/Calculated daylight duration: 9.3 hours/);
+assert.equal(snapshotNote({date:snap.date,daylightH:25,windSpeedMph:-1},[],[]).ok,false);
+calls=[];
+const denied=await writeAlmanac(forecastOnly,[],[],null,{env:{ANTHROPIC_API_KEY_FALL_COLOR:'a',ANTHROPIC_API_KEY:'b'},fetchImpl:async(_,o)=>{calls.push(o.headers['x-api-key']);return {status:403,ok:false}}});
+assert.deepEqual(calls,['a']);assert.equal(denied.mode,'source-fallback');
