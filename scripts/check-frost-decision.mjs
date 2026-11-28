@@ -56,3 +56,14 @@ assert.ok(api.includes('i+=4')&&api.includes('sites.slice(i,i+4)'), 'Bound NWS c
 assert.ok(api.includes('requested:sites.length'),'Expose complete board requested count');
 assert.ok(api.includes('s-maxage=120'),'Cache full NWS outage only briefly');
 console.log('Twelve-site coverage, weather-based sunrise guidance, low-visibility caution, proximity privacy and UI tests passed');
+
+const {admitFrostPacket}=await import('../lib/frostFreshness.mjs');
+const at=Date.parse('2026-11-28T10:00:00Z'),iso=ms=>new Date(at+ms).toISOString();
+const freshSite={id:'bay-city',status:'forecast',issuedAt:iso(-3600000),mornings:[{score:91}],best:{score:91},bestPhoto:{score:91},coverage:1};
+const packet={generatedAt:iso(-300000),locations:[freshSite,{...freshSite,id:'marquette',issuedAt:iso(-25*3600000)}]};
+const guarded=admitFrostPacket(packet,'board',at);
+assert.equal(guarded.locations[0].best.score,91);assert.equal(guarded.locations[1].best,null);assert.equal(guarded.locations[1].bestPhoto,null);assert.equal(guarded.usable,1);
+for(const generatedAt of [null,'bad',iso(-46*60000),iso(61000)])assert.throws(()=>admitFrostPacket({...packet,generatedAt},'board',at),/unavailable/);
+for(const issuedAt of [null,'bad',iso(-25*3600000),iso(3600001)])assert.equal(admitFrostPacket({generatedAt:packet.generatedAt,location:{...freshSite,issuedAt}},'site',at,'bay-city').location.best,null);
+assert.throws(()=>admitFrostPacket({generatedAt:packet.generatedAt,location:freshSite},'site',at,'marquette'),/match/);
+assert.equal(admitFrostPacket({generatedAt:packet.generatedAt,location:freshSite},'site',at,'bay-city').location.best.score,91);
