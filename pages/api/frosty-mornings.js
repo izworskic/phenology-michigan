@@ -16,7 +16,7 @@ async function siteForecast(site,now){
     if(!props?.temperature?.values||!props?.dewpoint?.values||!props?.windSpeed?.values||!props?.skyCover?.values)throw Error('Required forecast grids missing');
     const issued=props.updateTime||null;
     const issuedMs=Date.parse(issued);
-    if(issued&&(!Number.isFinite(issuedMs)||now.getTime()-issuedMs>24*3600000||issuedMs-now.getTime()>3600000))throw Error('NWS grid update timestamp outside freshness window');
+    if(!Number.isFinite(issuedMs)||now.getTime()-issuedMs>24*3600000||issuedMs-now.getTime()>3600000)throw Error('NWS grid update timestamp outside freshness window');
     const analysis=evaluateGrid(props,now,site);
     return {...site,...analysis,status:analysis.coverage?'forecast':'incomplete',issuedAt:issued,
       source:'National Weather Service forecast grid; modelled frost-friendly weather only',
