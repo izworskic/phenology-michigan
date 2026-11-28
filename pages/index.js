@@ -1,4 +1,5 @@
 import Head from "next/head";
+import { civilDateLabel, michiganCivilDay } from "../lib/civil-date.mjs";
 import { useState, useEffect, useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, ReferenceLine, ResponsiveContainer, Tooltip } from "recharts";
 import { Bird, Fish, Flower2, Waves, Thermometer, Sprout, Egg, TreePine, Feather, Compass, Droplets, X, Sunrise, Snowflake, Sparkles, Link2, BarChart3, ArrowRight, Target, Check, Clock, Leaf, ChevronRight } from "lucide-react";
@@ -317,7 +318,7 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
     // frost in the near outlook
     if (forecast?.frost?.length) {
       const f = forecast.frost[0];
-      const dt = new Date(f.date).toLocaleDateString("en-US", { weekday: "long" });
+      const dt = civilDateLabel(f.date, { weekday: "long" });
       parts.push(`Frost is in the outlook: ${f.low} degrees ${dt} night. Cover or bring in tender plants.`);
     }
     // Hunting near Pinconning, fifteen miles up, in season.
@@ -378,7 +379,7 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
     }
     if (sky && sky.moon) chips.push({ k: "moon", label: "Moon", value: `${sky.moon.illum}`, unit: "%", sub: sky.moon.name });
     if (forecast && forecast.frost && forecast.frost.length) {
-      chips.push({ k: "frost", label: "Frost", value: `${forecast.frost[0].low}`, unit: "\u00B0F", sub: new Date(forecast.frost[0].date).toLocaleDateString("en-US", { weekday: "short" }) + " night" });
+      chips.push({ k: "frost", label: "Frost", value: `${forecast.frost[0].low}`, unit: "\u00B0F", sub: civilDateLabel(forecast.frost[0].date, { weekday: "short" }) + " night" });
     } else if (forecast && forecast.daylightH != null) {
       const h = Math.floor(forecast.daylightH), m = Math.round((forecast.daylightH - h) * 60);
       chips.push({ k: "day", label: "Daylight", value: `${h}:${String(m).padStart(2, "0")}`, unit: "", sub: forecast.daylightDeltaMin != null ? `${forecast.daylightDeltaMin > 0 ? "+" : ""}${forecast.daylightDeltaMin} min/day` : "" });
@@ -413,7 +414,7 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
     if (bay && bay.iceConc != null && bay.iceConc >= 1) a.push({ tab: "water", Icon: Snowflake, label: "Bay ice cover", value: Math.round(bay.iceConc), unit: "percent", sub: `Saginaw Bay, GLERL satellite${bay.iceDate ? `, ${bay.iceDate}` : ""}`, live: true, accent: CAT.water.color });
     else if (bay && bay.glseaF != null) a.push({ tab: "water", Icon: Thermometer, label: "Lake surface, satellite", value: bay.glseaF, unit: "deg F", sub: `GLSEA whole-bay average${bay.glseaDate ? `, ${bay.glseaDate}` : ""}`, live: true, accent: CAT.fish.color });
     a.push({ tab: "garden", Icon: Sprout, label: "Soil, 6 inches", value: forecast?.soilF != null ? forecast.soilF : "n/a", unit: "deg F", sub: forecast?.soilF != null ? (forecast.soilF >= 50 ? "active; morels and warm-season planting" : "still cold for warm-season crops") : "unavailable", live: forecast?.soilF != null, accent: CAT.garden.color });
-    a.push({ tab: "garden", Icon: Snowflake, label: "Frost watch", value: forecast?.frost?.length ? forecast.frost[0].low : (forecast?.coldest != null ? forecast.coldest : "n/a"), unit: "deg F low", sub: forecast?.frost?.length ? `frost ${new Date(forecast.frost[0].date).toLocaleDateString("en-US", { weekday: "short" })} night; protect tender plants` : (forecast?.coldest != null ? "no frost in the 7-day outlook" : "unavailable"), live: forecast?.coldest != null, accent: CAT.water.color });
+    a.push({ tab: "garden", Icon: Snowflake, label: "Frost watch", value: forecast?.frost?.length ? forecast.frost[0].low : (forecast?.coldest != null ? forecast.coldest : "n/a"), unit: "deg F low", sub: forecast?.frost?.length ? `frost ${civilDateLabel(forecast.frost[0].date, { weekday: "short" })} night; protect tender plants` : (forecast?.coldest != null ? "no frost in the 7-day outlook" : "unavailable"), live: forecast?.coldest != null, accent: CAT.water.color });
     if (forecast && forecast.snowDepthIn != null && forecast.snowDepthIn >= 0.5) a.push({ tab: "garden", Icon: Snowflake, label: "Snow on ground", value: forecast.snowDepthIn, unit: "in", sub: "modeled, Open-Meteo", live: true, accent: CAT.water.color });
     a.push({ tab: "sky", Icon: Sunrise, label: "Daylight", value: forecast?.daylightH != null ? `${Math.floor(forecast.daylightH)}h ${Math.round((forecast.daylightH - Math.floor(forecast.daylightH)) * 60)}m` : "n/a", unit: "", sub: forecast?.daylightH != null ? `${forecast.daylightDeltaMin > 0 ? "+" : ""}${forecast.daylightDeltaMin} min/day${forecast.sunrise ? `, ${forecast.sunrise} to ${forecast.sunset}` : ""}` : "unavailable", live: forecast?.daylightH != null, accent: season.color });
     a.push({ tab: "trends", Icon: Thermometer, label: "Bay City air, now", value: airF != null ? airF : normToday, unit: "deg F", sub: airF != null ? `current observation${regional.air.forecast ? ", " + regional.air.forecast.toLowerCase() : ""}` : "seasonal normal", live: airF != null, accent: season.color });
@@ -524,7 +525,7 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
   const auNow = rivers.find((r) => r.id === "ausable") || {};
   const lyKey = (() => { const d = doyToDate(doy); return `${d.getFullYear() - 1}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; })();
   const lastYear = history.find((h) => h.date === lyKey) || null;
-  const prettyDate = (s) => (s ? new Date(s + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "");
+  const prettyDate = (s) => (s ? civilDateLabel(s, { month: "long", day: "numeric", year: "numeric" }) : "");
   const bankTrend = useMemo(() => history.filter((h) => h.gdd != null).slice(-60).map((h) => ({ doy: h.doy, gdd: h.gdd })), [history]);
 
   const personLd = {
@@ -1118,7 +1119,7 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
               {inat.map((o, i) => (
                 <div key={i} style={{ border: "1px solid #e4dcc8", borderRadius: 999, padding: "5px 12px", background: "rgba(255,255,255,0.6)", fontSize: 13, color: "#2b2a1f" }}>
                   <span style={{ fontFamily: "Georgia, serif" }}>{o.name}</span>
-                  {o.date ? <span style={{ color: "#a89c83", fontSize: 11, marginLeft: 6 }}>{new Date(o.date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span> : null}
+                  {o.date ? <span style={{ color: "#a89c83", fontSize: 11, marginLeft: 6 }}>{civilDateLabel(o.date, { month: "short", day: "numeric" })}</span> : null}
                 </div>
               ))}
             </div>
@@ -1138,7 +1139,7 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
                 <div key={i} style={{ border: "1px solid #e4dcc8", borderLeft: `3px solid ${o.kingdom === "Plantae" ? CAT.bloom.color : CAT.wild.color}`, borderRadius: 10, padding: "9px 12px", background: "rgba(255,255,255,0.5)" }}>
                   <div style={{ fontFamily: "Georgia, serif", fontSize: 14, color: "#2b2a1f" }}>{o.name}</div>
                   <div style={{ fontSize: 12, color: "#6a5f4a", marginTop: 2 }}>{o.phase}</div>
-                  <div style={{ fontSize: 11, color: "#a89c83", marginTop: 3 }}>{o.date ? new Date(o.date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""}</div>
+                  <div style={{ fontSize: 11, color: "#a89c83", marginTop: 3 }}>{o.date ? civilDateLabel(o.date, { month: "short", day: "numeric" }) : ""}</div>
                 </div>
               ))}
             </div>
@@ -1158,7 +1159,7 @@ export default function Home({ almanac, archivedAlmanac, regional, rivers, gddAc
 export async function getServerSideProps({ res, query }) {
   res.setHeader("Cache-Control", "s-maxage=600, stale-while-revalidate=1800");
   const now = new Date();
-  const doy = dayOfYear(now);
+  const doy = michiganCivilDay(now);
   const T = (p, fb) => withTimeout(p, 8000, fb);
   // Live sources change through the day and are fetched every load. Daily-cadence signals
   // (spring index, observations, iNaturalist, drought, ice, lake-surface temp) are read once
