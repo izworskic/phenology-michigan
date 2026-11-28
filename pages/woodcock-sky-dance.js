@@ -1,3 +1,4 @@
+import { currentSingleRegion } from "../lib/spring-response-admission.mjs";
 import Head from 'next/head';
 import {useEffect,useMemo,useState} from 'react';
 import {ArrowUpRight,Cloud,CloudRain,Clock,Compass,Feather,MapPin,Wind,Volume2,CalendarDays,Info,CheckCircle2} from 'lucide-react';
@@ -79,8 +80,8 @@ export default function WoodcockPage(){
     setLoading(true);setResult(null);setPicked(null);setRequestError('');
     fetch('/api/woodcock?region='+encodeURIComponent(selection),{signal:controller.signal})
       .then(r=>{if(!r.ok)throw new Error('Forecast API unavailable');return r.json();})
-      .then(data=>{setResult(data);setLoading(false);})
-      .catch(e=>{if(e.name!=='AbortError'){setRequestError('Regional forecast could not be retrieved. The spring calendar and field guide below remain available.');setLoading(false);}});
+      .then(data=>{if(!currentSingleRegion(data,selection,3))throw Error('Expired or mismatched regional evidence');if(!controller.signal.aborted){setResult(data);setLoading(false);}})
+      .catch(e=>{if(e.name!=='AbortError'&&!controller.signal.aborted){setRequestError('Regional forecast could not be retrieved. The spring calendar and field guide below remain available.');setLoading(false);}});
     return ()=>controller.abort();
   },[selection]);
   const current=result?.region;
