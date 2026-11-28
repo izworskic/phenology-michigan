@@ -1,5 +1,7 @@
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
+import {useRouter} from 'next/router';
+import {admitFrostPacket} from '../lib/frostFreshness.mjs';
 import {useEffect,useState} from 'react';
 import {SITES,closestFrostSite} from '../lib/frostMorning.mjs';
 import FrostDawnDecision from '../components/FrostDawnDecision';
@@ -45,6 +47,7 @@ function HourlyChart({morning}){
   </div>;
 }
 export default function FrostyMornings(){
+  const router=useRouter();
   const [chosen,setChosen]=useState('bay-city');
   const [board,setBoard]=useState(null),[boardErr,setBoardErr]=useState('');
   const [location,setLocation]=useState(null),[loading,setLoading]=useState(true);
@@ -58,7 +61,7 @@ export default function FrostyMornings(){
     const c=new AbortController();
     setBoardErr('');setBoard(null);
     fetch('/api/frosty-mornings?mode=board',{signal:c.signal}).then(r=>{if(!r.ok)throw Error('Regional board could not load');return r.json()})
-      .then(v=>setBoard(v)).catch(e=>{if(e.name!=='AbortError')setBoardErr(e.message);});
+      .then(v=>setBoard(admitFrostPacket(v,'board'))).catch(e=>{if(e.name!=='AbortError')setBoardErr(e.message);});
     return ()=>c.abort();
   },[boardAttempt]);
   useEffect(()=>{
@@ -66,11 +69,11 @@ export default function FrostyMornings(){
     setLoading(true);setError('');setLocation(null);setMorningIndex(0);
     fetch('/api/frosty-mornings?mode=site&site='+encodeURIComponent(chosen),{signal:c.signal})
       .then(r=>{if(!r.ok)throw Error('Location forecast request failed');return r.json();})
-      .then(v=>{setLocation(v.location);const idx=v.location?.mornings?.findIndex(m=>m.photo?.status!=='passed');setMorningIndex(idx>=0?idx:0);setLoading(false);})
+      .then(v=>{v=admitFrostPacket(v,'site',Date.now(),chosen);setLocation(v.location);const idx=v.location?.mornings?.findIndex(m=>m.photo?.status!=='passed');setMorningIndex(idx>=0?idx:0);setLoading(false);})
       .catch(e=>{if(e.name!=='AbortError'){setError(e.message);setLoading(false);}});
     return ()=>c.abort();
   },[chosen]);
-  const choose=id=>{setChosen(id);const u=new URL(window.location.href);u.searchParams.set('location',id);window.history.replaceState(null,'',u.pathname+u.search);};
+  const choose=id=>{setChosen(id);const u=new URL(window.location.href);u.searchParams.set('location',id);void router.replace(u.pathname+u.search,undefined,{shallow:true,scroll:false});};
   const findNearest=()=>{
     setGeoError('');
     if(!navigator.geolocation){setGeoError('Location services are unavailable; select an area below.');return;}
