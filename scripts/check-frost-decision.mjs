@@ -67,3 +67,9 @@ for(const generatedAt of [null,'bad',iso(-46*60000),iso(61000)])assert.throws(()
 for(const issuedAt of [null,'bad',iso(-25*3600000),iso(3600001)])assert.equal(admitFrostPacket({generatedAt:packet.generatedAt,location:{...freshSite,issuedAt}},'site',at,'bay-city').location.best,null);
 assert.throws(()=>admitFrostPacket({generatedAt:packet.generatedAt,location:freshSite},'site',at,'marquette'),/match/);
 assert.equal(admitFrostPacket({generatedAt:packet.generatedAt,location:freshSite},'site',at,'bay-city').location.best.score,91);
+
+// The canonical string must never shadow the browser URL constructor used by choose().
+const frostPage=(await import('node:fs')).readFileSync('pages/frosty-mornings.js','utf8');
+assert.doesNotMatch(frostPage,/const URL\s*=/);
+assert.match(frostPage,/new window\.URL\(window\.location\.href\)/);
+assert.match(frostPage,/router\.replace\(u\.pathname\+u\.search,undefined,\{shallow:true,scroll:false\}\)/);
