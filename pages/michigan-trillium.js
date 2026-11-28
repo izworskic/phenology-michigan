@@ -1,3 +1,4 @@
+import { currentRegionalEnvelope } from "../lib/spring-response-admission.mjs";
 import Head from 'next/head';
 import Script from 'next/script';
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
@@ -102,7 +103,7 @@ export default function MichiganTrillium({initialHistory={},initialThermalModels
  const [selected,setSelected]=useState('north'),[all,setAll]=useState(true),[pendingStop,setPendingStop]=useState(null),[payload,setPayload]=useState(null),[loading,setLoading]=useState(true),[error,setError]=useState(''),[stamp,setStamp]=useState('');
  const [localData,setLocalData]=useState(null);
  const [autoData,setAutoData]=useState({counts:{sourceChecked:0,linkOnly:0},records:[]});
- const fetchLatest=async(signal)=>{setLoading(true);setError('');try{const r=await fetch('/api/trillium',{signal,cache:'no-store'});if(!r.ok)throw new Error('Feed unavailable');const d=await r.json();setPayload(d);setStamp(seonow());}catch(e){if(e.name!=='AbortError')setError('Live data could not be loaded. Seasonal windows and official trail links are still available.');}finally{if(!signal?.aborted)setLoading(false);}};
+ const fetchLatest=async(signal)=>{setLoading(true);setError('');try{const r=await fetch('/api/trillium',{signal,cache:'no-store'});if(!r.ok)throw new Error('Feed unavailable');const d=await r.json();if(!currentRegionalEnvelope(d,REGIONS,13,'updatedAt'))throw Error('Expired or mismatched bloom evidence');if(!signal?.aborted){setPayload(d);setStamp(seonow());}}catch(e){if(e.name!=='AbortError'&&!signal?.aborted){setPayload(null);setStamp('');setError('Live data could not be loaded. Seasonal windows and official trail links are still available.');}}finally{if(!signal?.aborted)setLoading(false);}};
  useEffect(()=>{const c=new AbortController();fetchLatest(c.signal);
    fetch('/api/trillium-local',{signal:c.signal}).then(r=>{if(!r.ok)throw Error('Local forecast feed');return r.json();})
      .then(data=>{if(!c.signal.aborted)setLocalData(data);})

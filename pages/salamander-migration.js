@@ -1,3 +1,4 @@
+import { currentRegionalEnvelope } from "../lib/spring-response-admission.mjs";
 import Head from 'next/head';
 import {useEffect,useMemo,useState} from 'react';
 import {useRouter} from 'next/router';
@@ -78,12 +79,12 @@ function SpringCalendar(){
 export default function SalamanderMigration(){
  const router=useRouter(),[selected,setSelected]=useState('saginaw-bay'),[data,setData]=useState(null),[error,setError]=useState(''),[loading,setLoading]=useState(true),[refreshing,setRefreshing]=useState(false);
  useEffect(()=>{if(router.isReady&&typeof router.query.region==='string'&&REGIONS.some(r=>r.id===router.query.region))setSelected(router.query.region);},[router.isReady,router.query.region]);
- useEffect(()=>{let alive=true;fetch('/api/salamanders').then(r=>{if(!r.ok)throw Error('Forecast service unavailable');return r.json();}).then(v=>{if(alive){setData(v);setError('');setLoading(false);}}).catch(()=>{if(alive){setError('Unable to load the regional weather service.');setLoading(false);}});return()=>{alive=false;};},[]);
- const refreshForecast=()=>{setRefreshing(true);fetch('/api/salamanders',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Forecast service unavailable');return r.json();}).then(v=>{setData(v);setError('');}).catch(()=>setError('Latest forecast check failed. Previously loaded conditions may be outdated.')).finally(()=>setRefreshing(false));};
+ useEffect(()=>{let alive=true;fetch('/api/salamanders').then(r=>{if(!r.ok)throw Error('Forecast service unavailable');return r.json();}).then(v=>{if(!currentRegionalEnvelope(v,REGIONS,3))throw Error('Expired or mismatched regional evidence');if(alive){setData(v);setError('');setLoading(false);}}).catch(()=>{if(alive){setError('Unable to load the regional weather service.');setLoading(false);}});return()=>{alive=false;};},[]);
+ const refreshForecast=()=>{setRefreshing(true);fetch('/api/salamanders',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Forecast service unavailable');return r.json();}).then(v=>{if(!currentRegionalEnvelope(v,REGIONS,3))throw Error('Expired or mismatched regional evidence');setData(v);setError('');}).catch(()=>{setData(null);setError('Latest forecast check failed. Current forecast unavailable.');}).finally(()=>setRefreshing(false));};
  const choose=id=>{setSelected(id);router.replace({pathname:'/salamander-migration',query:id==='saginaw-bay'?{}:{region:id}},undefined,{shallow:true,scroll:false});};
  const region=REGIONS.find(r=>r.id===selected)||REGIONS[4];
  const row=data?.regions?.find(r=>r.id===selected)||null;
- const off=data?data.status==='off_season':!isSeason();
+ const off=!isSeason()||data?.status==='off_season';
  const unavailable=data?.status==='forecast_unavailable'||row?.season==='unavailable'||!!error;
  const regionRows=useMemo(()=>REGIONS.map(r=>data?.regions?.find(x=>x.id===r.id)||r),[data]);
  const best=row?.best,tonight=row?.tonight;
