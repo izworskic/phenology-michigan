@@ -10,7 +10,7 @@ import FrostCartoMap from '../components/FrostCartoMap';
 import FrostFieldGuide from '../components/FrostFieldGuide';
 const FrostExplorer=dynamic(()=>import('../components/FrostExplorer'),{ssr:false});
 const FrostNightJourney=dynamic(()=>import('../components/FrostNightJourney'),{ssr:false});
-const URL='https://phenology.chrisizworski.com/frosty-mornings';
+const CANONICAL_URL='https://phenology.chrisizworski.com/frosty-mornings';
 const TITLE='Michigan Frosty Morning Predictor: Hoarfrost Forecast';
 const DESCRIPTION='Explore Michigan frosty mornings with NWS weather clues, sunrise plans and an interactive field guide covering 12 forecast areas.';
 const QUESTIONS=[
@@ -26,8 +26,8 @@ const QUESTIONS=[
 const person={'@type':'Person','@id':'https://chrisizworski.com/#person',name:'Chris Izworski',url:'https://chrisizworski.com/'};
 const schema={'@context':'https://schema.org','@graph':[
   person,
-  {'@type':'WebPage','@id':URL+'#page',url:URL,name:TITLE,description:DESCRIPTION,isPartOf:{'@type':'WebSite',url:'https://phenology.chrisizworski.com/'},author:{'@id':person['@id']},publisher:{'@id':person['@id']}},
-  {'@type':'WebApplication','@id':URL+'#app',name:'Michigan Frosty Morning Predictor',url:URL,description:DESCRIPTION,applicationCategory:'WeatherApplication',operatingSystem:'Any',isAccessibleForFree:true,creator:{'@id':person['@id']}},
+  {'@type':'WebPage','@id':CANONICAL_URL+'#page',url:CANONICAL_URL,name:TITLE,description:DESCRIPTION,isPartOf:{'@type':'WebSite',url:'https://phenology.chrisizworski.com/'},author:{'@id':person['@id']},publisher:{'@id':person['@id']}},
+  {'@type':'WebApplication','@id':CANONICAL_URL+'#app',name:'Michigan Frosty Morning Predictor',url:CANONICAL_URL,description:DESCRIPTION,applicationCategory:'WeatherApplication',operatingSystem:'Any',isAccessibleForFree:true,creator:{'@id':person['@id']}},
   {'@type':'FAQPage',mainEntity:QUESTIONS.map(([q,a])=>({'@type':'Question',name:q,acceptedAnswer:{'@type':'Answer',text:a}}))}
 ]};
 const day=date=>date?new Intl.DateTimeFormat('en-US',{timeZone:'UTC',weekday:'short',month:'short',day:'numeric'}).format(new Date(date+'T12:00:00Z')):'—';
@@ -73,7 +73,7 @@ export default function FrostyMornings(){
       .catch(e=>{if(e.name!=='AbortError'){setError(e.message);setLoading(false);}});
     return ()=>c.abort();
   },[chosen]);
-  const choose=id=>{setChosen(id);const u=new URL(window.location.href);u.searchParams.set('location',id);void router.replace(u.pathname+u.search,undefined,{shallow:true,scroll:false});};
+  const choose=id=>{setChosen(id);const u=new window.URL(window.location.href);u.searchParams.set('location',id);void router.replace(u.pathname+u.search,undefined,{shallow:true,scroll:false});};
   const findNearest=()=>{
     setGeoError('');
     if(!navigator.geolocation){setGeoError('Location services are unavailable; select an area below.');return;}
@@ -97,9 +97,9 @@ export default function FrostyMornings(){
   const featured=photoLeaders.length?photoLeaders:scored;
   const photo=selectedMorning?.photo;
   return <div className='fm-tool'>
-    <Head><title>{TITLE} | Chris Izworski</title><meta name='description' content={DESCRIPTION}/><link rel='canonical' href={URL}/>
+    <Head><title>{TITLE} | Chris Izworski</title><meta name='description' content={DESCRIPTION}/><link rel='canonical' href={CANONICAL_URL}/>
       <meta name='robots' content='index,follow,max-image-preview:large'/><meta property='og:type' content='website'/><meta property='og:title' content={TITLE}/>
-      <meta property='og:description' content={DESCRIPTION}/><meta property='og:url' content={URL}/><meta name='twitter:card' content='summary'/>
+      <meta property='og:description' content={DESCRIPTION}/><meta property='og:url' content={CANONICAL_URL}/><meta name='twitter:card' content='summary'/>
       <link rel='stylesheet' href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'/>
       <link rel='stylesheet' href='/frosty-mornings.css'/><link rel='stylesheet' href='/frost-explorer.css'/><link rel='stylesheet' href='/frost-night.css'/><link rel='stylesheet' href='/frost-field-guide.css'/><script type='application/ld+json' dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}}/></Head>
     <div className='fm-top'><a href='/'>MICHIGAN PHENOLOGY</a><nav aria-label='Page sections'><a href='#field-guide'>Field guide</a><a href='#forecast'>The forecast</a><a href='#frost-explorer'>Explore the data</a><a href='#overnight-journey'>Overnight cooling</a><a href='#sunrise-guide'>Sunrise plan</a><a href='#frost-verification'>Evidence history</a><a href='#places'>Michigan map</a><a href='#science'>How it works</a><a href='/lake-smoke'>Lake smoke ↗</a></nav></div>
