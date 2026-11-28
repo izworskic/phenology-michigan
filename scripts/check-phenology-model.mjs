@@ -30,3 +30,14 @@ try{
  }
 }finally{if(priorTZ===undefined)delete process.env.TZ;else process.env.TZ=priorTZ;}
 console.log("PASS civil forecast weekday and hunting calendar parity across four timezones");
+
+
+import { readFileSync } from "node:fs";
+import vm from "node:vm";
+const wiSource=readFileSync("pages/wisconsin-bloom-tracker.js","utf8");
+const wiAdmission=vm.runInNewContext("("+wiSource.match(/function verifiedObservation\(stop, notes, now\) \{[\s\S]*?\n\}/)[0]+")",{OBSERVATION_MAX_AGE_MS:5*86400000});
+const wiStop={id:"test",sourceUrl:"https://example.org/report"},wiNow=new Date("2026-11-28T15:00:00Z"),wiNote={destinationId:"test",stage:"PEAK",observedAt:"2026-11-27T12:00:00Z",sourceName:"Operator",sourceUrl:wiStop.sourceUrl};
+assert.equal(wiAdmission(wiStop,[wiNote],wiNow),wiNote);
+for(const invalid of [{...wiNote,observedAt:"2027-02-26T12:00:00Z"},{...wiNote,observedAt:"2020-05-01T12:00:00Z"},{...wiNote,stage:"invalid"},{...wiNote,sourceUrl:"https://example.net/"},{...wiNote,sourceName:""}])assert.equal(wiAdmission(wiStop,[invalid],wiNow),null);
+assert.match(wiSource,/const latestSources=WISCONSIN\.destinations\.map\(stop=>verifiedObservation\(stop,observations,now\)\)\.filter\(Boolean\)/);
+assert.match(wiSource,/catch\{setObservations\(\[\]\);setCheckedAt\(null\);\}/);
