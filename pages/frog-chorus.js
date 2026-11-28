@@ -1,3 +1,4 @@
+import { currentRegionalEnvelope } from "../lib/spring-response-admission.mjs";
 import Head from 'next/head';
 import {useEffect,useMemo,useState} from 'react';
 import {useRouter} from 'next/router';
@@ -93,7 +94,7 @@ export default function FrogChorus(){
   const [filter,setFilter]=useState('all');
   useEffect(()=>{if(router.isReady&&typeof router.query.region==='string'&&REGIONS.some(r=>r.id===router.query.region))setSelected(router.query.region);},[router.isReady,router.query.region]);
   useEffect(()=>{let alive=true;fetch('/api/frogs').then(r=>{if(!r.ok)throw Error('API temporarily unavailable');return r.json();})
-    .then(v=>{if(alive){setData(v);setLoading(false);}}).catch(e=>{if(alive){setError(e.message);setLoading(false);}});
+    .then(v=>{if(!currentRegionalEnvelope(v,REGIONS,3))throw Error('Expired or mismatched regional evidence');if(alive){setData(v);setLoading(false);}}).catch(e=>{if(alive){setError(e.message);setLoading(false);}});
     return()=>{alive=false;};},[]);
   const choose=id=>{setSelected(id);router.replace({pathname:'/frog-chorus',query:id==='saginaw-bay'?{}:{region:id}},undefined,{shallow:true,scroll:false});};
   const region=REGIONS.find(r=>r.id===selected)||REGIONS[4];
