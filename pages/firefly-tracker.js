@@ -1,3 +1,4 @@
+import { currentRegionalEnvelope } from "../lib/spring-response-admission.mjs";
 import Head from 'next/head';
 import {useEffect,useState} from 'react';
 import FireflyCartoMap from '../components/FireflyCartoMap';
@@ -66,7 +67,7 @@ export default function FireflyTracker(){
   useEffect(()=>{
     let alive=true;
     fetch('/api/fireflies').then(r=>{if(!r.ok)throw Error('Regional forecast is temporarily unavailable');return r.json();})
-      .then(json=>{if(alive){setData(json);setLoading(false);}})
+      .then(json=>{if(!currentRegionalEnvelope(json,REGIONS,4))throw Error('Expired or mismatched regional evidence');if(alive){setData(json);setLoading(false);}})
       .catch(err=>{if(alive){setError(err.message);setLoading(false);}});
     return ()=>{alive=false;};
   },[]);
