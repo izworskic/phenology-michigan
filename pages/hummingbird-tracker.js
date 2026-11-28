@@ -1,3 +1,4 @@
+import { currentRegionalEnvelope } from "../lib/spring-response-admission.mjs";
 import Head from 'next/head';
 import {useEffect,useMemo,useState} from 'react';
 import {useRouter} from 'next/router';
@@ -44,7 +45,7 @@ export default function HummingbirdTracker(){
  useEffect(()=>{
   let active=true;
   fetch('/api/hummingbirds').then(r=>{if(!r.ok)throw Error('The live API could not be reached');return r.json();})
-   .then(j=>{if(active){setData(j);setLoading(false);}})
+   .then(j=>{if(!currentRegionalEnvelope(j,REGIONS,8))throw Error('Expired or mismatched regional evidence');if(active){setData(j);setLoading(false);}})
    .catch(e=>{if(active){setError(e.message);setLoading(false);}});
   return ()=>{active=false;};
  },[]);
