@@ -107,13 +107,13 @@ export default function WisconsinBloomTracker(){
   const [filters,setFilters]=useState({flower:'all',region:'all'}),[selected,setSelected]=useState(null),[now]=useState(()=>new Date()),[observations,setObservations]=useState([]),[loading,setLoading]=useState(false),[checkedAt,setCheckedAt]=useState(null);
   const update=async()=>{
     setLoading(true);
-    try{const response=await fetch('/api/wisconsin-bloom',{cache:'no-store'});if(!response.ok)throw Error('Update unavailable');const data=await response.json();setObservations(Array.isArray(data.observations)?data.observations:[]);setCheckedAt(new Date().toISOString());}catch{setCheckedAt(null);}finally{setLoading(false);}
+    try{const response=await fetch('/api/wisconsin-bloom',{cache:'no-store'});if(!response.ok)throw Error('Update unavailable');const data=await response.json();setObservations(Array.isArray(data.observations)?data.observations:[]);setCheckedAt(new Date().toISOString());}catch{setObservations([]);setCheckedAt(null);}finally{setLoading(false);}
   };
   useEffect(()=>{update();},[]);
   const visible=useMemo(()=>WISCONSIN.destinations.filter(d=>(filters.flower==='all'||filters.flower===d.category)&&(filters.region==='all'||filters.region===d.region)),[filters]);
   const onSelect=id=>{trackWisconsinEvent('wi_map_select',{destination_id:id,surface:'map'});setSelected(id);document.getElementById(anchor(id))?.scrollIntoView({behavior:'smooth',block:'start'});};
   const anyVerified=WISCONSIN.destinations.some(stop=>verifiedObservation(stop,observations,now));
-  const latestSources=observations.filter(x=>x.observedAt&&now.getTime()-Date.parse(x.observedAt)<=7*86400000);
+  const latestSources=WISCONSIN.destinations.map(stop=>verifiedObservation(stop,observations,now)).filter(Boolean);
   const schema={'@context':'https://schema.org','@graph':[
     {'@type':'WebApplication','@id':URL+'#app',name:'Wisconsin Bloom Tracker 2027',url:URL,description:'Wisconsin cherry blossoms, lilacs, lavender and sunflower trip planning with official source links and no unsourced peak claims.',applicationCategory:'TravelApplication',operatingSystem:'Any',isAccessibleForFree:true,author:{'@id':'https://chrisizworski.com/#person'}},
     {'@type':'WebPage','@id':URL+'#webpage',url:URL,name:'Wisconsin Bloom Tracker 2027: Cherry Blossoms & Map',mainEntity:{'@id':URL+'#app'},author:{'@id':'https://chrisizworski.com/#person'},primaryImageOfPage:{'@type':'ImageObject',url:'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Lilacs_at_UW_Arboretum_Longenecker_Horticultural_Garden.jpg/1280px-Lilacs_at_UW_Arboretum_Longenecker_Horticultural_Garden.jpg',caption:'Historical UW Arboretum lilacs, not live'}},
